@@ -120,8 +120,8 @@
                             </div>
                         </div>
                         <div class="ml-4">
-                            <h3 class="text-sm font-medium text-gray-900">Browse Services</h3>
-                            <p class="text-sm text-gray-500">Find student services</p>
+                            <h3 class="text-sm font-medium text-upsi-dark">Browse Services</h3>
+                            <p class="text-sm text-upsi-text-primary">Find student services</p>
                         </div>
                     </div>
                 </a>

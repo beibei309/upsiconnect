@@ -87,7 +87,7 @@
             <div class="max-w-7xl mx-auto">
                 <div class="text-center">
                     <h1 class="text-4xl md:text-6xl font-bold text-white mb-6">
-                        Connect. Learn. <span class="text-yellow-300">Grow Together.</span>
+                        Connect. Learn. <span class="text-upsi-gold">Grow Together.</span>
                     </h1>
                     <p class="text-xl md:text-2xl text-indigo-100 mb-8 max-w-3xl mx-auto">
                         UpsiConnect is the premier platform connecting UPSI students with peer-to-peer services. 
@@ -138,8 +138,8 @@
         <section id="features" class="py-20 bg-white">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="text-center mb-16">
-                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Why Choose UpsiConnect?</h2>
-                    <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                    <h2 class="text-3xl md:text-4xl font-bold text-upsi-dark mb-4">Why Choose UpsiConnect?</h2>
+                    <p class="text-xl text-upsi-text-primary max-w-2xl mx-auto">
                         Built by students, for students. Our platform makes it easy to find help and offer your skills.
                     </p>
                 </div>
@@ -151,8 +151,8 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
                             </svg>
                         </div>
-                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Trusted Community</h3>
-                        <p class="text-gray-600">All users are verified UPSI students. Build trust through our rating and review system.</p>
+                        <h3 class="text-xl font-semibold text-upsi-dark mb-4">Trusted Community</h3>
+                        <p class="text-upsi-text-primary">All users are verified UPSI students. Build trust through our rating and review system.</p>
                     </div>
                     
                     <div class="text-center p-8 card-hover bg-gray-50 rounded-xl">
@@ -161,8 +161,8 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                             </svg>
                         </div>
-                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Instant Connections</h3>
-                        <p class="text-gray-600">Find help quickly with our smart search and instant messaging system.</p>
+                        <h3 class="text-xl font-semibold text-upsi-dark mb-4">Instant Connections</h3>
+                        <p class="text-upsi-text-primary">Find help quickly with our smart search and instant messaging system.</p>
                     </div>
                     
                     <div class="text-center p-8 card-hover bg-gray-50 rounded-xl">
@@ -171,8 +171,8 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
                             </svg>
                         </div>
-                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Fair Pricing</h3>
-                        <p class="text-gray-600">Student-friendly rates with transparent pricing. No hidden fees or commissions.</p>
+                        <h3 class="text-xl font-semibold text-upsi-dark mb-4">Fair Pricing</h3>
+                        <p class="text-upsi-text-primary">Student-friendly rates with transparent pricing. No hidden fees or commissions.</p>
                     </div>
                 </div>
             </div>

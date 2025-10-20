@@ -19,7 +19,7 @@
                     <div class="card bg-white border border-gray-200">
                         <div class="card-body">
                             <div class="flex items-center justify-between">
-                                <span class="font-medium text-gray-900">{{ $cat }}</span>
+                                <span class="font-medium text-upsi-dark">{{ $cat }}</span>
                                 <span class="badge badge-outline" style="border-color:#003B73;color:#003B73;">Browse</span>
                             </div>
                         </div>
@@ -37,20 +37,20 @@
                         <div class="card-body">
                             <div class="flex items-center justify-between mb-2">
                                 <div>
-                                    <h3 class="font-semibold text-gray-900">Student {{ $i }}</h3>
-                                    <p class="text-sm text-gray-600">Offers: Tutoring, Design</p>
+                                    <h3 class="font-semibold text-upsi-dark">Student {{ $i }}</h3>
+                                    <p class="text-sm text-upsi-text-primary">Offers: Tutoring, Design</p>
                                 </div>
-                                <span class="badge" style="background-color:#D4AF37;color:#1F2937;">Pelajar UPSI Terkini</span>
+                                <span class="badge bg-upsi-gold text-upsi-dark font-semibold">Pelajar UPSI Terkini</span>
                             </div>
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center space-x-2">
-                                    <span class="text-xs text-gray-600">Rating</span>
+                                    <span class="text-xs text-upsi-text-primary">Rating</span>
                                     <div class="rating rating-sm">
-                                        <input type="radio" class="mask mask-star-2 bg-yellow-500" />
-                                        <input type="radio" class="mask mask-star-2 bg-yellow-500" checked />
-                                        <input type="radio" class="mask mask-star-2 bg-yellow-500" checked />
-                                        <input type="radio" class="mask mask-star-2 bg-yellow-500" checked />
-                                        <input type="radio" class="mask mask-star-2 bg-yellow-500" />
+                                        <input type="radio" class="mask mask-star-2 bg-upsi-gold" />
+                                        <input type="radio" class="mask mask-star-2 bg-upsi-gold" checked />
+                                        <input type="radio" class="mask mask-star-2 bg-upsi-gold" checked />
+                                        <input type="radio" class="mask mask-star-2 bg-upsi-gold" checked />
+                                        <input type="radio" class="mask mask-star-2 bg-upsi-gold" />
                                     </div>
                                 </div>
                                 <a href="{{ route('students.profile', ['user' => $i]) }}" class="btn" style="background-color:#003B73;color:#FFFFFF;">View Profile</a>

@@ -3,8 +3,8 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Search Header -->
             <div class="mb-8">
-                <h1 class="text-3xl font-bold text-gray-900">Discover Student Services</h1>
-                <p class="text-gray-600 mt-2">Find the perfect student to help with your needs</p>
+                <h1 class="text-3xl font-bold text-upsi-dark">Discover Student Services</h1>
+                <p class="text-upsi-text-primary mt-2">Find the perfect student to help with your needs</p>
             </div>
 
             <!-- Search and Filters -->
@@ -54,7 +54,7 @@
                         
                         <!-- Category Filter -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                            <label class="block text-sm font-medium text-upsi-dark mb-2">Category</label>
                             <select name="category_id" class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                                 <option value="">All Categories</option>
                                 <!-- Categories would be populated from backend -->
@@ -66,7 +66,7 @@
 
                         <!-- Rating Filter -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Minimum Rating</label>
+                            <label class="block text-sm font-medium text-upsi-dark mb-2">Minimum Rating</label>
                             <select name="min_rating" class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                                 <option value="">Any Rating</option>
                                 <option value="4" {{ $min_rating == '4' ? 'selected' : '' }}>4+ Stars</option>
@@ -77,7 +77,7 @@
 
                         <!-- Availability Filter -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Availability</label>
+                            <label class="block text-sm font-medium text-upsi-dark mb-2">Availability</label>
                             <select name="available" class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                                 <option value="">All Students</option>
                                 <option value="1" {{ $available == '1' ? 'selected' : '' }}>Available Now</option>
@@ -90,7 +90,7 @@
                 <!-- Active Filters -->
                 @if($q || $category_id || $min_rating || $available !== null)
                     <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-200">
-                        <span class="text-sm text-gray-600">Active filters:</span>
+                        <span class="text-sm text-upsi-text-primary">Active filters:</span>
                         
                         @if($q)
                             <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
@@ -146,12 +146,12 @@
                 @if($services->count() > 0)
                     <!-- Results Header -->
                     <div class="flex items-center justify-between">
-                        <p class="text-gray-600">
+                        <p class="text-upsi-text-primary">
                             Found <span class="font-semibold text-gray-900">{{ $services->count() }}</span> 
                             {{ Str::plural('service', $services->count()) }}
                         </p>
                         <div class="flex items-center space-x-2">
-                            <span class="text-sm text-gray-500">Sort by:</span>
+                            <span class="text-sm text-upsi-text-primary">Sort by:</span>
                             <select class="text-sm border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
                                 <option>Relevance</option>
                                 <option>Rating</option>
@@ -216,8 +216,8 @@
 
                                 <!-- Service Details -->
                                 <div class="px-6 pb-4">
-                                    <h4 class="font-medium text-gray-900 mb-2">{{ $service->title }}</h4>
-                                    <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ $service->description }}</p>
+                                    <h4 class="font-medium text-upsi-dark mb-2">{{ $service->title }}</h4>
+                                    <p class="text-sm text-upsi-text-primary mb-3 line-clamp-2">{{ $service->description }}</p>
                                     
                                     <!-- Service Tags -->
                                     @if($service->category)
@@ -258,8 +258,8 @@
                         <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
-                        <h3 class="mt-4 text-lg font-medium text-gray-900">No services found</h3>
-                        <p class="mt-2 text-gray-500">Try adjusting your search criteria or browse all available services.</p>
+                        <h3 class="mt-4 text-lg font-medium text-upsi-dark">No services found</h3>
+                        <p class="mt-2 text-upsi-text-primary">Try adjusting your search criteria or browse all available services.</p>
                         <div class="mt-6">
                             <a href="{{ route('search.index') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
                                 Browse All Services
