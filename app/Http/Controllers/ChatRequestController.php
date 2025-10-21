@@ -5,46 +5,67 @@ namespace App\Http\Controllers;
 use App\Models\ChatRequest;
 use App\Models\Conversation;
 use App\Models\User;
+use App\Models\StudentService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Carbon;
 
 class ChatRequestController extends Controller
 {
+    public function create(Request $request)
+    {
+        $userId = $request->query('user');
+        $serviceTitle = $request->query('service');
+        
+        $provider = null;
+        if ($userId) {
+            $provider = User::find($userId);
+        }
+        
+        return view('chat.request', compact('provider', 'serviceTitle'));
+    }
     public function store(Request $request): JsonResponse
     {
-        $data = $request->validate([
-            'student_id' => ['required', 'exists:users,id'],
-            'message' => ['nullable', 'string'],
-        ]);
+        try {
+            $data = $request->validate([
+                'student_id' => ['required', 'exists:users,id'],
+                'message' => ['nullable', 'string'],
+            ]);
 
-        $student = User::findOrFail($data['student_id']);
+            $student = User::findOrFail($data['student_id']);
 
-        if ($student->role !== 'student') {
-            return response()->json(['error' => 'Recipient must be a verified student.'], 422);
+            if ($student->role !== 'student') {
+                return response()->json(['error' => 'Recipient must be a verified student.'], 422);
+            }
+
+            if (!method_exists($student, 'isAvailable') || !$student->isAvailable()) {
+                return response()->json(['error' => 'Student currently unavailable.'], 422);
+            }
+
+            $requester = $request->user();
+            if (!$requester) {
+                return response()->json(['error' => 'Authentication required.'], 401);
+            }
+
+            if (!($requester->isVerifiedPublic() || $requester->isVerifiedStaff())) {
+                return response()->json(['error' => 'Only verified users may request to chat.'], 403);
+            }
+
+            $chatRequest = ChatRequest::create([
+                'requester_id' => $requester->id,
+                'recipient_id' => $student->id,
+                'message' => $data['message'] ?? null,
+                'status' => 'pending',
+            ]);
+
+            return response()->json(['success' => true, 'message' => 'Chat request sent successfully', 'chat_request' => $chatRequest], 201);
+            
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['error' => 'Validation failed', 'details' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            \Log::error('Chat request error: ' . $e->getMessage());
+            return response()->json(['error' => 'An error occurred while sending the chat request'], 500);
         }
-
-        if (!$student->isAvailable()) {
-            return response()->json(['error' => 'Student currently unavailable.'], 422);
-        }
-
-        $requester = $request->user();
-        if (!$requester) {
-            return response()->json(['error' => 'Authentication required.'], 401);
-        }
-
-        if (!($requester->isVerifiedPublic() || $requester->isVerifiedStaff())) {
-            return response()->json(['error' => 'Only verified users may request to chat.'], 403);
-        }
-
-        $chatRequest = ChatRequest::create([
-            'requester_id' => $requester->id,
-            'recipient_id' => $student->id,
-            'message' => $data['message'] ?? null,
-            'status' => 'pending',
-        ]);
-
-        return response()->json(['chat_request' => $chatRequest], 201);
     }
 
     public function accept(ChatRequest $chatRequest): JsonResponse

@@ -24,6 +24,7 @@ class User extends Authenticatable
         // extended fields
         'role',
         'phone',
+        'student_id',
         'profile_photo_path',
         'selfie_media_path',
         'public_verified_at',
@@ -69,6 +70,11 @@ class User extends Authenticatable
 
     // Relationships
     public function studentServices()
+    {
+        return $this->hasMany(StudentService::class, 'user_id');
+    }
+
+    public function services()
     {
         return $this->hasMany(StudentService::class, 'user_id');
     }

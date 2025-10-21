@@ -92,4 +92,33 @@ class StudentServiceController extends Controller
             'services' => $services,
         ], 200);
     }
+
+    public function create(Request $request)
+    {
+        $user = $request->user();
+        if (!$user || $user->role !== 'student') {
+            abort(403, 'Only students can create services.');
+        }
+
+        // Get categories for the form
+        $categories = \App\Models\Category::all();
+
+        return view('services.create', compact('categories'));
+    }
+
+    public function manage(Request $request)
+    {
+        $user = $request->user();
+        if (!$user || $user->role !== 'student') {
+            abort(403, 'Only students can manage services.');
+        }
+
+        $services = StudentService::query()
+            ->where('user_id', $user->id)
+            ->with('category')
+            ->orderByDesc('created_at')
+            ->get();
+
+        return view('services.manage', compact('services'));
+    }
 }

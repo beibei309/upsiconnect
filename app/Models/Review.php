@@ -11,6 +11,8 @@ class Review extends Model
 
     protected $fillable = [
         'conversation_id',
+        'service_request_id',
+        'service_application_id',
         'reviewer_id',
         'reviewee_id',
         'rating',
@@ -20,6 +22,16 @@ class Review extends Model
     public function conversation()
     {
         return $this->belongsTo(Conversation::class);
+    }
+
+    public function serviceRequest()
+    {
+        return $this->belongsTo(ServiceRequest::class);
+    }
+
+    public function serviceApplication()
+    {
+        return $this->belongsTo(ServiceApplication::class);
     }
 
     public function reviewer()

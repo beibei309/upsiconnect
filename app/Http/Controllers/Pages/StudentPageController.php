@@ -17,9 +17,13 @@ class StudentPageController extends Controller
             ->orderByDesc('created_at')
             ->get();
 
+        // Load the services relationship to avoid null errors
+        $user->load('services');
+
         $canChatOrReport = Auth::check() && Auth::id() !== $user->id;
 
         return view('students.profile', [
+            'user' => $user,
             'student' => $user,
             'services' => $services,
             'canActions' => $canChatOrReport,

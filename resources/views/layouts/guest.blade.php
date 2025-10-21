@@ -51,11 +51,11 @@
                 Built with ❤️ for UPSI students
             </p>
             <div class="mt-2 flex items-center justify-center space-x-4 text-indigo-200 text-xs">
-                <a href="#" class="hover:text-white transition">Help</a>
+                <a href="{{ route('dashboard') }}" class="hover:text-white transition">Help</a>
                 <span>•</span>
-                <a href="#" class="hover:text-white transition">Privacy</a>
+                <a href="{{ route('privacy') }}" class="hover:text-white transition">Privacy</a>
                 <span>•</span>
-                <a href="#" class="hover:text-white transition">Terms</a>
+                <a href="{{ route('terms') }}" class="hover:text-white transition">Terms</a>
             </div>
         </div>
     </div>

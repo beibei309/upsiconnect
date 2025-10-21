@@ -45,9 +45,15 @@
                     </div>
                     <div>
                         <div class="space-y-3">
-                            <button class="btn btn-primary w-full">Accept</button>
-                            <button class="btn w-full" style="background-color:#003B73;color:#FFFFFF;">View Profile</button>
-                            <button class="btn btn-outline w-full" style="border-color:#003B73;color:#003B73;">Decline</button>
+                            <form method="POST" action="{{ route('chat.request.demo') }}">
+                                @csrf
+                                <button type="submit" class="btn btn-primary w-full">Accept</button>
+                            </form>
+                            <a href="{{ route('students.profile', ['user' => 1]) }}" class="btn w-full" style="background-color:#003B73;color:#FFFFFF;">View Profile</a>
+                            <form method="POST" action="{{ route('community.home') }}">
+                                @csrf
+                                <button type="submit" class="btn btn-outline w-full" style="border-color:#003B73;color:#003B73;">Decline</button>
+                            </form>
                         </div>
                     </div>
                 </div>

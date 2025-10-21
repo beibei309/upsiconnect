@@ -2,11 +2,15 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AvailabilityController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ChatRequestController;
+use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\ServiceApplicationController;
 use App\Http\Controllers\StudentServiceController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ServiceRequestController;
 use App\Http\Controllers\Admin\VerificationController as AdminVerificationController;
 use App\Http\Controllers\Admin\ReportAdminController;
 use App\Http\Controllers\Admin\UserAdminController;
@@ -23,6 +27,15 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+// Legal pages
+Route::get('/terms', function () {
+    return view('legal.terms');
+})->name('terms');
+
+Route::get('/privacy', function () {
+    return view('legal.privacy');
+})->name('privacy');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -32,6 +45,26 @@ Route::middleware('auth')->group(function () {
 // UI pages
 Route::get('/students/{user}/profile', [StudentPageController::class, 'profile'])->middleware(['auth'])->name('students.profile');
 Route::get('/search', [SearchPageController::class, 'index'])->middleware(['auth'])->name('search.index');
+Route::get('/services/manage', [StudentServiceController::class, 'manage'])->middleware(['auth'])->name('services.manage');
+Route::get('/services/create', [StudentServiceController::class, 'create'])->middleware(['auth'])->name('services.create');
+Route::get('/services/apply', function () {
+    return view('services.apply');
+})->middleware(['auth'])->name('services.apply');
+Route::post('/services/apply', [App\Http\Controllers\ServiceApplicationController::class, 'store'])->middleware(['auth'])->name('services.apply.store');
+Route::get('/services/applications', [App\Http\Controllers\ServiceApplicationController::class, 'index'])->middleware(['auth'])->name('services.applications.index');
+Route::get('/service-requests', [ServiceRequestController::class, 'index'])->middleware(['auth'])->name('service-requests.index');
+
+// Service Request routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/service-requests', [ServiceRequestController::class, 'index'])->name('service-requests.index');
+    Route::post('/service-requests', [ServiceRequestController::class, 'store'])->name('service-requests.store');
+    Route::get('/service-requests/{serviceRequest}', [ServiceRequestController::class, 'show'])->name('service-requests.show');
+    Route::patch('/service-requests/{serviceRequest}/accept', [ServiceRequestController::class, 'accept'])->name('service-requests.accept');
+    Route::patch('/service-requests/{serviceRequest}/reject', [ServiceRequestController::class, 'reject'])->name('service-requests.reject');
+    Route::patch('/service-requests/{serviceRequest}/in-progress', [ServiceRequestController::class, 'markInProgress'])->name('service-requests.in-progress');
+    Route::patch('/service-requests/{serviceRequest}/complete', [ServiceRequestController::class, 'markCompleted'])->name('service-requests.complete');
+    Route::patch('/service-requests/{serviceRequest}/cancel', [ServiceRequestController::class, 'cancel'])->name('service-requests.cancel');
+});
 
 // Mockup flows (public for preview)
 Route::get('/onboarding', fn() => view('onboarding.register'))->name('onboarding.register');
@@ -39,7 +72,10 @@ Route::get('/onboarding/community', fn() => view('onboarding.community_verificat
 Route::get('/community/home', fn() => view('home.community'))->name('community.home');
 Route::get('/requests/demo', fn() => view('community.request_view'))->name('community.request.demo');
 Route::get('/chat/demo/request', fn() => view('chat.request'))->name('chat.request.demo');
+Route::get('/chat/request', [ChatRequestController::class, 'create'])->middleware(['auth'])->name('chat.request');
 Route::get('/chat/demo', fn() => view('chat.index'))->name('chat.index.demo');
+Route::get('/chat', [ChatController::class, 'index'])->middleware(['auth'])->name('chat.index');
+Route::get('/chat/{conversation}', [ChatController::class, 'show'])->middleware(['auth'])->name('chat.show');
 Route::get('/admin/verifications', [AdminPageController::class, 'verifications'])->middleware(['auth'])->name('admin.verifications.page');
 Route::get('/admin/reports', [AdminPageController::class, 'reports'])->middleware(['auth'])->name('admin.reports.page');
 
@@ -47,9 +83,14 @@ Route::get('/admin/reports', [AdminPageController::class, 'reports'])->middlewar
 Route::middleware(['auth'])->group(function () {
     Route::post('/availability/toggle', [AvailabilityController::class, 'toggle']);
 
-    Route::post('/chat-requests', [ChatRequestController::class, 'store']);
+    Route::post('/chat-requests', [ChatRequestController::class, 'store'])->name('chat-requests.store');
     Route::post('/chat-requests/{chatRequest}/accept', [ChatRequestController::class, 'accept']);
     Route::post('/chat-requests/{chatRequest}/decline', [ChatRequestController::class, 'decline']);
+    Route::post('/messages', [MessageController::class, 'store'])->name('messages.store');
+    Route::post('/service-applications/apply', [ServiceApplicationController::class, 'applyFromChat'])->name('service-applications.apply');
+    Route::post('/service-applications/{application}/accept', [ServiceApplicationController::class, 'acceptFromChat'])->name('service-applications.accept');
+    Route::post('/service-applications/{application}/decline', [ServiceApplicationController::class, 'declineFromChat'])->name('service-applications.decline');
+    Route::post('/service-applications/{application}/complete', [ServiceApplicationController::class, 'markCompleted'])->name('service-applications.complete');
 
     Route::post('/reviews', [ReviewController::class, 'store']);
 

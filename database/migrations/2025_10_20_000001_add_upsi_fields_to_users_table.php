@@ -10,6 +10,7 @@ return new class extends Migration {
         Schema::table('users', function (Blueprint $table) {
             $table->string('role')->default('community')->index(); // community, student, admin
             $table->string('phone')->nullable()->index();
+            $table->string('student_id')->nullable()->index(); // For student role
 
             // Trust and verification fields
             $table->timestamp('public_verified_at')->nullable();

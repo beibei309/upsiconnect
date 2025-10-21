@@ -286,9 +286,9 @@
                     <div>
                         <h4 class="font-semibold mb-4">Support</h4>
                         <ul class="space-y-2 text-gray-400">
-                            <li><a href="#" class="hover:text-white transition">Help Center</a></li>
-                            <li><a href="#" class="hover:text-white transition">Contact Us</a></li>
-                            <li><a href="#" class="hover:text-white transition">Community Guidelines</a></li>
+                            <li><a href="{{ route('dashboard') }}" class="hover:text-white transition">Help Center</a></li>
+                            <li><a href="{{ route('dashboard') }}" class="hover:text-white transition">Contact Us</a></li>
+                            <li><a href="{{ route('dashboard') }}" class="hover:text-white transition">Community Guidelines</a></li>
                         </ul>
                     </div>
                 </div>

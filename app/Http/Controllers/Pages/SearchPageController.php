@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\StudentService;
 use App\Models\User;
+use App\Models\Category;
 
 class SearchPageController extends Controller
 {
@@ -14,7 +15,8 @@ class SearchPageController extends Controller
         $q = trim((string) $request->input('q'));
         $categoryId = $request->input('category_id');
         $minRating = $request->input('min_rating');
-        $availableOnly = $request->boolean('available', false);
+        $availableOnly = $request->boolean('available', true);
+        $sortBy = $request->input('sort', 'newest');
 
         $query = StudentService::query()->where('is_active', true);
 
@@ -28,9 +30,27 @@ class SearchPageController extends Controller
             $query->where('category_id', $categoryId);
         }
 
-        // Preload user for rating/availability filtering and display
-        $query->with(['user']);
-        $services = $query->orderByDesc('created_at')->paginate(12)->withQueryString();
+        // Preload user and category for rating/availability filtering and display
+        $query->with(['user', 'category']);
+        
+        // Apply sorting
+        switch ($sortBy) {
+            case 'price_low':
+                $query->orderBy('suggested_price', 'asc');
+                break;
+            case 'price_high':
+                $query->orderBy('suggested_price', 'desc');
+                break;
+            case 'oldest':
+                $query->orderBy('created_at', 'asc');
+                break;
+            case 'newest':
+            default:
+                $query->orderByDesc('created_at');
+                break;
+        }
+        
+        $services = $query->paginate(12)->withQueryString();
 
         // Filter by availability and min rating at collection level (average_rating is an appended attribute)
         $filtered = $services->getCollection()->filter(function ($service) use ($availableOnly, $minRating) {
@@ -46,12 +66,17 @@ class SearchPageController extends Controller
         });
         $services->setCollection($filtered->values());
 
+        // Get categories for filter dropdown
+        $categories = Category::where('is_active', true)->orderBy('name')->get();
+
         return view('search.index', [
             'services' => $services,
+            'categories' => $categories,
             'q' => $q,
             'category_id' => $categoryId,
             'min_rating' => $minRating,
             'available' => $availableOnly,
+            'sort' => $sortBy,
         ]);
     }
 }

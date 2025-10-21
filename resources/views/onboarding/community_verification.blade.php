@@ -22,9 +22,15 @@
                     <h2 class="card-title text-upsi-blue">Step 1: Verify Phone</h2>
                     <p class="text-gray-600">Enter the 6-digit code sent to your phone.</p>
                     <div class="flex items-center space-x-3 mt-4">
-                        <input type="text" maxlength="6" placeholder="OTP Code" class="input input-bordered w-48" />
-                        <button class="btn btn-primary">Verify</button>
-                        <button class="btn btn-outline" style="border-color:#003B73;color:#003B73;">Resend</button>
+                        <form method="POST" action="{{ route('dashboard') }}" class="flex items-center space-x-3">
+                            @csrf
+                            <input type="text" maxlength="6" placeholder="OTP Code" class="input input-bordered w-48" name="otp_code" />
+                            <button type="submit" class="btn btn-primary">Verify</button>
+                        </form>
+                        <form method="POST" action="{{ route('onboarding.community.verify') }}">
+                            @csrf
+                            <button type="submit" class="btn btn-outline" style="border-color:#003B73;color:#003B73;">Resend</button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -34,10 +40,13 @@
                 <div class="card-body">
                     <h2 class="card-title text-upsi-blue">Step 2: Upload Profile Photo</h2>
                     <p class="text-gray-600">Upload a clear photo of yourself.</p>
-                    <input type="file" class="file-input file-input-bordered w-full max-w-md" />
-                    <div class="mt-4">
-                        <button class="btn btn-primary">Save Photo</button>
-                    </div>
+                    <form method="POST" action="{{ route('dashboard') }}" enctype="multipart/form-data">
+                        @csrf
+                        <input type="file" class="file-input file-input-bordered w-full max-w-md" name="profile_photo" />
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">Save Photo</button>
+                        </div>
+                    </form>
                 </div>
             </div>
 
@@ -51,7 +60,10 @@
                             <p class="text-sm text-gray-700">Camera preview placeholder</p>
                             <p class="text-xs text-gray-500">Ensure good lighting and remove accessories.</p>
                         </div>
-                        <button class="btn btn-primary">Open Camera</button>
+                        <form method="POST" action="{{ route('dashboard') }}">
+                            @csrf
+                            <button type="submit" class="btn btn-primary">Open Camera</button>
+                        </form>
                     </div>
                 </div>
             </div>
