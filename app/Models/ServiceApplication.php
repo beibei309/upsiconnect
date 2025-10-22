@@ -258,7 +258,6 @@ class ServiceApplication extends Model
 
         return false;
     }
-    }
 
     /**
      * Check if application is completed

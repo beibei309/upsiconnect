@@ -1,6 +1,4 @@
-@extends('layouts.app')
-
-@section('content')
+<x-app-layout>
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-4xl mx-auto">
         <div class="bg-white rounded-lg shadow-md">
@@ -38,14 +36,14 @@
             <!-- Chat Messages -->
             <div id="chatMessages" class="h-96 overflow-y-auto p-6 space-y-4 bg-gray-50">
                 @forelse($conversation->messages as $message)
-                    <div class="flex {{ $message->sender_id === auth()->id() ? 'justify-end' : 'justify-start' }}">
+                    <div class="flex {{ $message->sender_id === auth()->id() ? 'justify-end' : 'justify-start' }} mb-4">
                         <div class="max-w-xs lg:max-w-md">
                             <div class="flex items-end space-x-2 {{ $message->sender_id === auth()->id() ? 'flex-row-reverse space-x-reverse' : '' }}">
-                                <img src="{{ $message->sender->profile_picture ? asset('storage/' . $message->sender->profile_picture) : asset('images/default-avatar.png') }}" 
+                                <img src="{{ $message->sender->profile_photo_path ? asset('storage/' . $message->sender->profile_photo_path) : asset('images/default-avatar.png') }}" 
                                      alt="{{ $message->sender->name }}" 
                                      class="w-8 h-8 rounded-full object-cover">
                                 <div class="px-4 py-2 rounded-lg {{ $message->sender_id === auth()->id() ? 'bg-blue-600 text-white' : 'bg-white border border-gray-200' }}">
-                                    <p class="text-sm">{{ $message->content }}</p>
+                                    <p class="text-sm">{{ $message->body }}</p>
                                     <p class="text-xs mt-1 {{ $message->sender_id === auth()->id() ? 'text-blue-100' : 'text-gray-500' }}">
                                         {{ $message->created_at->format('H:i') }}
                                     </p>
@@ -130,6 +128,11 @@
                     </div>
                 </div>
             @endif
+
+            <!-- Typing Indicator -->
+            <div id="typingIndicator" class="px-4 py-2 text-sm text-gray-500 italic hidden">
+                <span id="typingText"></span>
+            </div>
 
             <!-- Message Input -->
             <div class="border-t border-gray-200 p-4">
@@ -249,35 +252,415 @@
 @endif
 
 <script>
-// Message sending functionality
-document.getElementById('messageForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    const messageInput = document.getElementById('messageInput');
-    const message = messageInput.value.trim();
-    
-    if (!message) return;
-    
-    try {
-        const response = await fetch('{{ route("messages.store") }}', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            }
+// Real-time message listening with Echo
+const conversationId = {{ $conversation->id }};
+const currentUserId = {{ auth()->id() }};
+
+// Wait for DOM to be ready
+document.addEventListener('DOMContentLoaded', function() {
+    // Variables for typing functionality
+    let typingTimer;
+    let isTyping = false;
+
+    // Check if Echo is available and establish connection
+    if (typeof window.Echo === 'undefined') {
+        console.error('❌ Echo is not loaded! WebSocket connection will not work.');
+        console.log('Available window properties:', Object.keys(window).filter(key => key.includes('Echo') || key.includes('Pusher')));
+    } else {
+        console.log('✅ Echo is loaded, attempting to connect to conversation channel...');
+        console.log('Echo configuration:', {
+            broadcaster: window.Echo.options.broadcaster,
+            key: window.Echo.options.key,
+            wsHost: window.Echo.options.wsHost,
+            wsPort: window.Echo.options.wsPort
         });
         
-        if (response.ok) {
-            messageInput.value = '';
-            // Add message to chat (you might want to implement real-time updates)
-            location.reload(); // Simple reload for now
-        } else {
-            throw new Error('Failed to send message');
+        // Test Echo connection with more detailed logging
+        window.Echo.connector.pusher.connection.bind('connected', function() {
+            console.log('✅ WebSocket connected successfully!');
+            console.log('Connection state:', window.Echo.connector.pusher.connection.state);
+            console.log('Socket ID:', window.Echo.connector.pusher.connection.socket_id);
+        });
+        
+        window.Echo.connector.pusher.connection.bind('disconnected', function() {
+            console.log('❌ WebSocket disconnected');
+            console.log('Connection state:', window.Echo.connector.pusher.connection.state);
+        });
+        
+        window.Echo.connector.pusher.connection.bind('error', function(error) {
+            console.error('❌ WebSocket connection error:', error);
+        });
+        
+        // Listen for new messages on the conversation channel with detailed logging
+        const channel = window.Echo.private(`conversation.${conversationId}`);
+        console.log('📡 Subscribing to channel:', `conversation.${conversationId}`);
+        
+        channel.listen('.message.sent', (e) => {
+            console.log('📨 New message received via Echo:', e);
+            console.log('Current user ID:', currentUserId);
+            console.log('Message sender ID:', e.sender_id);
+            console.log('Should add message:', e.sender_id !== currentUserId);
+        
+            if (e.sender_id !== currentUserId) {
+                console.log('✅ Adding message to chat');
+                addMessageToChat(e);
+                scrollToBottom();
+            } else {
+                console.log('❌ Not adding message - sent by current user');
+            }
+        })
+        .listen('MessageSent', (e) => {
+            console.log('📨 New message received via MessageSent event:', e);
+            console.log('Current user ID:', currentUserId);
+            console.log('Message data:', e.message || e);
+        
+            const messageData = e.message || e;
+            console.log('Message sender ID:', messageData.sender_id);
+            console.log('Should add message:', messageData.sender_id !== currentUserId);
+        
+            if (messageData.sender_id !== currentUserId) {
+                console.log('✅ Adding message to chat from MessageSent');
+                addMessageToChat(messageData);
+                scrollToBottom();
+            } else {
+                console.log('❌ Not adding message - sent by current user');
+            }
+        })
+        .error((error) => {
+            console.error('❌ Echo channel error:', error);
+        });
+        
+        // Test if channel is subscribed
+        setTimeout(() => {
+            console.log('Channel subscription status:', channel);
+            console.log('All active channels:', Object.keys(window.Echo.connector.channels));
+        }, 2000);
+        
+        // Add a test button to manually trigger Echo connection test
+        const testButton = document.createElement('button');
+        testButton.textContent = 'Test WebSocket Connection';
+        testButton.className = 'px-4 py-2 bg-red-500 text-white rounded mb-4';
+        testButton.onclick = function() {
+            console.log('🔍 Testing WebSocket connection...');
+            
+            // Check if Echo is available
+            if (!window.Echo) {
+                console.error('❌ Echo is not available on window object');
+                updateStatus('❌ Echo not loaded', 'bg-red-100 text-red-800');
+                return;
+            }
+            
+            console.log('✅ Echo object found:', window.Echo);
+            
+            // Check connector
+            if (!window.Echo.connector) {
+                console.error('❌ Echo connector not available');
+                updateStatus('❌ Echo connector missing', 'bg-red-100 text-red-800');
+                return;
+            }
+            
+            console.log('✅ Echo connector found:', window.Echo.connector);
+            
+            // Debug: Log the full connector structure
+            console.log('🔍 Connector keys:', Object.keys(window.Echo.connector));
+            console.log('🔍 Connector pusher:', window.Echo.connector.pusher);
+            
+            // Check socket through Pusher connection
+            const pusher = window.Echo.connector.pusher;
+            if (!pusher) {
+                console.error('❌ Pusher not available on connector');
+                updateStatus('❌ Pusher missing', 'bg-red-100 text-red-800');
+                return;
+            }
+            
+            console.log('✅ Pusher found:', pusher);
+            console.log('🔍 Pusher keys:', Object.keys(pusher));
+            console.log('🔍 Pusher connection:', pusher.connection);
+            
+            if (!pusher.connection) {
+                console.error('❌ Pusher connection not available');
+                updateStatus('❌ Pusher connection missing', 'bg-red-100 text-red-800');
+                return;
+            }
+            
+            console.log('✅ Pusher connection found:', pusher.connection);
+            console.log('🔍 Connection keys:', Object.keys(pusher.connection));
+            console.log('🔍 Connection.connection:', pusher.connection.connection);
+            
+            // Access the actual WebSocket through the ConnectionManager
+            const connectionManager = pusher.connection;
+            const actualConnection = connectionManager.connection;
+            
+            if (!actualConnection) {
+                console.error('❌ Actual connection not available');
+                updateStatus('❌ Connection not established', 'bg-red-100 text-red-800');
+                return;
+            }
+            
+            console.log('✅ Actual connection found:', actualConnection);
+            console.log('🔍 Actual connection keys:', Object.keys(actualConnection));
+            console.log('🔍 Actual connection transport:', actualConnection.transport);
+            
+            // Access the WebSocket through the transport layer
+            const transport = actualConnection.transport;
+            if (!transport) {
+                console.error('❌ Transport not available');
+                updateStatus('❌ Transport missing', 'bg-red-100 text-red-800');
+                return;
+            }
+            
+            console.log('✅ Transport found:', transport);
+            console.log('🔍 Transport keys:', Object.keys(transport));
+            console.log('🔍 Transport socket:', transport.socket);
+            console.log('🔍 Transport ws:', transport.ws);
+            console.log('🔍 Transport websocket:', transport.websocket);
+            
+            // Try multiple possible socket property names
+            let socket = transport.socket || transport.ws || transport.websocket;
+            
+            // If still not found, check if it's nested deeper
+            if (!socket && transport.connection) {
+                console.log('🔍 Checking transport.connection:', transport.connection);
+                socket = transport.connection.socket || transport.connection.ws;
+            }
+            if (!socket) {
+                console.error('❌ WebSocket not available');
+                updateStatus('❌ WebSocket not created', 'bg-red-100 text-red-800');
+                return;
+            }
+            
+            console.log('✅ WebSocket found:', socket);
+            console.log('WebSocket URL:', socket.url);
+            console.log('WebSocket readyState:', socket.readyState);
+            console.log('WebSocket protocol:', socket.protocol);
+            
+            const connectionState = socket.readyState;
+            const stateNames = {
+                0: 'CONNECTING',
+                1: 'OPEN', 
+                2: 'CLOSING',
+                3: 'CLOSED'
+            };
+            
+            console.log(`WebSocket State: ${connectionState} (${stateNames[connectionState]})`);
+            
+            if (connectionState === 1) { // WebSocket.OPEN
+                updateStatus('✅ Connected Successfully', 'bg-green-100 text-green-800');
+                
+                // Test channel subscription
+                 try {
+                     const channel = window.Echo.private(`conversation.{{ $conversation->id }}`);
+                     console.log('✅ Channel subscription test:', channel);
+                     updateStatus('✅ Connected & Channel Ready', 'bg-green-100 text-green-800');
+                 } catch (error) {
+                     console.error('❌ Channel subscription failed:', error);
+                     updateStatus('⚠️ Connected but Channel Failed', 'bg-yellow-100 text-yellow-800');
+                 }
+            } else {
+                updateStatus(`❌ Not Connected (${stateNames[connectionState]})`, 'bg-red-100 text-red-800');
+                
+                // Add error event listener for debugging
+                socket.addEventListener('error', function(error) {
+                    console.error('WebSocket Error:', error);
+                });
+                
+                socket.addEventListener('close', function(event) {
+                    console.error('WebSocket Closed:', event.code, event.reason);
+                });
+            }
+        };
+        
+        function updateStatus(message, className) {
+            const statusDiv = document.getElementById('connection-status') || document.createElement('div');
+            statusDiv.id = 'connection-status';
+            statusDiv.className = 'mt-2 p-2 rounded text-sm font-medium ' + className;
+            statusDiv.textContent = message;
+            
+            if (!document.getElementById('connection-status')) {
+                testButton.parentNode.insertBefore(statusDiv, testButton.nextSibling);
+            }
         }
-    } catch (error) {
-        alert('Failed to send message. Please try again.');
+        
+        // Add test button to the page
+        const chatMessages = document.getElementById('chatMessages');
+        if (chatMessages && chatMessages.parentNode) {
+            chatMessages.parentNode.insertBefore(testButton, chatMessages);
+        }
+        
+        // Auto-test connection after 3 seconds
+        setTimeout(() => {
+            // Auto-test WebSocket connection
+            console.log('🧪 Auto-testing WebSocket connection...');
+            if (window.Echo && window.Echo.connector && window.Echo.connector.pusher && 
+                window.Echo.connector.pusher.connection && window.Echo.connector.pusher.connection.connection &&
+                window.Echo.connector.pusher.connection.connection.transport && 
+                window.Echo.connector.pusher.connection.connection.transport.socket) {
+                
+                const socket = window.Echo.connector.pusher.connection.connection.transport.socket;
+                console.log('✅ WebSocket found:', socket);
+                console.log('WebSocket URL:', socket.url);
+                console.log('WebSocket readyState:', socket.readyState);
+                
+                if (socket.readyState === 1) {
+                    console.log('✅ Connected Successfully - WebSocket is OPEN');
+                    // Update UI to show connection status
+                    const statusElement = document.querySelector('.connection-status');
+                    if (statusElement) {
+                        statusElement.textContent = 'Connected';
+                        statusElement.className = 'connection-status text-green-600';
+                    }
+                } else {
+                    console.error('❌ WebSocket not in OPEN state. ReadyState:', socket.readyState);
+                }
+            } else {
+                console.error('❌ WebSocket not available');
+            }
+            testButton.click();
+        }, 3000);
     }
+
+    // Function to send typing status
+    function sendTypingStatus(typing) {
+        console.log('📤 Sending typing status:', typing);
+        isTyping = typing;
+        
+        fetch('{{ route("messages.typing") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                conversation_id: {{ $conversation->id }},
+                is_typing: typing
+            })
+        })
+        .then(response => {
+            console.log('✅ Typing status sent successfully:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('✅ Typing response:', data);
+        })
+        .catch(error => {
+            console.error('❌ Error sending typing status:', error);
+        });
+    }
+    
+    // Message input and typing functionality
+    const messageInput = document.getElementById('messageInput');
+    if (messageInput) {
+        messageInput.addEventListener('input', function() {
+            if (!isTyping) {
+                sendTypingStatus(true);
+            }
+            
+            // Clear existing timer
+            clearTimeout(typingTimer);
+            
+            // Set timer to stop typing after 2 seconds of inactivity
+            typingTimer = setTimeout(() => {
+                sendTypingStatus(false);
+            }, 2000);
+        });
+    }
+    
+    // Message sending functionality
+    const messageForm = document.getElementById('messageForm');
+    if (messageForm) {
+        messageForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const message = messageInput.value.trim();
+            
+            if (!message) return;
+            
+            // Stop typing indicator when sending message
+            clearTimeout(typingTimer);
+            sendTypingStatus(false);
+            
+            // Disable send button temporarily
+            const sendButton = this.querySelector('button[type="submit"]');
+            sendButton.disabled = true;
+            sendButton.textContent = 'Sending...';
+            
+            try {
+                const response = await fetch('{{ route("messages.store") }}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    messageInput.value = '';
+                    // Add message immediately for current user
+                    addMessageToChat(data.message);
+                    scrollToBottom();
+                } else {
+                    throw new Error(data.message || 'Failed to send message');
+                }
+            } catch (error) {
+                console.error('Error sending message:', error);
+                alert('Failed to send message. Please try again.');
+            } finally {
+                // Re-enable send button
+                sendButton.disabled = false;
+                sendButton.textContent = 'Send';
+            }
+        });
+    }
+});
+
+// Function to add new message to chat
+function addMessageToChat(message) {
+    const chatMessages = document.getElementById('chatMessages');
+    const isCurrentUser = message.sender_id === currentUserId;
+    
+    const messageElement = document.createElement('div');
+    messageElement.className = `flex ${isCurrentUser ? 'justify-end' : 'justify-start'} mb-4`;
+    
+    const currentTime = new Date().toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: false 
+    });
+    
+    messageElement.innerHTML = `
+        <div class="max-w-xs lg:max-w-md">
+            <div class="flex items-end space-x-2 ${isCurrentUser ? 'flex-row-reverse space-x-reverse' : ''}">
+                <img src="${message.sender.avatar ? '/storage/' + message.sender.avatar : '/images/default-avatar.png'}" 
+                     alt="${message.sender.name}" 
+                     class="w-8 h-8 rounded-full object-cover">
+                <div class="px-4 py-2 rounded-lg ${isCurrentUser ? 'bg-blue-600 text-white' : 'bg-white border border-gray-200'}">
+                    <p class="text-sm">${message.body}</p>
+                    <p class="text-xs mt-1 ${isCurrentUser ? 'text-blue-100' : 'text-gray-500'}">
+                        ${currentTime}
+                    </p>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    chatMessages.appendChild(messageElement);
+}
+
+// Function to scroll to bottom of chat
+function scrollToBottom() {
+    const chatMessages = document.getElementById('chatMessages');
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Scroll to bottom on page load
+document.addEventListener('DOMContentLoaded', function() {
+    scrollToBottom();
 });
 
 // Service application handling
@@ -286,21 +669,23 @@ async function handleApplication(applicationId, action) {
         const response = await fetch(`/service-applications/${applicationId}/${action}`, {
             method: 'POST',
             headers: {
+                'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Content-Type': 'application/json'
+                'Accept': 'application/json'
             }
         });
-        
+
         const data = await response.json();
         
-        if (response.ok) {
-            alert(data.message);
+        if (response.ok && data.success) {
+            // Refresh the page to show updated status
             location.reload();
         } else {
-            throw new Error(data.message || `Failed to ${action} application`);
+            throw new Error(data.message || 'Failed to process application');
         }
     } catch (error) {
-        alert('Error: ' + error.message);
+        console.error('Error processing application:', error);
+        alert('Failed to process application. Please try again.');
     }
 }
 
@@ -411,9 +796,9 @@ function openServiceApplicationModal() {
     document.getElementById('serviceApplicationModal').classList.remove('hidden');
 }
 
-function closeServiceModal() {
-            document.getElementById('serviceApplicationModal').classList.add('hidden');
-        }
+function closeServiceApplicationModal() {
+    document.getElementById('serviceApplicationModal').classList.add('hidden');
+}
 
 async function loadProviderServices() {
     const providerId = document.querySelector('input[name="provider_id"]').value;
@@ -480,5 +865,134 @@ document.getElementById('serviceApplicationModal').addEventListener('click', fun
         closeServiceApplicationModal();
     }
 });
+
+
+
+// Function to initialize typing indicators
+function initializeTypingIndicators() {
+    if (window.Echo && window.Echo.connector && window.Echo.connector.pusher) {
+        console.log('🔄 Initializing typing indicators...');
+        try {
+            const channel = window.Echo.private('conversation.{{ $conversation->id }}');
+            
+            channel.listen('.user.typing', (e) => {
+                console.log('⌨️ Typing event received:', e);
+                console.log('Event user ID:', e.user_id, 'Current user ID:', {{ auth()->id() }});
+                
+                const typingIndicator = document.getElementById('typingIndicator');
+                const typingText = document.getElementById('typingText');
+                
+                console.log('Typing indicator element:', typingIndicator);
+                console.log('Typing text element:', typingText);
+                
+                // Don't show typing indicator for current user
+                if (e.user_id === {{ auth()->id() }}) {
+                    console.log('❌ Ignoring typing event from current user');
+                    return;
+                }
+                
+                if (e.is_typing) {
+                    console.log('✅ Showing typing indicator for:', e.user_name);
+                    if (typingText) typingText.textContent = `${e.user_name} is typing...`;
+                    if (typingIndicator) typingIndicator.classList.remove('hidden');
+                    scrollToBottom();
+                } else {
+                    console.log('✅ Hiding typing indicator for:', e.user_name);
+                    if (typingIndicator) typingIndicator.classList.add('hidden');
+                }
+            });
+            
+            // Also listen for the event without the dot prefix (in case of different event naming)
+            channel.listen('user.typing', (e) => {
+                console.log('⌨️ Typing event received (without dot):', e);
+                console.log('Event user ID:', e.user_id, 'Current user ID:', {{ auth()->id() }});
+                
+                const typingIndicator = document.getElementById('typingIndicator');
+                const typingText = document.getElementById('typingText');
+                
+                // Don't show typing indicator for current user
+                if (e.user_id === {{ auth()->id() }}) {
+                    console.log('❌ Ignoring typing event from current user');
+                    return;
+                }
+                
+                if (e.is_typing) {
+                    console.log('✅ Showing typing indicator for:', e.user_name);
+                    if (typingText) typingText.textContent = `${e.user_name} is typing...`;
+                    if (typingIndicator) typingIndicator.classList.remove('hidden');
+                    scrollToBottom();
+                } else {
+                    console.log('✅ Hiding typing indicator for:', e.user_name);
+                    if (typingIndicator) typingIndicator.classList.add('hidden');
+                }
+            });
+            
+            console.log('✅ Typing indicators initialized successfully');
+        } catch (error) {
+            console.error('❌ Error initializing typing indicators:', error);
+        }
+    } else {
+        console.error('❌ Echo is not available for typing indicators');
+        console.log('Echo state:', {
+            Echo: !!window.Echo,
+            connector: !!(window.Echo && window.Echo.connector),
+            pusher: !!(window.Echo && window.Echo.connector && window.Echo.connector.pusher)
+        });
+    }
+}
+
+// Note: initializeTypingIndicators() will be called after Echo loads via CDN
 </script>
-@endsection
+
+<!-- Load Echo via CDN if not available -->
+<script>
+// Check if Echo is loaded, if not, load it via CDN
+if (typeof window.Echo === 'undefined') {
+    console.log('Echo not found, loading via CDN...');
+    
+    // Load Pusher first
+    const pusherScript = document.createElement('script');
+    pusherScript.src = 'https://js.pusher.com/8.2.0/pusher.min.js';
+    pusherScript.onload = function() {
+        console.log('Pusher loaded');
+        
+        // Load Laravel Echo
+        const echoScript = document.createElement('script');
+        echoScript.src = 'https://cdn.jsdelivr.net/npm/laravel-echo@1.15.3/dist/echo.iife.js';
+        echoScript.onload = function() {
+            console.log('Echo loaded, initializing...');
+            
+            // Initialize Echo
+            window.Echo = new Echo({
+                broadcaster: 'reverb',
+                key: '{{ env('VITE_REVERB_APP_KEY') }}',
+                wsHost: '127.0.0.1',
+                wsPort: 6001,
+                wssPort: 6001,
+                forceTLS: false,
+                enabledTransports: ['ws'],
+                disableStats: true,
+            });
+            
+            console.log('Echo initialized via CDN:', window.Echo);
+            
+            // Wait for Echo to fully connect before setting up typing indicators
+            setTimeout(() => {
+                initializeTypingIndicators();
+            }, 500);
+            
+            // Trigger the test button after Echo is loaded
+            setTimeout(() => {
+                const testButton = document.querySelector('button[onclick*="Testing WebSocket"]');
+                if (testButton) {
+                    console.log('Auto-triggering test after Echo load...');
+                    testButton.click();
+                }
+            }, 1000);
+        };
+        document.head.appendChild(echoScript);
+    };
+    document.head.appendChild(pusherScript);
+}
+</script>
+</x-app-layout>

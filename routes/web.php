@@ -87,12 +87,13 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/chat-requests/{chatRequest}/accept', [ChatRequestController::class, 'accept']);
     Route::post('/chat-requests/{chatRequest}/decline', [ChatRequestController::class, 'decline']);
     Route::post('/messages', [MessageController::class, 'store'])->name('messages.store');
+    Route::post('/messages/typing', [MessageController::class, 'typing'])->name('messages.typing');
     Route::post('/service-applications/apply', [ServiceApplicationController::class, 'applyFromChat'])->name('service-applications.apply');
     Route::post('/service-applications/{application}/accept', [ServiceApplicationController::class, 'acceptFromChat'])->name('service-applications.accept');
     Route::post('/service-applications/{application}/decline', [ServiceApplicationController::class, 'declineFromChat'])->name('service-applications.decline');
     Route::post('/service-applications/{application}/complete', [ServiceApplicationController::class, 'markCompleted'])->name('service-applications.complete');
 
-    Route::post('/reviews', [ReviewController::class, 'store']);
+    Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
 
     Route::post('/student-services', [StudentServiceController::class, 'store']);
     Route::put('/student-services/{service}', [StudentServiceController::class, 'update']);
