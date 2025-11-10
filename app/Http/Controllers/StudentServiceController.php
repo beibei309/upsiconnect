@@ -121,4 +121,22 @@ class StudentServiceController extends Controller
 
         return view('services.manage', compact('services'));
     }
+
+    public function show(Request $request, StudentService $service)
+    {
+        // Ensure the service is active/available for viewing
+        if (!$service->is_active) {
+            abort(404);
+        }
+
+        $service->load(['user', 'category']);
+
+        $viewer = $request->user();
+
+        return view('services.show', [
+            'service' => $service,
+            'provider' => $service->user,
+            'viewer' => $viewer,
+        ]);
+    }
 }

@@ -9,9 +9,71 @@ use App\Models\User;
 
 class ServiceApplicationController extends Controller
 {
-    public function __construct()
+    /**
+     * Show the edit form for a custom application owned by the community user
+     */
+    public function edit(ServiceApplication $application)
     {
-        $this->middleware('auth');
+        $user = Auth::user();
+
+        // Only community users can edit their own custom applications
+        if ($user->role !== 'community' || $application->user_id !== $user->id) {
+            abort(403, 'You are not authorized to edit this application.');
+        }
+
+        // Only allow editing custom applications (not linked to a specific student service)
+        if (!is_null($application->service_id)) {
+            abort(403, 'This application is linked to a service and cannot be edited here.');
+        }
+
+        // Allow editing only when application is still open
+        if (!in_array($application->status, ['open'])) {
+            return redirect()->route('services.applications.show', $application)
+                ->with('error', 'You can only edit applications that are still open.');
+        }
+
+        return view('services.applications.edit', compact('application'));
+    }
+
+    /**
+     * Update a custom application owned by the community user
+     */
+    public function update(Request $request, ServiceApplication $application)
+    {
+        $user = Auth::user();
+
+        // Authorization checks
+        if ($user->role !== 'community' || $application->user_id !== $user->id) {
+            abort(403, 'You are not authorized to update this application.');
+        }
+
+        if (!is_null($application->service_id)) {
+            abort(403, 'This application is linked to a service and cannot be edited here.');
+        }
+
+        if (!in_array($application->status, ['open'])) {
+            return redirect()->route('services.applications.show', $application)
+                ->with('error', 'You can only update applications that are still open.');
+        }
+
+        $validated = $request->validate([
+            'service_type' => 'required|string|max:255',
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'budget_range' => 'nullable|string|max:255',
+            'timeline' => 'required|string|max:255',
+            'contact_methods' => 'nullable|array',
+            'contact_methods.*' => 'string|in:platform_chat,email,phone'
+        ]);
+
+        // Store contact methods as array (model casts to JSON)
+        $validated['contact_methods'] = $request->contact_methods ?? [];
+
+        $application->update($validated);
+
+        return redirect()->route('services.applications.show', $application)
+            ->with('success', 'Application details updated successfully.');
+    }
     /**
      * Mark service as completed by current user
      */
@@ -95,8 +157,8 @@ class ServiceApplicationController extends Controller
             'contact_methods.*' => 'string|in:platform_chat,email,phone'
         ]);
 
-        // Convert contact methods array to JSON
-        $validated['contact_methods'] = json_encode($request->contact_methods ?? []);
+        // Store contact methods as array (model casts to JSON)
+        $validated['contact_methods'] = $request->contact_methods ?? [];
         $validated['user_id'] = Auth::id();
         $validated['status'] = 'open';
 
@@ -116,21 +178,100 @@ class ServiceApplicationController extends Controller
     {
         $user = Auth::user();
         
-        if ($user->role === 'community') {
-            // Show applications submitted by this community user
-            $applications = ServiceApplication::where('user_id', $user->id)
+        if ($user->role === 'student') {
+            // For students: show OPEN community requests (custom applications) available to all students
+            $applications = ServiceApplication::whereNull('service_id')
+                ->where('status', 'open')
+                ->with(['user'])
                 ->orderBy('created_at', 'desc')
                 ->paginate(10);
-                
-            return view('services.applications.index', compact('applications'));
         } else {
-            // For students, show applications they can respond to
-            $applications = ServiceApplication::where('status', 'open')
+            // For community: show their own applications (services they applied for)
+            $applications = ServiceApplication::where('user_id', $user->id)
+                ->with(['user', 'service.user', 'service.category'])
                 ->orderBy('created_at', 'desc')
                 ->paginate(10);
-                
-            return view('services.applications.browse', compact('applications'));
         }
+                
+        return view('services.applications.index', compact('applications'));
+    }
+
+    /**
+     * Accept an application (for students)
+     */
+    public function accept(ServiceApplication $application)
+    {
+        $user = Auth::user();
+
+        // Guard: only service-targeted applications can be accepted
+        if (!$application->service) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This open application cannot be accepted directly.'
+            ], 403);
+        }
+
+        // Check if user is the service provider
+        if ($user->id !== $application->service->user_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You are not authorized to accept this application.'
+            ], 403);
+        }
+
+        // Check if application is open
+        if ($application->status !== 'open') {
+            return response()->json([
+                'success' => false,
+                'message' => 'This application is no longer open.'
+            ], 400);
+        }
+
+        $application->update(['status' => 'in_progress']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Application accepted! The service is now in progress.'
+        ]);
+    }
+
+    /**
+     * Reject an application (for students)
+     */
+    public function reject(ServiceApplication $application)
+    {
+        $user = Auth::user();
+
+        // Guard: only service-targeted applications can be rejected
+        if (!$application->service) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This open application cannot be rejected directly.'
+            ], 403);
+        }
+
+        // Check if user is the service provider
+        if ($user->id !== $application->service->user_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You are not authorized to reject this application.'
+            ], 403);
+        }
+
+        // Check if application is open
+        if ($application->status !== 'open') {
+            return response()->json([
+                'success' => false,
+                'message' => 'This application is no longer open.'
+            ], 400);
+        }
+
+        $application->update(['status' => 'cancelled']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Application declined.'
+        ]);
     }
 
     /**
@@ -198,7 +339,7 @@ class ServiceApplicationController extends Controller
             'description' => $data['message'] ?? 'Application submitted from chat',
             'budget_range' => $service->price_range ?? 'As discussed',
             'timeline' => 'As discussed',
-            'contact_methods' => json_encode(['platform_chat']),
+            'contact_methods' => ['platform_chat'],
             'status' => 'pending',
         ]);
 

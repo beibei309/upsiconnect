@@ -186,13 +186,19 @@
                                 <div class="p-4 pb-3">
                                     <div class="flex items-start justify-between">
                                         <div class="flex items-center space-x-2">
-                                            <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                                                {{ substr($service->user->name, 0, 1) }}
-                                            </div>
+                                            <a href="{{ route('students.profile', $service->user) }}" class="block group/avatar">
+                                                @if($service->user->profile_photo_path)
+                                                    <img src="{{ asset('storage/' . $service->user->profile_photo_path) }}" alt="{{ $service->user->name }}" class="w-8 h-8 rounded-full object-cover ring-1 ring-gray-200 group-hover/avatar:ring-indigo-300">
+                                                @else
+                                                    <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                                                        {{ substr($service->user->name, 0, 1) }}
+                                                    </div>
+                                                @endif
+                                            </a>
                                             <div>
-                                                <h3 class="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors text-sm">
+                                                <a href="{{ route('students.profile', $service->user) }}" class="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors text-sm hover:underline">
                                                     {{ Str::limit($service->user->name, 15) }}
-                                                </h3>
+                                                </a>
                                                 <div class="flex items-center space-x-1 mt-0.5">
                                                     <!-- Trust Badge -->
                                                     @if($service->user->trust_badge)
@@ -233,7 +239,7 @@
 
                                 <!-- Service Details - Flexible content area -->
                                 <div class="px-4 pb-3 flex-grow">
-                                    <h4 class="font-medium text-upsi-dark mb-1 text-sm">{{ Str::limit($service->title, 30) }}</h4>
+                                    <a href="{{ route('student-services.show', $service) }}" class="font-medium text-upsi-dark mb-1 text-sm group-hover:text-indigo-600 hover:underline">{{ Str::limit($service->title, 30) }}</a>
                                     <p class="text-xs text-upsi-text-primary mb-2 line-clamp-2">{{ Str::limit($service->description, 60) }}</p>
                                     
                                     <!-- Service Tags -->

@@ -35,6 +35,9 @@ class User extends Authenticatable
         'is_suspended',
         'is_blacklisted',
         'blacklist_reason',
+        'bio',
+        'faculty',
+        'course',
     ];
 
     /**
@@ -109,10 +112,37 @@ class User extends Authenticatable
         return $this->hasMany(Review::class, 'reviewee_id');
     }
 
+    public function favorites()
+    {
+        return $this->belongsToMany(User::class, 'favorites', 'user_id', 'favorited_user_id')
+                    ->withTimestamps();
+    }
+
+    public function favoritedBy()
+    {
+        return $this->belongsToMany(User::class, 'favorites', 'favorited_user_id', 'user_id')
+                    ->withTimestamps();
+    }
+
     // Helpers
     public function isStudent(): bool
     {
         return $this->role === 'student';
+    }
+
+    public function isCommunity(): bool
+    {
+        return $this->role === 'community' || $this->role === 'staff';
+    }
+
+    public function isStaff(): bool
+    {
+        return !is_null($this->staff_verified_at) && !is_null($this->staff_email);
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
     }
 
     public function isVerifiedPublic(): bool
@@ -132,11 +162,12 @@ class User extends Authenticatable
 
     public function getTrustBadgeAttribute(): string
     {
-        if ($this->role === 'student' && $this->email_verified_at) {
-            return 'Pelajar UPSI Terkini';
-        }
+        // Staff gets priority badge even if they are community role
         if ($this->isVerifiedStaff()) {
             return 'Staf UPSI Rasmi';
+        }
+        if ($this->role === 'student' && $this->email_verified_at) {
+            return 'Pelajar UPSI Terkini';
         }
         if ($this->isVerifiedPublic()) {
             return 'Pengguna Disahkan';

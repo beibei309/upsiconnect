@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="py-8">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <!-- Header -->
+            <!-- Header + Tabs -->
             <div class="mb-8">
                 <div class="flex items-center justify-between">
                     <div>
@@ -15,6 +15,16 @@
                         </svg>
                         <span>Browse Services</span>
                     </a>
+                </div>
+                <div class="mt-6 border-b border-gray-200">
+                    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                        <a href="{{ route('services.apply') }}" class="whitespace-nowrap py-4 px-1 border-b-2 text-sm font-medium border-indigo-600 text-indigo-600">Apply for Services</a>
+                        @auth
+                            @if(Auth::user()->isStudent())
+                                <a href="{{ route('services.create') }}" class="whitespace-nowrap py-4 px-1 border-b-2 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">Add New Service</a>
+                            @endif
+                        @endauth
+                    </nav>
                 </div>
             </div>
 
@@ -240,19 +250,31 @@
             `;
             
             try {
-                // For now, we'll simulate a successful submission
-                // In a real implementation, this would send to a backend endpoint
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                const response = await fetch('{{ route("services.apply.store") }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('[name="_token"]').value,
+                        'Accept': 'application/json',
+                    },
+                    body: formData
+                });
                 
-                showMessage('Service application submitted successfully! Students will be notified and can contact you soon.', 'success');
-                setTimeout(() => {
-                    window.location.href = '{{ route("dashboard") }}';
-                }, 2000);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage(data.message || 'Service application submitted successfully! Students will be notified and can contact you soon.', 'success');
+                    setTimeout(() => {
+                        window.location.href = '{{ route("services.applications.index") }}';
+                    }, 2000);
+                } else {
+                    showMessage(data.error || data.message || 'An error occurred. Please try again.', 'error');
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalText;
+                }
                 
             } catch (error) {
+                console.error('Error:', error);
                 showMessage('An error occurred. Please try again.', 'error');
-            } finally {
-                // Restore button state
                 submitButton.disabled = false;
                 submitButton.innerHTML = originalText;
             }

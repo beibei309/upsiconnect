@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\ServiceApplicationResponse;
 
 class ServiceApplication extends Model
 {
@@ -161,9 +162,18 @@ class ServiceApplication extends Model
     public function getStatusColorAttribute()
     {
         $colors = [
-            'open' => 'bg-green-100 text-green-800',
+            // Informational / available
+            'open' => 'bg-blue-100 text-blue-800',
+            // Positive states
+            'accepted' => 'bg-green-100 text-green-800',
+            'in_progress' => 'bg-yellow-100 text-yellow-800',
+            'completed' => 'bg-green-100 text-green-800',
+            // Neutral/terminal
             'closed' => 'bg-gray-100 text-gray-800',
-            'completed' => 'bg-blue-100 text-blue-800'
+            // Negative states
+            'cancelled' => 'bg-red-100 text-red-800',
+            'rejected' => 'bg-red-100 text-red-800',
+            'declined' => 'bg-red-100 text-red-800',
         ];
 
         return $colors[$this->status] ?? 'bg-gray-100 text-gray-800';

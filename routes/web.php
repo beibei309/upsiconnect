@@ -11,6 +11,7 @@ use App\Http\Controllers\StudentServiceController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ServiceRequestController;
+use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\Admin\VerificationController as AdminVerificationController;
 use App\Http\Controllers\Admin\ReportAdminController;
 use App\Http\Controllers\Admin\UserAdminController;
@@ -52,6 +53,12 @@ Route::get('/services/apply', function () {
 })->middleware(['auth'])->name('services.apply');
 Route::post('/services/apply', [App\Http\Controllers\ServiceApplicationController::class, 'store'])->middleware(['auth'])->name('services.apply.store');
 Route::get('/services/applications', [App\Http\Controllers\ServiceApplicationController::class, 'index'])->middleware(['auth'])->name('services.applications.index');
+Route::get('/services/applications/{application}', [App\Http\Controllers\ServiceApplicationController::class, 'show'])->middleware(['auth'])->name('services.applications.show');
+Route::get('/services/applications/{application}/edit', [App\Http\Controllers\ServiceApplicationController::class, 'edit'])->middleware(['auth'])->name('services.applications.edit');
+Route::patch('/services/applications/{application}', [App\Http\Controllers\ServiceApplicationController::class, 'update'])->middleware(['auth'])->name('services.applications.update');
+Route::post('/services/applications/{application}/accept', [App\Http\Controllers\ServiceApplicationController::class, 'accept'])->middleware(['auth'])->name('services.applications.accept');
+Route::post('/services/applications/{application}/reject', [App\Http\Controllers\ServiceApplicationController::class, 'reject'])->middleware(['auth'])->name('services.applications.reject');
+Route::post('/services/applications/{application}/mark-completed', [App\Http\Controllers\ServiceApplicationController::class, 'markCompleted'])->middleware(['auth'])->name('services.applications.mark-completed');
 Route::get('/service-requests', [ServiceRequestController::class, 'index'])->middleware(['auth'])->name('service-requests.index');
 
 // Service Request routes
@@ -59,11 +66,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/service-requests', [ServiceRequestController::class, 'index'])->name('service-requests.index');
     Route::post('/service-requests', [ServiceRequestController::class, 'store'])->name('service-requests.store');
     Route::get('/service-requests/{serviceRequest}', [ServiceRequestController::class, 'show'])->name('service-requests.show');
-    Route::patch('/service-requests/{serviceRequest}/accept', [ServiceRequestController::class, 'accept'])->name('service-requests.accept');
-    Route::patch('/service-requests/{serviceRequest}/reject', [ServiceRequestController::class, 'reject'])->name('service-requests.reject');
-    Route::patch('/service-requests/{serviceRequest}/in-progress', [ServiceRequestController::class, 'markInProgress'])->name('service-requests.in-progress');
-    Route::patch('/service-requests/{serviceRequest}/complete', [ServiceRequestController::class, 'markCompleted'])->name('service-requests.complete');
-    Route::patch('/service-requests/{serviceRequest}/cancel', [ServiceRequestController::class, 'cancel'])->name('service-requests.cancel');
+    Route::post('/service-requests/{serviceRequest}/accept', [ServiceRequestController::class, 'accept'])->name('service-requests.accept');
+    Route::post('/service-requests/{serviceRequest}/reject', [ServiceRequestController::class, 'reject'])->name('service-requests.reject');
+    Route::post('/service-requests/{serviceRequest}/mark-in-progress', [ServiceRequestController::class, 'markInProgress'])->name('service-requests.mark-in-progress');
+    Route::post('/service-requests/{serviceRequest}/mark-completed', [ServiceRequestController::class, 'markCompleted'])->name('service-requests.mark-completed');
+    Route::post('/service-requests/{serviceRequest}/cancel', [ServiceRequestController::class, 'cancel'])->name('service-requests.cancel');
 });
 
 // Mockup flows (public for preview)
@@ -98,8 +105,16 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/student-services', [StudentServiceController::class, 'store']);
     Route::put('/student-services/{service}', [StudentServiceController::class, 'update']);
     Route::delete('/student-services/{service}', [StudentServiceController::class, 'destroy']);
+    Route::get('/student-services/{service}', [StudentServiceController::class, 'show'])->name('student-services.show');
 
     Route::post('/reports', [ReportController::class, 'store']);
+
+    // Favorites routes
+    Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
+    Route::post('/favorites', [FavoriteController::class, 'store'])->name('favorites.store');
+    Route::delete('/favorites/{user}', [FavoriteController::class, 'destroy'])->name('favorites.destroy');
+    Route::post('/favorites/toggle', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
+    Route::get('/favorites/{user}/check', [FavoriteController::class, 'check'])->name('favorites.check');
 
     // Admin moderation endpoints
     Route::post('/admin/verifications/{user}/approve', [AdminVerificationController::class, 'approve']);

@@ -155,6 +155,25 @@ class ServiceRequest extends Model
     }
 
     /**
+     * Check if user has reviewed this service request
+     */
+    public function hasUserReviewed($userId)
+    {
+        return $this->reviews()->where('reviewer_id', $userId)->exists();
+    }
+
+    /**
+     * Check if both parties have reviewed
+     */
+    public function bothPartiesReviewed()
+    {
+        $requesterReviewed = $this->reviews()->where('reviewer_id', $this->requester_id)->exists();
+        $providerReviewed = $this->reviews()->where('reviewer_id', $this->provider_id)->exists();
+        
+        return $requesterReviewed && $providerReviewed;
+    }
+
+    /**
      * Get status badge color
      */
     public function getStatusColorAttribute()

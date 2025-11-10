@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="py-8">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <!-- Header -->
+            <!-- Header + Tabs -->
             <div class="mb-8">
                 <div class="flex items-center justify-between">
                     <div>
@@ -15,6 +15,12 @@
                         </svg>
                         <span>Back to Manage</span>
                     </a>
+                </div>
+                <div class="mt-6 border-b border-gray-200">
+                    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                        <a href="{{ route('services.apply') }}" class="whitespace-nowrap py-4 px-1 border-b-2 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">Apply for Services</a>
+                        <a href="{{ route('services.create') }}" class="whitespace-nowrap py-4 px-1 border-b-2 text-sm font-medium border-indigo-600 text-indigo-600">Add New Service</a>
+                    </nav>
                 </div>
             </div>
 

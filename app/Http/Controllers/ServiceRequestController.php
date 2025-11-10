@@ -22,13 +22,13 @@ class ServiceRequestController extends BaseController
     {
         $user = Auth::user();
         
-        // Only community members can request services
-        if ($user->role !== 'community') {
+        // Only community members (including staff) can request services
+        if (!$user->isCommunity()) {
             return response()->json(['error' => 'Only community members can request services.'], 403);
         }
 
-        // Check if user is verified
-        if (!$user->isVerifiedPublic()) {
+        // Check if user is verified (staff are automatically verified)
+        if (!$user->isVerifiedPublic() && !$user->isVerifiedStaff()) {
             return response()->json(['error' => 'Please complete your account verification first.'], 403);
         }
 
@@ -83,24 +83,28 @@ class ServiceRequestController extends BaseController
     {
         $user = Auth::user();
         $status = $request->get('status', 'all');
-
-        if ($user->role === 'community') {
-            // Show requests made by this community member
-            $query = ServiceRequest::where('requester_id', $user->id)
-                ->with(['studentService', 'provider']);
-        } else {
-            // Show requests received by this student
-            $query = ServiceRequest::where('provider_id', $user->id)
-                ->with(['studentService', 'requester']);
+        // Normalize status filter (supports hyphen or underscore) and validate
+        $status = str_replace('-', '_', strtolower($status));
+        $validStatuses = ['all', 'pending', 'accepted', 'rejected', 'in_progress', 'completed', 'cancelled'];
+        if (!in_array($status, $validStatuses, true)) {
+            $status = 'all';
         }
+
+        // Build both lists so the view can render tabs reliably
+        $sentQuery = ServiceRequest::where('requester_id', $user->id)
+            ->with(['studentService', 'provider']);
+        $receivedQuery = ServiceRequest::where('provider_id', $user->id)
+            ->with(['studentService', 'requester']);
 
         if ($status !== 'all') {
-            $query->where('status', $status);
+            $sentQuery->where('status', $status);
+            $receivedQuery->where('status', $status);
         }
 
-        $requests = $query->orderBy('created_at', 'desc')->paginate(10);
+        $sentRequests = $sentQuery->orderBy('created_at', 'desc')->get();
+        $receivedRequests = $receivedQuery->orderBy('created_at', 'desc')->get();
 
-        return view('service-requests.index', compact('requests', 'status'));
+        return view('service-requests.index', compact('sentRequests', 'receivedRequests', 'status'));
     }
 
     /**
@@ -115,7 +119,12 @@ class ServiceRequestController extends BaseController
             abort(403, 'You are not authorized to view this request.');
         }
 
-        $serviceRequest->load(['studentService', 'requester', 'provider']);
+        $serviceRequest->load([
+            'studentService.category', 
+            'requester', 
+            'provider',
+            'reviews.reviewer'
+        ]);
 
         return view('service-requests.show', compact('serviceRequest'));
     }

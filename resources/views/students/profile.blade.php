@@ -7,11 +7,19 @@
                     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden sticky top-8">
                         <!-- Profile Header -->
                         <div class="bg-gradient-to-br from-indigo-500 to-purple-600 px-6 py-8 text-center">
-                            <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center text-indigo-600 font-bold text-2xl mx-auto mb-4">
-                                {{ substr($user->name, 0, 1) }}
+                            <div class="mx-auto mb-4">
+                                @if($user->profile_photo_path)
+                                    <img src="{{ asset('storage/' . $user->profile_photo_path) }}" alt="{{ $user->name }}" class="w-24 h-24 rounded-full object-cover ring-2 ring-white">
+                                @else
+                                    <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center text-indigo-600 font-bold text-2xl">
+                                        {{ substr($user->name, 0, 1) }}
+                                    </div>
+                                @endif
                             </div>
                             <h1 class="text-xl font-bold text-white">{{ $user->name }}</h1>
-                            <p class="text-indigo-100 text-sm mt-1">Student Service Provider</p>
+                            <p class="text-indigo-100 text-sm mt-1">
+                                {{ $user->isStudent() ? 'Student Service Provider' : ($user->isCommunity() ? 'Community Member' : 'UPSI Staff') }}
+                            </p>
                         </div>
 
                         <!-- Profile Info -->
@@ -38,7 +46,7 @@
                                     @endfor
                                 </div>
                                 <p class="text-lg font-semibold text-gray-900">{{ number_format($user->average_rating ?? 0, 1) }}</p>
-                                <p class="text-sm text-gray-500">Based on {{ $user->reviews_count ?? 0 }} {{ Str::plural('review', $user->reviews_count ?? 0) }}</p>
+                                <p class="text-sm text-gray-500">Based on {{ $user->reviews_received_count ?? 0 }} {{ Str::plural('review', $user->reviews_received_count ?? 0) }}</p>
                             </div>
 
                             <!-- Availability Status -->
@@ -49,32 +57,23 @@
                                 </span>
                             </div>
 
-                            <!-- Contact Actions -->
+                            <!-- Contact Actions (community viewers contacting student providers only) -->
                             <div class="space-y-3">
                                 @auth
-                                    @if(auth()->id() !== $user->id)
-                                        <form method="POST" action="{{ route('chat.request.demo') }}">
-                                            @csrf
-                                            <button 
-                                                type="submit"
-                                                {{ !$user->is_available ? 'disabled' : '' }}
-                                                class="w-full inline-flex items-center justify-center px-4 py-3 border border-transparent rounded-lg text-sm font-medium text-white {{ $user->is_available ? 'bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500' : 'bg-gray-400 cursor-not-allowed' }} focus:outline-none focus:ring-2 transition-colors">
-                                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.959 8.959 0 01-4.906-1.436L3 21l2.436-5.094A8.959 8.959 0 013 12c0-4.418 3.582-8 8-8s8 3.582 8 8z"></path>
-                                                </svg>
-                                                {{ $user->is_available ? 'Send Message' : 'Currently Unavailable' }}
-                                            </button>
-                                        </form>
-                                        
-                                        <form method="POST" action="{{ route('dashboard') }}">
-                                            @csrf
-                                            <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors">
-                                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                                                </svg>
-                                                Save to Favorites
-                                            </button>
-                                        </form>
+                                    @php $viewer = auth()->user(); @endphp
+                                    @if($viewer->id !== $user->id && $viewer->isCommunity() && $user->isStudent())
+                                        <a href="{{ route('chat.request', ['user' => $user->id]) }}"
+                                           class="w-full inline-flex items-center justify-center px-4 py-3 border border-transparent rounded-lg text-sm font-medium text-white {{ $user->is_available ? 'bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500' : 'bg-gray-400 cursor-not-allowed' }} focus:outline-none focus:ring-2 transition-colors"
+                                           {{ !$user->is_available ? 'aria-disabled=true' : '' }}>
+                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.959 8.959 0 01-4.906-1.436L3 21l2.436-5.094A8.959 8.959 0 013 12c0-4.418 3.582-8 8-8s8 3.582 8 8z"></path>
+                                            </svg>
+                                            {{ $user->is_available ? 'Send Message' : 'Currently Unavailable' }}
+                                        </a>
+
+                                        <div class="w-full">
+                                            <x-favorite-button :user-id="$user->id" :is-favorited="$viewer->favorites()->where('favorited_user_id', $user->id)->exists()" class="w-full justify-center" />
+                                        </div>
                                     @endif
                                 @else
                                     <a href="{{ route('login') }}" class="w-full inline-flex items-center justify-center px-4 py-3 border border-transparent rounded-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors">
@@ -83,16 +82,27 @@
                                 @endauth
                             </div>
 
-                            <!-- Quick Stats -->
+                            <!-- Quick Stats (role-specific) -->
                             <div class="grid grid-cols-2 gap-4 pt-6 border-t border-gray-200">
-                                <div class="text-center">
-                                    <p class="text-2xl font-bold text-gray-900">{{ $user->services_count ?? 0 }}</p>
-                                    <p class="text-sm text-gray-500">Services</p>
-                                </div>
-                                <div class="text-center">
-                                    <p class="text-2xl font-bold text-gray-900">{{ $user->completed_projects ?? 0 }}</p>
-                                    <p class="text-sm text-gray-500">Completed</p>
-                                </div>
+                                @if($user->isStudent())
+                                    <div class="text-center">
+                                        <p class="text-2xl font-bold text-gray-900">{{ $servicesActiveCount }}</p>
+                                        <p class="text-sm text-gray-500">Services</p>
+                                    </div>
+                                    <div class="text-center">
+                                        <p class="text-2xl font-bold text-gray-900">{{ $completedCount }}</p>
+                                        <p class="text-sm text-gray-500">Completed</p>
+                                    </div>
+                                @else
+                                    <div class="text-center">
+                                        <p class="text-2xl font-bold text-gray-900">{{ $completedCount }}</p>
+                                        <p class="text-sm text-gray-500">Completed</p>
+                                    </div>
+                                    <div class="text-center">
+                                        <p class="text-2xl font-bold text-gray-900">{{ $favoritesCount }}</p>
+                                        <p class="text-sm text-gray-500">Favorites</p>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -108,87 +118,116 @@
                         </div>
                     @endif
 
-                    <!-- Services Section -->
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                        <div class="flex items-center justify-between mb-6">
-                            <h2 class="text-xl font-semibold text-gray-900">Services Offered</h2>
-                            <span class="text-sm text-gray-500">{{ $user->services->count() }} {{ Str::plural('service', $user->services->count()) }}</span>
+                    @if($user->isStudent() && ($user->faculty || $user->course))
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                            <h2 class="text-xl font-semibold text-gray-900 mb-4">Academic Info</h2>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <p class="text-sm text-gray-500">Faculty</p>
+                                    <p class="text-gray-900 font-medium">{{ $user->faculty ?? '—' }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Course/Program</p>
+                                    <p class="text-gray-900 font-medium">{{ $user->course ?? '—' }}</p>
+                                </div>
+                            </div>
                         </div>
+                    @endif
 
-                        @if($user->services->count() > 0)
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                @foreach($user->services as $service)
-                                    <div class="border border-gray-200 rounded-lg p-4 hover:border-indigo-300 transition-colors">
-                                        <div class="flex items-start justify-between mb-3">
-                                            <h3 class="font-medium text-gray-900">{{ $service->title }}</h3>
-                                            @if($service->price)
-                                                <span class="text-lg font-semibold text-indigo-600">${{ number_format($service->price, 2) }}</span>
-                                            @endif
+                    <!-- Services Section (only for student providers) -->
+                    @if($user->isStudent())
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <h2 class="text-xl font-semibold text-gray-900">Services Offered</h2>
+                                <span class="text-sm text-gray-500">{{ $servicesActiveCount }} {{ Str::plural('service', $servicesActiveCount) }}</span>
+                            </div>
+
+                            @if($servicesActiveCount > 0)
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    @foreach($services as $service)
+                                        <div class="border border-gray-200 rounded-lg p-4 hover:border-indigo-300 transition-colors flex flex-col h-full" data-service-card>
+                                            <div class="flex items-start justify-between mb-3">
+                                                <h3 class="service-title font-medium text-gray-900 leading-tight">{{ $service->title }}</h3>
+                                                @if(!is_null($service->suggested_price))
+                                                    <span class="service-price whitespace-nowrap text-lg font-semibold text-indigo-600">RM {{ number_format($service->suggested_price, 2) }}</span>
+                                                @endif
+                                            </div>
+
+                                            <p class="service-desc text-sm text-gray-600 mb-3" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.5rem;">{{ $service->description ?? '' }}</p>
+
+                                            <div class="mt-auto flex items-center justify-between pt-1">
+                                                @if($service->category)
+                                                    <span class="service-category inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800">
+                                                        {{ $service->category->name }}
+                                                    </span>
+                                                @else
+                                                    <span class="service-category inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-500">Uncategorized</span>
+                                                @endif
+
+                                                <a href="{{ route('student-services.show', $service->id) }}" class="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors">
+                                                    View Details
+                                                </a>
+                                            </div>
                                         </div>
-                                        
-                                        <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ $service->description }}</p>
-                                        
-                                        @if($service->category)
-                                            <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800">
-                                                {{ $service->category->name }}
-                                            </span>
-                                        @endif
-                                    </div>
-                                @endforeach
-                            </div>
-                        @else
-                            <div class="text-center py-8">
-                                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                                </svg>
-                                <h3 class="mt-4 text-lg font-medium text-gray-900">No services yet</h3>
-                                <p class="mt-2 text-gray-500">This student hasn't added any services yet.</p>
-                            </div>
-                        @endif
-                    </div>
+                                    @endforeach
+                                </div>
+                            @else
+                                <div class="text-center py-8">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                    </svg>
+                                    <h3 class="mt-4 text-lg font-medium text-gray-900">No services yet</h3>
+                                    <p class="mt-2 text-gray-500">This student hasn't added any services yet.</p>
+                                </div>
+                            @endif
+                        </div>
+                    @endif
 
                     <!-- Reviews Section -->
                     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                         <div class="flex items-center justify-between mb-6">
                             <h2 class="text-xl font-semibold text-gray-900">Reviews & Feedback</h2>
-                            <span class="text-sm text-gray-500">{{ $user->reviews_count ?? 0 }} {{ Str::plural('review', $user->reviews_count ?? 0) }}</span>
+                            <span class="text-sm text-gray-500">{{ $user->reviews_received_count ?? 0 }} {{ Str::plural('review', $user->reviews_received_count ?? 0) }}</span>
                         </div>
 
-                        @if(($user->reviews_count ?? 0) > 0)
-                            <!-- Reviews would be loaded here from the backend -->
+                        @if(isset($reviews) && $reviews->count() > 0)
                             <div class="space-y-6">
-                                <!-- Sample review structure -->
-                                <div class="border-b border-gray-200 pb-6 last:border-b-0 last:pb-0">
-                                    <div class="flex items-start space-x-4">
-                                        <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
-                                            J
-                                        </div>
-                                        <div class="flex-1">
-                                            <div class="flex items-center justify-between mb-2">
-                                                <h4 class="font-medium text-gray-900">John Doe</h4>
-                                                <div class="flex items-center">
-                                                    @for($i = 1; $i <= 5; $i++)
-                                                        <svg class="w-4 h-4 {{ $i <= 5 ? 'text-yellow-400' : 'text-gray-300' }}" fill="currentColor" viewBox="0 0 20 20">
-                                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                                                        </svg>
-                                                    @endfor
-                                                </div>
+                                @foreach($reviews as $review)
+                                    <div class="border-b border-gray-200 pb-6 last:border-b-0 last:pb-0">
+                                        <div class="flex items-start space-x-4">
+                                            <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
+                                                {{ strtoupper(substr($review->reviewer->name, 0, 1)) }}
                                             </div>
-                                            <p class="text-gray-600 mb-2">Excellent work on my programming assignment. Very professional and delivered on time.</p>
-                                            <p class="text-sm text-gray-500">2 weeks ago</p>
+                                            <div class="flex-1">
+                                                <div class="flex items-center justify-between mb-2">
+                                                    <a href="{{ route('students.profile', $review->reviewer) }}" class="font-medium text-upsi-blue hover:text-upsi-blue/80">
+                                                        {{ $review->reviewer->name }}
+                                                    </a>
+                                                    <div class="flex items-center">
+                                                        @for($i = 1; $i <= 5; $i++)
+                                                            <svg class="w-4 h-4 {{ $i <= $review->rating ? 'text-yellow-400' : 'text-gray-300' }}" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                                            </svg>
+                                                        @endfor
+                                                    </div>
+                                                </div>
+                                                @if($review->comment)
+                                                    <p class="text-gray-600 mb-2">{{ $review->comment }}</p>
+                                                @endif
+                                                <p class="text-sm text-gray-500">{{ $review->created_at->diffForHumans() }}</p>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                @endforeach
                             </div>
-
-                            <!-- Load More Reviews -->
-                            <div class="mt-6 text-center">
-                                <form method="GET" action="{{ route('students.profile', $user->id) }}">
-                                    <button type="submit" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors">
+                            
+                            @if($reviews->count() >= 10)
+                                <div class="mt-6 text-center">
+                                    <a href="{{ route('students.profile', $user->id) }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors">
                                         Load More Reviews
-                                    </button>
-                                </form>
-                            </div>
+                                    </a>
+                                </div>
+                            @endif
                         @else
                             <div class="text-center py-8">
                                 <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
