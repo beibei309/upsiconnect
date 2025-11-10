@@ -3,13 +3,24 @@
         <div class="max-w-7xl mx-auto">
             <!-- Header -->
             <div class="mb-8">
-                <h1 class="text-3xl font-bold text-upsi-text-primary">
+                <div class="flex items-center justify-between">
+                    <h1 class="text-3xl font-bold text-upsi-text-primary">
+                        @if(auth()->user()->role === 'student')
+                            Open Applications
+                        @else
+                            My Applications
+                        @endif
+                    </h1>
                     @if(auth()->user()->role === 'student')
-                        Open Applications
-                    @else
-                        My Applications
+                        <button onclick="openInterestsModal()"
+                                class="inline-flex items-center px-4 py-2 bg-indigo-50 text-indigo-600 font-semibold rounded-xl hover:bg-indigo-100 transition-all duration-200">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            My Interested Requests
+                        </button>
                     @endif
-                </h1>
+                </div>
                 <p class="mt-2 text-upsi-text-primary/60">
                     @if(auth()->user()->role === 'student')
                         Requests from community members open to all students
@@ -141,6 +152,19 @@
                                             </button>
                                         @endif
 
+                                        @if($application->status === 'open' && auth()->user()->role === 'student' && !$application->service)
+                                            @php($myInterest = $application->interests()->where('student_id', auth()->id())->first())
+                                            <button onclick="expressInterest({{ $application->id }})"
+                                                    class="px-4 py-2 bg-indigo-50 text-indigo-600 text-sm font-semibold rounded-lg transition-all duration-200 @if($myInterest) opacity-60 cursor-not-allowed @else hover:bg-indigo-100 @endif"
+                                                    @if($myInterest) disabled @endif>
+                                                @if($myInterest) Submitted @else I'm Interested @endif
+                                            </button>
+                                            @if($myInterest)
+                                                <span class="inline-flex items-center px-2 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold">Submitted</span>
+                                                <span class="ml-2 text-xs text-upsi-text-primary/60">Thanks for your interest — we’ll reach out if it’s a fit.</span>
+                                            @endif
+                                        @endif
+
                                         @if($application->status === 'in_progress')
                                             <button onclick="markCompleted({{ $application->id }})"
                                                     class="px-4 py-2 bg-green-50 text-green-600 text-sm font-semibold rounded-lg hover:bg-green-100 transition-all duration-200">
@@ -175,8 +199,97 @@
         </div>
     </div>
 
+    {{-- Interests Modal (Student) --}}
+    @if(auth()->user()->role === 'student')
+        @php(
+            $myInterests = \App\Models\ServiceApplicationInterest::with(['application.service','application.user'])
+                ->where('student_id', auth()->id())
+                ->latest()
+                ->take(20)
+                ->get()
+        )
+        <div id="interestsModal" class="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 hidden" aria-hidden="true">
+            <div class="absolute inset-0 flex items-center justify-center p-4">
+                <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl border border-gray-200">
+                    <div class="flex items-center justify-between p-4 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-upsi-text-primary">My Interested Requests</h3>
+                        <button onclick="closeInterestsModal()" class="p-2 rounded-lg hover:bg-gray-100" aria-label="Close">
+                            <svg class="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+                    <div class="p-4 max-h-[60vh] overflow-y-auto">
+                        @if($myInterests->isEmpty())
+                            <div class="bg-upsi-light-gray rounded-xl p-6 text-center">
+                                <p class="text-upsi-text-primary/60">You haven’t expressed interest in any requests yet.</p>
+                            </div>
+                        @else
+                            <div class="space-y-3">
+                                @foreach($myInterests as $interest)
+                                    @php($app = $interest->application)
+                                    <a href="{{ route('services.applications.show', $app) }}" class="block p-4 rounded-xl border border-gray-100 hover:bg-upsi-light-gray transition-all duration-200">
+                                        <div class="flex items-center justify-between">
+                                            <div>
+                                                <p class="text-sm font-semibold text-upsi-text-primary">
+                                                    {{ optional($app->service)->title ?? ($app->title ?? 'Custom Request') }}
+                                                </p>
+                                                <p class="text-xs text-upsi-text-primary/60">From {{ $app->user->name }}</p>
+                                            </div>
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold @if($app->status === 'accepted' || $app->status === 'in_progress') bg-green-100 text-green-700 @else bg-blue-100 text-blue-700 @endif">
+                                                @if($app->status === 'accepted' || $app->status === 'in_progress') Selected @else Submitted @endif
+                                            </span>
+                                        </div>
+                                    </a>
+                                @endforeach
+                            </div>
+                            <p class="mt-4 text-xs text-upsi-text-primary/60">Thanks for your interest — we’ll reach out if it’s a fit.</p>
+                        @endif
+                    </div>
+                    <div class="p-4 border-t border-gray-200 flex justify-end">
+                        <button onclick="closeInterestsModal()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     @push('scripts')
     <script>
+        function openInterestsModal() {
+            const m = document.getElementById('interestsModal');
+            if (m) m.classList.remove('hidden');
+        }
+
+        function closeInterestsModal() {
+            const m = document.getElementById('interestsModal');
+            if (m) m.classList.add('hidden');
+        }
+
+        function expressInterest(applicationId) {
+            fetch(`/services/applications/${applicationId}/interest`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Thanks for your interest — we’ll reach out if it’s a fit.');
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Failed to record interest');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred');
+            });
+        }
+
+        // withdrawInterest removed: keep interest expression only
+
         function acceptApplication(applicationId) {
             if (!confirm('Accept this application?')) return;
 

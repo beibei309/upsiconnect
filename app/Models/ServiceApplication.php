@@ -78,6 +78,22 @@ class ServiceApplication extends Model
     }
 
     /**
+     * Students' expressed interests for open applications
+     */
+    public function interests()
+    {
+        return $this->hasMany(ServiceApplicationInterest::class, 'service_application_id');
+    }
+
+    /**
+     * Currently selected interest (if any)
+     */
+    public function selectedInterest()
+    {
+        return $this->hasOne(ServiceApplicationInterest::class, 'service_application_id')->where('status', 'selected');
+    }
+
+    /**
      * Scope for open applications
      */
     public function scopeOpen($query)
@@ -262,8 +278,17 @@ class ServiceApplication extends Model
         }
 
         // Provider can mark if they haven't already
+        // Case 1: Linked student service, provider is the service owner
         if ($this->service && $user->id === $this->service->user_id) {
             return !$this->provider_completed;
+        }
+
+        // Case 2: Custom application with selected interest; provider is selected student
+        if (!$this->service) {
+            $selected = $this->selectedInterest()->first();
+            if ($selected && $user->id === $selected->student_id) {
+                return !$this->provider_completed;
+            }
         }
 
         return false;

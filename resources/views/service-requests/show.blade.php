@@ -22,7 +22,7 @@
                 <div class="bg-upsi-blue bg-gradient-to-r from-upsi-blue to-upsi-blue/90 px-8 py-6 text-white">
                     <div class="flex items-start justify-between">
                         <div>
-                            <h1 class="text-2xl font-bold mb-2">{{ $serviceRequest->studentService->title ?? 'Service Request' }}</h1>
+                            <h1 class="text-2xl font-bold mb-2">{{ optional($serviceRequest->studentService)->title ?? 'Service Request' }}</h1>
                             <p class="text-white/90">Requested {{ $serviceRequest->created_at->format('F j, Y \\a\\t g:i A') }}</p>
                         </div>
                         <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold {{ $serviceRequest->status_color }}">
@@ -111,7 +111,7 @@
                                         </svg>
                                         <div>
                                             <p class="text-xs text-upsi-text-primary/60">Category</p>
-                                            <p class="text-sm font-medium text-upsi-text-primary">{{ optional($serviceRequest->studentService->category)->name ?? '—' }}</p>
+                                            <p class="text-sm font-medium text-upsi-text-primary">{{ optional(optional($serviceRequest->studentService)->category)->name ?? '—' }}</p>
                                         </div>
                                     </div>
                                     <div class="bg-white rounded-xl border border-gray-100 p-4 flex items-start space-x-3">

@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\ServiceApplication;
 use App\Models\User;
+use App\Models\ServiceApplicationInterest;
+use App\Models\ChatRequest;
+use App\Models\ServiceRequest;
 
 class ServiceApplicationController extends Controller
 {
@@ -401,5 +404,213 @@ class ServiceApplicationController extends Controller
             'success' => true,
             'message' => 'Application declined.'
         ]);
+    }
+
+    /**
+     * Student expresses interest in an open custom application
+     */
+    public function expressInterest(ServiceApplication $application, Request $request)
+    {
+        $user = Auth::user();
+
+        if ($user->role !== 'student') {
+            return response()->json(['success' => false, 'message' => 'Only students can express interest.'], 403);
+        }
+
+        if ($application->service_id) {
+            return response()->json(['success' => false, 'message' => 'Interest is only for open community requests.'], 403);
+        }
+
+        if ($application->status !== 'open') {
+            return response()->json(['success' => false, 'message' => 'This application is not open.'], 400);
+        }
+
+        $validated = $request->validate([
+            'message' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        try {
+            $interest = ServiceApplicationInterest::firstOrCreate(
+                [
+                    'service_application_id' => $application->id,
+                    'student_id' => $user->id,
+                ],
+                [
+                    'message' => $validated['message'] ?? null,
+                    'status' => 'interested',
+                ]
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Interest recorded successfully.',
+                'interest_id' => $interest->id,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to record interest.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Student withdraws their interest (if not selected yet)
+     */
+    public function withdrawInterest(ServiceApplication $application)
+    {
+        $user = Auth::user();
+
+        if ($user->role !== 'student') {
+            return response()->json(['success' => false, 'message' => 'Only students can withdraw interest.'], 403);
+        }
+
+        $interest = ServiceApplicationInterest::where('service_application_id', $application->id)
+            ->where('student_id', $user->id)
+            ->first();
+
+        if (!$interest) {
+            return response()->json(['success' => false, 'message' => 'Interest not found.'], 404);
+        }
+
+        if ($interest->status === 'selected') {
+            return response()->json(['success' => false, 'message' => 'Selected interest cannot be withdrawn.'], 400);
+        }
+
+        try {
+            $interest->delete();
+            return response()->json(['success' => true, 'message' => 'Interest withdrawn.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Failed to withdraw interest.'], 500);
+        }
+    }
+
+    /**
+     * Community user selects a candidate; also sends a chat request
+     */
+    public function selectInterest(Request $request, ServiceApplication $application, ServiceApplicationInterest $interest)
+    {
+        $user = Auth::user();
+
+        if ($user->role !== 'community' || $application->user_id !== $user->id) {
+            return response()->json(['success' => false, 'message' => 'You are not authorized to select a candidate for this application.'], 403);
+        }
+
+        if ($application->status !== 'open' || $application->service_id) {
+            return response()->json(['success' => false, 'message' => 'Candidate selection is only allowed for open custom applications.'], 400);
+        }
+
+        if ($interest->service_application_id !== $application->id) {
+            return response()->json(['success' => false, 'message' => 'Interest does not belong to this application.'], 400);
+        }
+
+        $validated = $request->validate([
+            'message' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        try {
+            $interest->update([
+                'status' => 'selected',
+                'selected_at' => now(),
+            ]);
+
+            $chatRequest = ChatRequest::create([
+                'requester_id' => $application->user_id,
+                'recipient_id' => $interest->student_id,
+                'status' => 'pending',
+                'message' => $validated['message'] ?? 'Hi! You were selected for my request. Shall we chat?',
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Candidate selected and chat request sent.',
+                'interest_id' => $interest->id,
+                'chat_request_id' => $chatRequest->id,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to select candidate.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Community user declines an interested student
+     */
+    public function declineInterest(ServiceApplication $application, ServiceApplicationInterest $interest)
+    {
+        $user = Auth::user();
+
+        if ($user->role !== 'community' || $application->user_id !== $user->id) {
+            return response()->json(['success' => false, 'message' => 'You are not authorized to decline candidates for this application.'], 403);
+        }
+
+        if ($interest->service_application_id !== $application->id) {
+            return response()->json(['success' => false, 'message' => 'Interest does not belong to this application.'], 400);
+        }
+
+        try {
+            $interest->update([
+                'status' => 'declined',
+                'declined_at' => now(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Candidate declined.',
+                'interest_id' => $interest->id,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to decline candidate.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Community confirms selected candidate and creates a ServiceRequest
+     */
+    public function confirmSelected(ServiceApplication $application)
+    {
+        $user = Auth::user();
+
+        if ($user->role !== 'community' || $application->user_id !== $user->id) {
+            return response()->json(['success' => false, 'message' => 'You are not authorized to confirm selection for this application.'], 403);
+        }
+
+        if ($application->status !== 'open' || $application->service_id) {
+            return response()->json(['success' => false, 'message' => 'Confirmation is only allowed for open custom applications.'], 400);
+        }
+
+        $selected = $application->selectedInterest;
+        if (!$selected || $selected->status !== 'selected') {
+            return response()->json(['success' => false, 'message' => 'No selected candidate to confirm.'], 400);
+        }
+
+        try {
+            $serviceRequest = ServiceRequest::create([
+                'student_service_id' => null,
+                'requester_id' => $application->user_id,
+                'provider_id' => $selected->student_id,
+                'message' => $application->description ?? 'Custom service request created from application #' . $application->id,
+                'status' => 'pending',
+            ]);
+
+            $application->update([
+                'status' => 'accepted',
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'redirect' => route('service-requests.show', $serviceRequest),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create service request.',
+            ], 500);
+        }
     }
 }

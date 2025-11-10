@@ -100,6 +100,14 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/service-applications/{application}/decline', [ServiceApplicationController::class, 'declineFromChat'])->name('service-applications.decline');
     Route::post('/service-applications/{application}/complete', [ServiceApplicationController::class, 'markCompleted'])->name('service-applications.complete');
 
+    // Interest system endpoints for open applications
+    Route::post('/services/applications/{application}/interest', [ServiceApplicationController::class, 'expressInterest'])->name('services.applications.interest');
+// Withdraw interest removed by product decision
+// Route::delete('/services/applications/{application}/interest', [ServiceApplicationController::class, 'withdrawInterest'])->name('services.applications.interest.withdraw');
+Route::post('/services/applications/{application}/interests/confirm', [ServiceApplicationController::class, 'confirmSelected'])->name('services.applications.interests.confirm');
+    Route::post('/services/applications/{application}/interests/{interest}/select', [ServiceApplicationController::class, 'selectInterest'])->name('services.applications.interests.select');
+    Route::post('/services/applications/{application}/interests/{interest}/decline', [ServiceApplicationController::class, 'declineInterest'])->name('services.applications.interests.decline');
+
     Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
 
     Route::post('/student-services', [StudentServiceController::class, 'store']);

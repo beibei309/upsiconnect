@@ -292,6 +292,71 @@
                         </div>
                     @endif
 
+                    <!-- Student Interest CTA for open custom applications -->
+                    @if(!$application->service && $application->status === 'open' && auth()->user()->role === 'student')
+                        <div class="border-t border-gray-200 pt-6">
+                            <h2 class="text-lg font-semibold text-upsi-text-primary mb-4">Express Interest</h2>
+                            @php($myInterest = $application->interests()->where('student_id', auth()->id())->first())
+                            <p class="text-sm text-upsi-text-primary/60 mb-4">
+                                @if($myInterest)
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold mr-2">Submitted</span>
+                                    Thanks for your interest — we’ll reach out if it’s a fit.
+                                @else
+                                    Let the community member know you're interested in this request.
+                                @endif
+                            </p>
+                            <div class="space-y-3">
+                                <textarea id="interestMessage" class="w-full rounded-xl border-gray-200 focus:ring-upsi-blue focus:border-upsi-blue" rows="3" placeholder="Optional message (e.g., your availability or approach)"></textarea>
+                                <div class="flex items-center space-x-3">
+                                    <button onclick="expressInterest()" class="px-6 py-3 bg-indigo-50 text-indigo-600 font-semibold rounded-xl hover:bg-indigo-100 transition-all duration-200" @if($myInterest) disabled @endif>
+                                        @if($myInterest) Submitted @else I'm Interested @endif
+                                    </button>
+                                    <button onclick="openInterestsModal()" class="px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-all duration-200">My Interested Requests</button>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
+                    <!-- Candidate List for community owner -->
+                    @if(!$application->service && $application->status === 'open' && auth()->user()->role === 'community' && auth()->user()->id === $application->user_id)
+                        <div class="border-t border-gray-200 pt-6">
+                            <h2 class="text-lg font-semibold text-upsi-text-primary mb-4">Interested Candidates</h2>
+                            @php($interests = $application->interests()->with('student')->orderByDesc('created_at')->get())
+                            @if($interests->isEmpty())
+                                <div class="bg-upsi-light-gray rounded-xl p-6">
+                                    <p class="text-upsi-text-primary/60">No students have expressed interest yet. Share your request to get more visibility.</p>
+                                </div>
+                            @else
+                                <div class="space-y-3">
+                                    @foreach($interests as $interest)
+                                        <div class="bg-white rounded-xl border border-gray-100 p-4 flex items-center justify-between">
+                                            <div class="flex items-center space-x-3">
+                                                <a href="{{ route('students.profile', $interest->student) }}" class="font-semibold text-upsi-blue hover:text-upsi-blue/80">{{ $interest->student->name }}</a>
+                                                <span class="text-xs px-2 py-1 rounded-full {{ $interest->status === 'selected' ? 'bg-green-100 text-green-700' : ($interest->status === 'declined' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700') }}">
+                                                    {{ ucfirst($interest->status) }}
+                                                </span>
+                                            </div>
+                                            <div class="flex items-center space-x-3">
+                                                @if($interest->status !== 'declined')
+                                                    @if($interest->status !== 'selected')
+                                                        <button onclick="selectCandidate({{ $interest->id }})" class="px-6 py-3 bg-indigo-50 text-indigo-600 font-semibold rounded-xl hover:bg-indigo-100 transition-all duration-200">Select Candidate</button>
+                                                    @endif
+                                                    <button onclick="declineCandidate({{ $interest->id }})" class="px-6 py-3 bg-red-50 text-red-600 font-semibold rounded-xl hover:bg-red-100 transition-all duration-200">Decline</button>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                                @php($selected = $application->selectedInterest)
+                                @if($selected && $application->status === 'open')
+                                    <div class="mt-4">
+                                        <button onclick="confirmSelected()" class="px-6 py-3 bg-upsi-blue text-white font-semibold rounded-xl hover:bg-upsi-blue/90 transition-all duration-200">Start with Selected Candidate</button>
+                                    </div>
+                                @endif
+                            @endif
+                        </div>
+                    @endif
+
                     <!-- Actions -->
                     @if($application->service && $application->status === 'open' && auth()->user()->role === 'student' && auth()->user()->id === $application->service->user_id)
                         <div class="border-t border-gray-200 pt-6">
@@ -333,6 +398,116 @@
 
     @push('scripts')
     <script>
+        function openInterestsModal() {
+            const m = document.getElementById('interestsModal');
+            if (m) m.classList.remove('hidden');
+        }
+        function closeInterestsModal() {
+            const m = document.getElementById('interestsModal');
+            if (m) m.classList.add('hidden');
+        }
+        function expressInterest() {
+            const message = document.getElementById('interestMessage')?.value || '';
+            fetch('{{ route("services.applications.interest", $application) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Interest recorded. The community member may contact you.');
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Failed to record interest');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred');
+            });
+        }
+
+        // withdrawInterest removed: keep interest expression only
+
+        function selectCandidate(interestId) {
+            const message = prompt('Optional message to the candidate:', 'Hi! You were selected for my request. Shall we chat?');
+            fetch(`/services/applications/{{ $application->id }}/interests/${interestId}/select`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Candidate selected. A chat request has been sent.');
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Failed to select candidate');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred');
+            });
+        }
+
+        function declineCandidate(interestId) {
+            if (!confirm('Decline this candidate?')) return;
+            fetch(`/services/applications/{{ $application->id }}/interests/${interestId}/decline`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Candidate declined.');
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Failed to decline candidate');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred');
+            });
+        }
+
+        function confirmSelected() {
+            if (!confirm('Confirm selected candidate and create a Service Request?')) return;
+            fetch('{{ route("services.applications.interests.confirm", $application) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.redirect) {
+                    window.location.href = data.redirect;
+                } else if (data.success) {
+                    alert('Selection confirmed.');
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Failed to confirm selection');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred');
+            });
+        }
+
         function acceptApplication() {
             if (!confirm('Accept this application? The service will be marked as in progress.')) return;
 
@@ -409,4 +584,63 @@
         }
     </script>
     @endpush
+
+    @if(auth()->user()->role === 'student')
+    <!-- Interests Modal -->
+    @php($myInterestsList = \App\Models\ServiceApplicationInterest::with(['application.user'])
+        ->where('student_id', auth()->id())
+        ->orderByDesc('created_at')
+        ->limit(20)
+        ->get())
+    <div id="interestsModal" class="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 hidden" aria-hidden="true">
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl border border-gray-200">
+                <div class="flex items-center justify-between p-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-upsi-text-primary">My Interested Requests</h3>
+                    <button onclick="closeInterestsModal()" class="p-2 rounded-lg hover:bg-gray-100" aria-label="Close">
+                        <svg class="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <div class="p-4 max-h-[60vh] overflow-y-auto">
+                    @if($myInterestsList->isEmpty())
+                        <div class="bg-upsi-light-gray rounded-xl p-6 text-center">
+                            <p class="text-upsi-text-primary/60">You haven’t expressed interest in any requests yet.</p>
+                        </div>
+                    @else
+                        <div class="space-y-3">
+                            @foreach($myInterestsList as $interest)
+                                <div class="flex items-center justify-between bg-white border border-gray-100 rounded-xl p-4">
+                                    <div>
+                                        <p class="font-semibold text-upsi-blue">
+                                            <a href="{{ route('services.applications.show', $interest->application) }}" class="hover:underline">
+                                                {{ optional($interest->application->service)->title ?? $interest->application->title ?? 'Community Request' }}
+                                            </a>
+                                        </p>
+                                        <p class="text-xs text-upsi-text-primary/60">By {{ $interest->application->user->name }}</p>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        @php($status = $interest->status)
+                                        @if($status === 'selected')
+                                            <span class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold">Selected</span>
+                                        @elseif($status === 'interested')
+                                            <span class="px-2 py-1 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold">Submitted</span>
+                                        @elseif($status === 'declined')
+                                            <span class="px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-semibold">Submitted</span>
+                                        @else
+                                            <span class="px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-semibold">Submitted</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                        <p class="mt-4 text-xs text-upsi-text-primary/60">Thanks for your interest — we’ll reach out if it’s a fit.</p>
+                    @endif
+                </div>
+                <div class="p-4 border-t border-gray-200 flex justify-end">
+                    <button onclick="closeInterestsModal()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 </x-app-layout>

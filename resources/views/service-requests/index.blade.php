@@ -64,7 +64,7 @@
                                             <div class="flex-1">
                                                 <div class="flex items-center space-x-2 mb-2">
                                                     <h4 class="text-lg font-medium text-gray-900">
-                                                        {{ $request->studentService->title ?? 'NO TITLE' }}
+                                                        {{ optional($request->studentService)->title ?? 'Custom Request' }}
                                                     </h4>
                                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $request->status_color }}">
                                                         {{ $request->formatted_status }}
@@ -144,7 +144,7 @@
                                             <div class="flex-1">
                                                 <div class="flex items-center space-x-2 mb-2">
                                                     <h4 class="text-lg font-medium text-gray-900">
-                                                        {{ $request->studentService->title }}
+                                                        {{ optional($request->studentService)->title ?? 'Custom Request' }}
                                                     </h4>
                                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $request->status_color }}">
                                                         {{ $request->formatted_status }}

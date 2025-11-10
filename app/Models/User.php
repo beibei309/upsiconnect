@@ -112,6 +112,11 @@ class User extends Authenticatable
         return $this->hasMany(Review::class, 'reviewee_id');
     }
 
+    public function applicationInterests()
+    {
+        return $this->hasMany(ServiceApplicationInterest::class, 'student_id');
+    }
+
     public function favorites()
     {
         return $this->belongsToMany(User::class, 'favorites', 'user_id', 'favorited_user_id')
