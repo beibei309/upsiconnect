@@ -36,16 +36,21 @@ class RegisteredUserController extends Controller
             'role' => ['required', 'in:student,community'],
             'phone' => ['required', 'string', 'max:20'],
             'student_id' => ['required_if:role,student', 'nullable', 'string', 'max:20'],
+            // Optional: used for instant verification; name retained for compatibility
+            'community_type' => ['nullable', 'in:public,staff'],
             'staff_email' => [
-                'required_if:role,student', 
                 'nullable', 
                 'email',
                 function ($attribute, $value, $fail) use ($request) {
                     if ($value) {
-                        if ($request->role === 'student' && !str_ends_with($value, '@siswa.upsi.edu.my')) {
-                            $fail('Student email must end with @siswa.upsi.edu.my');
-                        } elseif ($request->role === 'community' && !preg_match('/@([a-zA-Z]+\.)?upsi\.edu\.my$/', $value)) {
-                            $fail('Staff email must be in format @upsi.edu.my or @faculty.upsi.edu.my');
+                        if ($request->role === 'student') {
+                            if (!str_ends_with($value, '@siswa.upsi.edu.my')) {
+                                $fail('Student email must end with @siswa.upsi.edu.my');
+                            }
+                        } elseif ($request->role === 'community' && $request->community_type === 'staff') {
+                            if (!preg_match('/@([a-zA-Z]+\.)?upsi\.edu\.my$/', $value)) {
+                                $fail('Staff email must be in format @upsi.edu.my or @faculty.upsi.edu.my');
+                            }
                         }
                     }
                 }
@@ -54,17 +59,19 @@ class RegisteredUserController extends Controller
 
         // Set verification status based on role
         $verificationStatus = 'pending';
+        $publicVerifiedAt = null;
         $staffVerifiedAt = null;
         
         if ($request->role === 'student') {
             // Students are auto-verified if they have valid UPSI student email
             if ($request->staff_email && str_ends_with($request->staff_email, '@siswa.upsi.edu.my')) {
                 $verificationStatus = 'approved';
-                $staffVerifiedAt = now();
+                // Mark as publicly verified; do NOT set staff verification for students
+                $publicVerifiedAt = now();
             }
         } elseif ($request->role === 'community') {
             // Staff are auto-verified if they have valid UPSI email
-            if ($request->staff_email && preg_match('/@([a-zA-Z]+\.)?upsi\.edu\.my$/', $request->staff_email)) {
+            if ($request->community_type === 'staff' && $request->staff_email && preg_match('/@([a-zA-Z]+\.)?upsi\.edu\.my$/', $request->staff_email)) {
                 $verificationStatus = 'approved';
                 $staffVerifiedAt = now();
             }
@@ -79,6 +86,7 @@ class RegisteredUserController extends Controller
             'student_id' => $request->student_id,
             'staff_email' => $request->staff_email,
             'verification_status' => $verificationStatus,
+            'public_verified_at' => $publicVerifiedAt,
             'staff_verified_at' => $staffVerifiedAt,
             'is_available' => $request->role === 'student' ? true : false,
         ]);

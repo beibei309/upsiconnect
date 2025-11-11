@@ -142,7 +142,8 @@ class User extends Authenticatable
 
     public function isStaff(): bool
     {
-        return !is_null($this->staff_verified_at) && !is_null($this->staff_email);
+        // Only community accounts with staff verification qualify as staff
+        return $this->role === 'community' && !is_null($this->staff_verified_at) && !is_null($this->staff_email);
     }
 
     public function isAdmin(): bool
@@ -157,7 +158,7 @@ class User extends Authenticatable
 
     public function isVerifiedStaff(): bool
     {
-        return !is_null($this->staff_verified_at);
+        return $this->role === 'community' && !is_null($this->staff_verified_at);
     }
 
     public function isAvailable(): bool
