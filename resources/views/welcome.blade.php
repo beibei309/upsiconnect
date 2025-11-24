@@ -35,12 +35,15 @@
                 <div class="flex justify-between items-center h-16">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <h1 class="text-2xl font-bold text-indigo-600">UpsiConnect</h1>
+                            <h1 class="text-2xl font-bold text-indigo-600">S2U</h1>
                         </div>
                     </div>
                     
                     <div class="hidden md:block">
                         <div class="ml-10 flex items-baseline space-x-4">
+                            <a href="{{ route('services') }}" class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">
+                                Services
+                            </a>                            
                             <a href="#features" class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">Features</a>
                             <a href="#how-it-works" class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">How It Works</a>
                             <a href="#stats" class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">Community</a>
