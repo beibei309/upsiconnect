@@ -34,7 +34,7 @@
         <div class="w-full max-w-md px-6 py-4">
             <a href="{{ url('/') }}" class="flex items-center justify-center">
                 <div class="text-center">
-                    <h1 class="text-3xl font-bold text-white mb-2">UpsiConnect</h1>
+                    <h1 class="text-3xl font-bold text-white mb-2">S2U</h1>
                     <p class="text-indigo-100 text-sm">Connect. Learn. Grow Together.</p>
                 </div>
             </a>
