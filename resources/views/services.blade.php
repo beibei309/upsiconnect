@@ -77,8 +77,9 @@
                             <a href="#how-it-works"
                                 class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">How
                                 It Works</a>
-                            <a href="#stats"
-                                class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">Community</a>
+                            <a href="{{ route('help') }}" 
+                            class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">
+                            Help</a>
                         </div>
                     </div>
 
@@ -287,7 +288,7 @@
 
                             <!-- Footer Actions -->
                             <div class="px-4 pb-4 mt-auto">
-                                @if (auth()->user()->role === 'community')
+                            @if (auth()->check() && auth()->user()->role === 'community')
                                     @if ($service->status === 'available')
                                         <a href="{{ route('chat.request', ['user' => $service->user->id, 'service' => $service->title]) }}"
                                             class="w-full flex items-center justify-center px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition shadow-sm">

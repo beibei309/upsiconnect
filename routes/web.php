@@ -149,3 +149,11 @@ Route::post('/services/applications/{application}/interests/confirm', [ServiceAp
 Route::get('/students/{user}', [StudentServiceController::class, 'storefront']);
 Route::get('/search/services', [SearchController::class, 'services']);
 require __DIR__.'/auth.php';
+
+Route::get('/help', function () {
+    return view('help');
+})->name('help');
+
+Route::get('/', function () {
+    return view('welcome');
+})->name('welcome');
