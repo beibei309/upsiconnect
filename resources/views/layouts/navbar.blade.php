@@ -17,7 +17,7 @@
                             <a href="{{ route('about') }}"
                                 class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">About
                                 Us</a>
-                            <a href="#stats"
+                            <a href="{{ route('help') }}"
                                 class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">Help</a>
                         </div>
                     </div>
@@ -54,7 +54,7 @@
                     <a href="{{ route('about') }}"
                         class="text-gray-600 hover:text-indigo-600 block px-3 py-2 rounded-md text-base font-medium">About
                         Us</a>
-                    <a href="{{ route('about') }}"
+                    <a href="{{ route('help') }}"
                         class="text-gray-600 hover:text-indigo-600 block px-3 py-2 rounded-md text-base font-medium">Help
                     </a>
                     @auth
