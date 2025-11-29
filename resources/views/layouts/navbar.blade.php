@@ -1,11 +1,12 @@
   <!-- Navigation -->
+  
         <nav class="bg-white shadow-sm fixed w-full top-0 z-50">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between items-center h-16">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <h1 class="text-2xl font-bold text-indigo-600">S2U</h1>
-                        </div>
+                 <div class="flex justify-between items-center h-30 px-6"> <!-- h-30 lebih tinggi -->
+                    <div class="flex items-center h-full"> <!-- buat full height untuk logo & menu -->
+                        <h1 class="text-4xl font-bold text-indigo-600">S2U</h1> <!-- logo lebih besar -->
+                    </div>
                     </div>
 
                     <div class="hidden md:block">

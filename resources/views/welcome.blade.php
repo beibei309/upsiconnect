@@ -12,6 +12,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -61,201 +63,108 @@
 
 
         <!-- Hero Section -->
-        <section class="gradient-bg pt-20 pb-16 px-4 sm:px-6 lg:px-8">
-            <div class="max-w-5xl mx-auto"><br><br>
-                <div class="text-center">
-                    <h1 class="text-4xl md:text-6xl font-bold text-white mb-8">
-                        How can we <span class="text-upsi-gold">help you?</span>
-                    </h1>
+        <section class="relative min-h-screen flex items-center overflow-hidden pt-36">
 
-                    <!-- Search and Filters -->
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8" x-data="{ showFilters: false }" style="color:#484745;">
-                        <!-- Search Bar -->
-                        <form method="GET" action="{{ route('search.index') }}" class="space-y-4" >
-                            <div class="flex flex-col lg:flex-row gap-4">
-                                <div class="flex-1">
-                                    <div class="relative">
-                                        <div
-                                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                            </svg>
-                                        </div>
-                                        <input type="text" name="q" value="{{ $q }}"
-                                            placeholder="Search for services, skills, or student names..."
-                                            class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                                    </div>
+            <!-- Background video -->
+            <video autoplay muted loop playsinline
+                class="absolute inset-0 w-full h-full object-cover z-0 brightness-20">
+                <source src="{{ asset('videos/herobanner.mp4') }}" type="video/mp4">
+            </video>
+
+
+            <!-- Left-side dark overlay using gradient -->
+            <div class="absolute inset-0 z-10"
+                style="background: linear-gradient(to right, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);">
+            </div>
+
+            <!-- CONTENT -->
+            <div class="relative z-20 w-full max-w-6xl mx-auto px-0.2">
+                <h1
+                    style="color: white; 
+           font-family: 'Poppins', sans-serif; 
+           font-size: 50px;
+           font-weight: 700; 
+           max-width: 48rem;
+           line-height: 1.25; 
+            margin-bottom: 1.5rem; /* reduce spacing below */
+           margin-top: -50px;">
+                    UPSI student to community<br>
+                    <span style="color: #cd7a3f;">we've got you.</span>
+                </h1>
+
+                <!-- SEARCH BAR -->
+                <div class="w-full max-w-5xl">
+                    <form action="{{ route('search.index') }}" method="GET" class="w-full">
+                        <div class="relative">
+                            <input type="text" name="q" placeholder="Search for any service..."
+                                class="w-full py-4 pl-5 pr-14 rounded-xl text-lg shadow-lg focus:outline-none text-gray-900 placeholder-gray-400" />
+
+                            <!-- Search Icon -->
+                            <button class="absolute right-4 top-1/2 -translate-y-1/2">
+                                <div class=" w-12 h-12 rounded-xl shadow flex items-center justify-center"
+                                    style="background-color: #23221e;">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
                                 </div>
-                                <div class="flex gap-2">
-                                    <button type="button" @click="showFilters = !showFilters"
-                                        class="inline-flex items-center px-4 py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.707A1 1 0 013 7V4z">
-                                            </path>
-                                        </svg>
-                                        Filters
-                                    </button>
-                                    <button type="submit"
-                                        class="inline-flex items-center px-6 py-3 border border-transparent rounded-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                        Search
-                                    </button>
-                                </div>
-                            </div>
+                            </button>
+                        </div>
+                    </form>
+                </div>
 
-                            <!-- Advanced Filters -->
-                            <div x-show="showFilters" x-transition:enter="transition ease-out duration-200"
-                                x-transition:enter-start="opacity-0 transform scale-95"
-                                x-transition:enter-end="opacity-100 transform scale-100"
-                                x-transition:leave="transition ease-in duration-150"
-                                x-transition:leave-start="opacity-100 transform scale-100"
-                                x-transition:leave-end="opacity-0 transform scale-95"
-                                class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-200">
-
-                                <!-- Category Filter -->
-                                <div>
-                                    <label class="block text-sm font-medium text-upsi-dark mb-2">Category</label>
-                                    <select name="category_id"
-                                        class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                                        <option value="">All Categories</option>
-                                        @foreach ($categories as $category)
-                                            <option value="{{ $category->id }}"
-                                                {{ $category_id == $category->id ? 'selected' : '' }}>
-                                                {{ $category->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-
-                                <!-- Rating Filter -->
-                                <div>
-                                    <label class="block text-sm font-medium text-upsi-dark mb-2">Minimum Rating</label>
-                                    <select name="min_rating"
-                                        class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                                        <option value="">Any Rating</option>
-                                        <option value="4" {{ $min_rating == '4' ? 'selected' : '' }}>4+ Stars
-                                        </option>
-                                        <option value="3" {{ $min_rating == '3' ? 'selected' : '' }}>3+ Stars
-                                        </option>
-                                        <option value="2" {{ $min_rating == '2' ? 'selected' : '' }}>2+ Stars
-                                        </option>
-                                    </select>
-                                </div>
-
-                                <!-- Availability Filter -->
-                                <div>
-                                    <label class="block text-sm font-medium text-upsi-dark mb-2">Availability</label>
-                                    <select name="available"
-                                        class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                                        <option value="1" {{ $available == '1' ? 'selected' : '' }}>Available Now
-                                        </option>
-                                        <option value="">All Students</option>
-                                        <option value="0" {{ $available == '0' ? 'selected' : '' }}>Unavailable
-                                        </option>
-                                    </select>
-                                </div>
-                            </div>
-                        </form>
-
-                        <!-- Active Filters -->
-                        @if ($q || $category_id || $min_rating || ($available !== null && $available != '1'))
-                            <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-200">
-                                <span class="text-sm text-upsi-text-primary">Active filters:</span>
-
-                                @if ($q)
-                                    <span
-                                        class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                                        Search: "{{ $q }}"
-                                        <a href="{{ route('search.index', array_filter(['category_id' => $category_id, 'min_rating' => $min_rating, 'available' => $available != '1' ? $available : null])) }}"
-                                            class="ml-1 text-indigo-600 hover:text-indigo-500">
-                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd"
-                                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                                    clip-rule="evenodd"></path>
-                                            </svg>
-                                        </a>
-                                    </span>
-                                @endif
-
-                                @if ($category_id)
-                                    <span
-                                        class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                        Category
-                                        <a href="{{ route('search.index', array_filter(['q' => $q, 'min_rating' => $min_rating, 'available' => $available != '1' ? $available : null])) }}"
-                                            class="ml-1 text-green-600 hover:text-green-500">
-                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd"
-                                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                                    clip-rule="evenodd"></path>
-                                            </svg>
-                                        </a>
-                                    </span>
-                                @endif
-
-                                @if ($min_rating)
-                                    <span
-                                        class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                        {{ $min_rating }}+ Stars
-                                        <a href="{{ route('search.index', array_filter(['q' => $q, 'category_id' => $category_id, 'available' => $available != '1' ? $available : null])) }}"
-                                            class="ml-1 text-yellow-600 hover:text-yellow-500">
-                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd"
-                                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                                    clip-rule="evenodd"></path>
-                                            </svg>
-                                        </a>
-                                    </span>
-                                @endif
-
-                                @if ($available !== null && $available != '1')
-                                    <span
-                                        class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                        {{ $available ? 'Available' : 'Unavailable' }}
-                                        <a href="{{ route('search.index', array_filter(['q' => $q, 'category_id' => $category_id, 'min_rating' => $min_rating])) }}"
-                                            class="ml-1 text-purple-600 hover:text-purple-500">
-                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd"
-                                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                                    clip-rule="evenodd"></path>
-                                            </svg>
-                                        </a>
-                                    </span>
-                                @endif
-
-                                <a href="{{ route('search.index') }}"
-                                    class="text-sm text-gray-500 hover:text-gray-700">Clear all</a>
-                            </div>
-                        @endif
-                    </div>
+                <!-- Search idea -->
+                <div class="flex gap-5 mt-6 flex-wrap">
+                    <a
+                        class="bg-transparent border border-white hover:bg-white/10 px-8 py-2 rounded-md  text-white text-sm font-medium backdrop-blur transition cursor-pointer">
+                        iron baju →
+                    </a>
+                    <a
+                        class="bg-transparent border border-white hover:bg-white/10 px-8 py-2 rounded-md  text-white text-sm font-medium backdrop-blur transition cursor-pointer">
+                        video editing →
+                    </a>
+                    <a
+                        class="bg-transparent border border-white hover:bg-white/10 px-8 py-2 rounded-md  text-white text-sm font-medium backdrop-blur transition cursor-pointer">
+                        booth helper →
+                    </a>
+                    <a
+                        class="bg-transparent border border-white hover:bg-white/10 px-8 py-2 rounded-md  text-white text-sm font-medium backdrop-blur transition cursor-pointer">
+                        design poster →
+                    </a>
+                    <a
+                        class="bg-transparent border border-white hover:bg-white/10 px-8 py-2 rounded-md  text-white text-sm font-medium flex items-center gap-2 backdrop-blur transition cursor-pointer">
+                        pickup parcel →
+                    </a>
                 </div>
             </div>
         </section>
 
 
-
-        <!-- Category Section -->
-        <section id="stats" class="py-16 bg-gray-50">
+        <section id="categories" class="py-16 bg-gray-50 ">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <h2 style="color: #484745; font-weight:bold; font-size: 20px;">Categories</h2>
-                <br>
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 text-center">
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 text-center">
+
                     @foreach ($categories as $category)
-                        <div class="bg-white p-8 rounded-xl shadow-sm hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300"
-                            style="box-shadow: rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;">
-                            <div class="text-5 font-bold text-indigo-600 mb-2">
+                        <div class="group bg-white p-4 rounded-xl transform hover:-translate-y-1.5 transition-all duration-300 cursor-pointer"
+                            style="box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);">
+                            <!-- Icon -->
+                        <div class="mx-auto mb-3 w-12 h-12 flex items-center justify-center rounded-full shadow-sm"
+                            style="border: 2px solid {{ $category->color }};">
+                                <img src="{{ asset('images/' . $category->image_path) }}" alt="{{ $category->name }}"
+                                    class="w-6 h-6">
+                            </div>
+                            <!-- Name -->
+                            <div class="text-sm font-semibold text-gray-900" style="color: {{ $category->color }};">
                                 {{ $category->name }}
                             </div>
-                            <div class="text-gray-600 font-medium">
-                                {{ $category->services_count ?? 0 }} Services
-                            </div>
+
                         </div>
                     @endforeach
                 </div>
             </div>
         </section>
+
 
 
         <!-- Top Services Section -->
@@ -474,7 +383,7 @@
                                     @endif
                                 </div>
 
-                               <br>
+                                <br>
                                 <a href="{{ route('students.profile', $service->user) }}"
                                     class="w-full inline-flex items-center justify-center px-4 py-2.5 border border-transparent rounded-lg text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors group-hover:bg-indigo-700 shadow-sm">
                                     View all {{ $student->services_count }} Services
