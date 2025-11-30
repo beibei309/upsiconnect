@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 
 class StudentServiceController extends Controller
 {
+
     public function store(Request $request): JsonResponse
     {
         $user = $request->user();

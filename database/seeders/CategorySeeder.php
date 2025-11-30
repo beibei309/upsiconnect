@@ -44,7 +44,7 @@ class CategorySeeder extends Seeder
             'slug' => 'housechore-services',
             'description' => 'Ironing services, house cleaning',
             'image_path' => 'cleaning.png',
-            'color' => '#EF4444',
+            'color' => '#540863',
             'is_active' => 1,
         ],
         [

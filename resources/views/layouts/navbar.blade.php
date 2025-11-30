@@ -1,7 +1,7 @@
   <!-- Navigation -->
   
         <nav class="bg-white shadow-sm fixed w-full top-0 z-50">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between items-center h-16">
                  <div class="flex justify-between items-center h-30 px-6"> <!-- h-30 lebih tinggi -->
                     <div class="flex items-center h-full"> <!-- buat full height untuk logo & menu -->
@@ -15,9 +15,12 @@
                                 class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">
                                 Home
                             </a>
+                             <a href="{{ route('guest.services') }}"
+                                class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">
+                                Find services
+                            </a>
                             <a href="{{ route('about') }}"
-                                class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">About
-                                Us</a>
+                                class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">About Us</a>
                             <a href="{{ route('help') }}"
                                 class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">Help</a>
                         </div>

@@ -83,7 +83,7 @@
                     style="color: white; 
            font-family: 'Poppins', sans-serif; 
            font-size: 50px;
-           font-weight: 700; 
+           font-weight: 200; 
            max-width: 48rem;
            line-height: 1.25; 
             margin-bottom: 1.5rem; /* reduce spacing below */
@@ -149,8 +149,8 @@
                         <div class="group bg-white p-4 rounded-xl transform hover:-translate-y-1.5 transition-all duration-300 cursor-pointer"
                             style="box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);">
                             <!-- Icon -->
-                        <div class="mx-auto mb-3 w-12 h-12 flex items-center justify-center rounded-full shadow-sm"
-                            style="border: 2px solid {{ $category->color }};">
+                            <div class="mx-auto mb-3 w-12 h-12 flex items-center justify-center rounded-full shadow-sm"
+                                style="border: 2px solid {{ $category->color }};">
                                 <img src="{{ asset('images/' . $category->image_path) }}" alt="{{ $category->name }}"
                                     class="w-6 h-6">
                             </div>
@@ -168,166 +168,232 @@
 
 
         <!-- Top Services Section -->
-        <section class="py-5 bg-gray-50">
-            <div class="max-w-7xl mx-auto px-4">
+        <section class="py-6 bg-gray-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-gray-800 font-normal text-2xl sm:text-3xl mb-6">Popular Services</h2>
 
-                <h2 style="color: #484745; font-weight:bold; font-size: 20px;">Popular Services</h2><br>
-
-                <!-- Clean Single Grid -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-
                     @foreach ($services->take(6) as $service)
                         <div
-                            class="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all overflow-hidden flex flex-col">
+                            class="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all flex flex-col overflow-hidden">
 
-                            <!-- Header Section -->
-                            <div class="p-4 pb-2">
-                                <div class="flex items-start justify-between">
+                            <!-- Service Image -->
+                            <a href="{{ route('student-services.show', $service) }}"
+                                class="relative block h-48 bg-gray-100 overflow-hidden group">
 
+                                @if ($service->image_path)
+                                    <img src="{{ asset('images/' . $service->image_path) }}"
+                                        alt="{{ $service->title }}"
+                                        class="w-full h-full object-cover hover:scale-105 transition-transform duration-300">
+                                @else
+                                    <div class="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+                                        No Image
+                                    </div>
+                                @endif
+
+                                <!-- Heart Icon -->
+                                <button type="button"
+                                    class="absolute top-4 right-6 text-gray-400 hover:text-red-500 transition-colors"
+                                    title="Add to favourites">
+                                    <svg class="w-9 h-9" fill="currentColor" viewBox="0 0 20 20">
+                                        <path
+                                            d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
+                                    </svg>
+                                </button>
+                            </a>
+
+
+                            <!-- Content -->
+                            <div class="p-4 flex flex-col flex-grow">
+                                <!-- Provider Info + Category Badge -->
+                                <div class="flex items-center justify-between pt-2 border-t border-gray-100">
+
+                                    <!-- Left: Avatar + Name + Verified -->
                                     <div class="flex items-center space-x-2">
-                                        <a href="{{ route('students.profile', $service->user) }}">
-                                            @if ($service->user->profile_photo_path)
-                                                <img src="{{ asset('storage/' . $service->user->profile_photo_path) }}"
-                                                    class="w-9 h-9 rounded-full object-cover ring-1 ring-gray-300">
-                                            @else
-                                                <div
-                                                    class="w-9 h-9 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
-                                                    {{ substr($service->user->name, 0, 1) }}
-                                                </div>
-                                            @endif
-                                        </a>
-
-                                        <div>
-                                            <a href="{{ route('students.profile', $service->user) }}"
-                                                class="font-medium text-gray-900 text-sm hover:text-indigo-600 transition hover:underline">
-                                                {{ Str::limit($service->user->name, 18) }}
-                                            </a>
-
-                                            <div class="flex items-center space-x-1 mt-0.5">
-                                                @if ($service->user->trust_badge)
-                                                    <span
-                                                        class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                                                        <svg class="w-2.5 h-2.5 mr-0.5" fill="currentColor"
-                                                            viewBox="0 0 20 20">
-                                                            <path fill-rule="evenodd"
-                                                                d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                                                clip-rule="evenodd"></path>
-                                                        </svg>
-                                                        Verified
-                                                    </span>
-                                                @endif
-
-                                                <!-- Rating -->
-                                                <div class="flex items-center">
-                                                    <div class="flex items-center">
-                                                        @for ($i = 1; $i <= 5; $i++)
-                                                            <svg class="w-2.5 h-2.5 {{ $i <= ($service->user->average_rating ?? 0) ? 'text-yellow-400' : 'text-gray-300' }}"
-                                                                fill="currentColor" viewBox="0 0 20 20">
-                                                                <path
-                                                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z">
-                                                                </path>
-                                                            </svg>
-                                                        @endfor
-                                                    </div>
-                                                    <span class="text-xs text-gray-500 ml-1">
-                                                        ({{ $service->user->reviews_count ?? 0 }})
-                                                    </span>
-                                                </div>
+                                        <!-- User Avatar -->
+                                        @if ($service->user->profile_photo_path)
+                                            <img src="{{ asset('storage/' . $service->user->profile_photo_path) }}"
+                                                class="w-9 h-9 rounded-full object-cover ring-1 ring-gray-300">
+                                        @else
+                                            <div
+                                                class="w-9 h-9 bg-gray-300 rounded-full flex items-center justify-center text-white text-xs">
+                                                {{ substr($service->user->name, 0, 1) }}
                                             </div>
+                                        @endif
 
-                                            <!-- Availability Badge -->
-                                            <span
-                                                class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold
-                                                    {{ $service->user->is_available ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
-                                                ● {{ $service->user->is_available ? 'Available' : 'Busy' }}
+                                        <!-- User Name + Verified Badge -->
+                                        <div class="flex items-center space-x-1">
+                                            <span class="font-medium text-[16px] text-[#2c2b29] font-semibold">
+                                                {{ Str::limit($service->user->name, 12) }}
                                             </span>
+
+                                            @if ($service->user->trust_badge)
+                                                <span
+                                                    class="inline-flex items-center px-1.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded">
+                                                    Verified
+                                                </span>
+                                            @endif
                                         </div>
                                     </div>
+
+                                    <!-- Right: Service Category Badge -->
+                                    @if ($service->category)
+                                        <span
+                                            class="inline-block px-2 py-0.5 text-xs rounded-full font-semibold flex-shrink-0"
+                                            style="border: 1px solid {{ $service->category->color }}; color: {{ $service->category->color }};">
+                                            {{ $service->category->name }}
+                                        </span>
+                                    @endif
+
                                 </div>
-                            </div>
 
-                            <!-- Content Section -->
-                            <div class="px-4 flex-grow">
 
+                                <!-- Title Below Provider Info -->
                                 <a href="{{ route('student-services.show', $service) }}"
-                                    class="block font-semibold text-upsi-dark text-sm mt-2 hover:text-indigo-600 hover:underline">
-                                    {{ Str::limit($service->title, 40) }}
+                                    class="mt-2 text-gray-900 font-semibold hover:text-indigo-600 line-clamp-2 block"
+                                    style="font-size: 16px;">
+                                    {{ Str::limit($service->title, 50) }}
                                 </a>
 
-                                <p class="text-xs text-gray-600 mt-1 line-clamp-2">
+
+                                <!-- Description -->
+                                <p class="line-clamp-2 mb-2" style="font-size: 16px; color:#484745;">
                                     {{ Str::limit($service->description, 70) }}
                                 </p>
 
-                                <!-- Category Tag -->
-                                @if ($service->category)
-                                    <div class="mt-2">
-                                        <span class="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs">
-                                            {{ $service->category->name }}
-                                        </span>
+                                <!-- Rating -->
+                                <div class="flex items-center mb-2">
+                                    <div class="flex items-center">
+                                        @for ($i = 1; $i <= 5; $i++)
+                                            <svg class="w-3 h-3 {{ $i <= ($service->user->average_rating ?? 0) ? 'text-yellow-400' : 'text-gray-300' }}"
+                                                fill="currentColor" viewBox="0 0 20 20">
+                                                <path
+                                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z">
+                                                </path>
+                                            </svg>
+                                        @endfor
                                     </div>
-                                @endif
+                                    <span
+                                        class="text-xs text-gray-500 ml-1">({{ $service->user->reviews_count ?? 0 }})</span>
+                                </div>
+
 
                                 <!-- Price -->
                                 @if ($service->suggested_price)
-                                    <div class="mt-3">
-                                        <span class="text-sm font-semibold text-gray-900">
-                                            RM {{ number_format($service->suggested_price, 2) }}
-                                        </span>
-                                        <span class="text-xs text-gray-500 ml-1">(suggested)</span>
+                                    <div class="text-gray-900 mb-2" style="font-size: 16px;">
+                                        From <strong>RM{{ number_format($service->suggested_price, 2) }}</strong>
                                     </div>
                                 @endif
-                            </div> <br>
-                            <!-- Action Button - Always at bottom -->
-                            <div class="px-4 pb-4 mt-auto">
-                                @if (auth()->check() && auth()->user()->role === 'community')
-                                    <div class="flex space-x-2">
-                                        @if ($service->status === 'available')
-                                            <a href="{{ route('chat.request', ['user' => $service->user->id, 'service' => $service->title]) }}"
-                                                class="flex-1 inline-flex items-center justify-center px-3 py-2.5 border border-transparent rounded-lg text-sm font-semibold text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors shadow-sm">
-                                                Contact Provider
-                                                <svg class="w-4 h-4 ml-1.5" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
-                                                    </path>
-                                                </svg>
-                                            </a>
-                                        @else
-                                            <button disabled
-                                                class="flex-1 inline-flex items-center justify-center px-3 py-2.5 border border-transparent rounded-lg text-sm font-semibold text-white bg-gray-400 cursor-not-allowed shadow-sm">
-                                                Service Unavailable
-                                            </button>
-                                        @endif
-                                        <a href="{{ route('students.profile', $service->user) }}"
-                                            class="px-3 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
-                                                </path>
-                                            </svg>
-                                        </a>
-                                    </div>
-                                @else
-                                    <a href="{{ route('students.profile', $service->user) }}"
-                                        class="w-full inline-flex items-center justify-center px-4 py-2.5 border border-transparent rounded-lg text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors group-hover:bg-indigo-700 shadow-sm">
-                                        View Profile
-                                        <svg class="w-4 h-4 ml-1.5" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M9 5l7 7-7 7"></path>
-                                        </svg>
-                                    </a>
-                                @endif
-                            </div>
 
+
+                                <!-- Action + Share -->
+                                <div class="mt-3 flex items-center justify-between space-x-2">
+
+                                    <!-- Request Service Button -->
+                                    <a href="{{ auth()->check() ? route('chat.request', ['user' => $service->user->id, 'service' => $service->title]) : route('login') }}"
+                                        class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-base font-medium rounded shadow transition duration-200">
+                                        {{ auth()->check() ? 'Request Service' : 'Request Service' }}
+                                    </a>
+
+                                    <!-- Share Modal -->
+                                    <div id="shareModal"
+                                        class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 z-50">
+                                        <div
+                                            class="bg-white rounded-xl shadow-xl w-80 md:w-96 p-6 transform scale-95 transition-transform duration-300">
+                                            <!-- Close Button -->
+                                            <button onclick="closeShareModal()"
+                                                class="absolute top-3 right-3 text-gray-400 hover:text-gray-600">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
+                                                    fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                                    stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
+
+                                            <!-- Header -->
+                                            <h3 class="text-xl font-semibold text-gray-800 mb-4 text-center">Share This
+                                                Service</h3>
+
+                                            <!-- Input + Copy -->
+                                            <div class="flex items-center border rounded-lg overflow-hidden mb-4">
+                                                <input type="text" id="shareLinkInput"
+                                                    class="flex-1 px-3 py-2 text-sm text-gray-700 focus:outline-none"
+                                                    readonly>
+                                                <button onclick="copyShareLink()"
+                                                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 text-sm font-medium transition-colors duration-200">
+                                                    Copy
+                                                </button>
+                                            </div>
+
+                                            <!-- Copy Feedback -->
+                                            <p id="copyMessage"
+                                                class="text-sm text-green-600 hidden text-center mb-2">Link copied!</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Example Share Button -->
+                                    <button type="button"
+                                        class="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-full transition"
+                                        title="Share Service" onclick="handleShare(this)"
+                                        data-url="{{ route('student-services.show', $service) }}"
+                                        data-guest="{{ auth()->guest() ? '1' : '0' }}">
+                                        <img src="{{ asset('images/share.png') }}" alt="Share" class="w-5 h-5">
+                                    </button>
+
+                                    <script>
+                                        function handleShare(button) {
+                                            const isGuest = button.dataset.guest === '1';
+                                            const url = button.dataset.url;
+
+                                            if (isGuest) {
+                                                window.location.href = "{{ route('login') }}";
+                                            } else {
+                                                const modal = document.getElementById('shareModal');
+                                                document.getElementById('shareLinkInput').value = url;
+
+                                                // Show modal with fade and scale
+                                                modal.classList.remove('opacity-0', 'pointer-events-none');
+                                                modal.querySelector('div').classList.remove('scale-95');
+                                                modal.querySelector('div').classList.add('scale-100');
+                                            }
+                                        }
+
+                                        function copyShareLink() {
+                                            const input = document.getElementById('shareLinkInput');
+                                            input.select();
+                                            input.setSelectionRange(0, 99999);
+                                            document.execCommand("copy");
+
+                                            const msg = document.getElementById('copyMessage');
+                                            msg.classList.remove('hidden');
+                                            setTimeout(() => msg.classList.add('hidden'), 2000);
+                                        }
+
+                                        function closeShareModal() {
+                                            const modal = document.getElementById('shareModal');
+                                            modal.classList.add('opacity-0', 'pointer-events-none');
+                                            modal.querySelector('div').classList.add('scale-95');
+                                            modal.querySelector('div').classList.remove('scale-100');
+                                        }
+                                    </script>
+
+
+
+
+
+
+                                </div>
+
+
+                            </div>
                         </div>
                     @endforeach
-
                 </div>
+
             </div>
         </section>
+
 
         <!-- Top Students Section -->
         <section id="stats" class="py-16 bg-gray-50">
