@@ -1,6 +1,7 @@
 <?php
 
-use App\Http\Controllers\PagesController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\HelpController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AvailabilityController;
 use App\Http\Controllers\ChatController;
@@ -26,16 +27,9 @@ use App\Http\Controllers\Admin\SuperAdminController;
 use Illuminate\Support\Facades\Route;
 
 
-// Homepage
-Route::get('/', [PagesController::class, 'home'])->name('home');
-
-// Services page
-Route::get('/services', [PagesController::class, 'services'])->name('services');
-Route::get('/services/{id}', [PagesController::class, 'show'])->name('services.show');
-
-// Search page
-Route::get('/search', [SearchController::class, 'index'])->name('search.index');
-
+Route::get('/', [HomeController::class, 'home'])->name('home');
+Route::get('/about', function () { return view('about'); })->name('about');
+Route::get('/help', function () {return view('help');})->name('help');
 
 Route::get('/dashboard', function () {
     return view('dashboard');

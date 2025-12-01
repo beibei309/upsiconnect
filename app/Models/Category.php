@@ -14,6 +14,8 @@ class Category extends Model
         'slug',
         'description',
         'is_active',
+        'image_path',
+        'color'
     ];
 
     public function services()

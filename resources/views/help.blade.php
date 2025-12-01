@@ -7,16 +7,16 @@
 
 <!-- FAQ ITEM -->
 <details class="faq-item p-4 border rounded-lg transition-all duration-300 hover:shadow-lg hover:scale-[1.02]">
-    <summary class="font-semibold cursor-pointer">Who can use UpsiConnect?</summary>
+    <summary class="font-semibold cursor-pointer">Who can use S2U?</summary>
     <p class="mt-2 text-gray-600">
-        UpsiConnect can be used by UPSI students (service providers), UPSI staff, and local community members.
+        S2U can be used by UPSI students (service providers), UPSI staff, and local community members.
     </p>
 </details>
 
 <details class="faq-item p-4 border rounded-lg transition-all duration-300 hover:shadow-lg hover:scale-[1.02]">
-    <summary class="font-semibold cursor-pointer">Is UpsiConnect free to use?</summary>
+    <summary class="font-semibold cursor-pointer">Is S2U free to use?</summary>
     <p class="mt-2 text-gray-600">
-        Yes. UpsiConnect is completely free with no hidden fees or commissions.
+        Yes. S2U is completely free with no hidden fees or commissions.
     </p>
 </details>
 
