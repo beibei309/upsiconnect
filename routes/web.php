@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\HelpController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AvailabilityController;
 use App\Http\Controllers\ChatController;
@@ -20,9 +22,10 @@ use App\Http\Controllers\Pages\SearchPageController;
 use App\Http\Controllers\Pages\AdminPageController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+
+Route::get('/', [HomeController::class, 'home'])->name('home');
+Route::get('/about', function () { return view('about'); })->name('about');
+Route::get('/help', function () {return view('help');})->name('help');
 
 Route::get('/dashboard', function () {
     return view('dashboard');

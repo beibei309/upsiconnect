@@ -1,302 +1,412 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'UpsiConnect') }} - Connect, Learn, Grow</title>
-    
+    <title>S2U - Student to Community</title>
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+
+
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    
+
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .card-hover { transition: all 0.3s ease; }
-        .card-hover:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        input::placeholder {
+            color: white;
+            opacity: 1;
+        }
+
+        select option {
+            border-radius: 10px;
+            color: #484745;
+            background-color: #F0F0F0;
+
+        }
     </style>
 </head>
+
 <body class="antialiased">
-    <div x-data="{ 
-        mobileMenuOpen: false, 
+    <div x-data="{
+        mobileMenuOpen: false,
         activeTab: 'students',
         stats: { students: 1250, services: 340, reviews: 890 },
         animateStats: false
     }" x-init="setTimeout(() => animateStats = true, 1000)">
-        
-        <!-- Navigation -->
-        <nav class="bg-white shadow-sm fixed w-full top-0 z-50">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between items-center h-16">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <h1 class="text-2xl font-bold text-indigo-600">UpsiConnect</h1>
-                        </div>
-                    </div>
-                    
-                    <div class="hidden md:block">
-                        <div class="ml-10 flex items-baseline space-x-4">
-                            <a href="#features" class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">Features</a>
-                            <a href="#how-it-works" class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">How It Works</a>
-                            <a href="#stats" class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">Community</a>
-                        </div>
-                    </div>
-                    
-                    <div class="hidden md:flex items-center space-x-4">
-                        @auth
-                            <a href="{{ route('dashboard') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">Dashboard</a>
-                        @else
-                            <a href="{{ route('login') }}" class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">Login</a>
-                            <a href="{{ route('register') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">Get Started</a>
-                        @endauth
-                    </div>
-                    
-                    <div class="md:hidden">
-                        <button @click="mobileMenuOpen = !mobileMenuOpen" class="text-gray-600 hover:text-indigo-600">
-                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Mobile menu -->
-            <div x-show="mobileMenuOpen" class="md:hidden bg-white border-t">
-                <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                    <a href="#features" class="text-gray-600 hover:text-indigo-600 block px-3 py-2 rounded-md text-base font-medium">Features</a>
-                    <a href="#how-it-works" class="text-gray-600 hover:text-indigo-600 block px-3 py-2 rounded-md text-base font-medium">How It Works</a>
-                    <a href="#stats" class="text-gray-600 hover:text-indigo-600 block px-3 py-2 rounded-md text-base font-medium">Community</a>
-                    @auth
-                        <a href="{{ route('dashboard') }}" class="bg-indigo-600 text-white block px-3 py-2 rounded-md text-base font-medium">Dashboard</a>
-                    @else
-                        <a href="{{ route('login') }}" class="text-gray-600 hover:text-indigo-600 block px-3 py-2 rounded-md text-base font-medium">Login</a>
-                        <a href="{{ route('register') }}" class="bg-indigo-600 text-white block px-3 py-2 rounded-md text-base font-medium">Get Started</a>
-                    @endauth
-                </div>
-            </div>
-        </nav>
+
+        {{-- Navigation bar --}}
+        @include('layouts.navbar')
+
 
         <!-- Hero Section -->
-        <section class="gradient-bg pt-20 pb-16 px-4 sm:px-6 lg:px-8">
-            <div class="max-w-7xl mx-auto">
-                <div class="text-center">
-                    <h1 class="text-4xl md:text-6xl font-bold text-white mb-6">
-                        Connect. Learn. <span class="text-upsi-gold">Grow Together.</span>
-                    </h1>
-                    <p class="text-xl md:text-2xl text-indigo-100 mb-8 max-w-3xl mx-auto">
-                        UpsiConnect is the premier platform connecting UPSI students with peer-to-peer services. 
-                        Find tutoring, design help, coding assistance, and more from your fellow students.
-                    </p>
-                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                        @auth
-                            <a href="{{ route('search.index') }}" class="bg-white text-indigo-600 px-8 py-4 rounded-lg font-semibold hover:bg-gray-50 transition transform hover:scale-105">
-                                Explore Services
-                            </a>
-                            <a href="{{ route('dashboard') }}" class="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-indigo-600 transition">
-                                Go to Dashboard
-                            </a>
-                        @else
-                            <a href="{{ route('register') }}" class="bg-white text-indigo-600 px-8 py-4 rounded-lg font-semibold hover:bg-gray-50 transition transform hover:scale-105">
-                                Join UpsiConnect
-                            </a>
-                            <a href="{{ route('search.index') }}" class="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-indigo-600 transition">
-                                Browse Services
-                            </a>
-                        @endauth
-                    </div>
+        <section class="relative min-h-screen flex items-center overflow-hidden pt-36">
+
+            <!-- Background video -->
+            <video autoplay muted loop playsinline
+                class="absolute inset-0 w-full h-full object-cover z-0 brightness-20">
+                <source src="{{ asset('videos/herobanner.mp4') }}" type="video/mp4">
+            </video>
+
+
+            <!-- Left-side dark overlay using gradient -->
+            <div class="absolute inset-0 z-10"
+                style="background: linear-gradient(to right, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);">
+            </div>
+
+            <!-- CONTENT -->
+            <div class="relative z-20 w-full max-w-6xl mx-auto px-0.2">
+                <h1
+                    style="color: white; 
+           font-family: 'Poppins', sans-serif; 
+           font-size: 50px;
+           font-weight: 700; 
+           max-width: 48rem;
+           line-height: 1.25; 
+            margin-bottom: 1.5rem; /* reduce spacing below */
+           margin-top: -50px;">
+                    UPSI student to community<br>
+                    <span style="color: #cd7a3f;">we've got you.</span>
+                </h1>
+
+                <!-- SEARCH BAR -->
+                <div class="w-full max-w-5xl">
+                    <form action="{{ route('search.index') }}" method="GET" class="w-full">
+                        <div class="relative">
+                            <input type="text" name="q" placeholder="Search for any service..."
+                                class="w-full py-4 pl-5 pr-14 rounded-xl text-lg shadow-lg focus:outline-none text-gray-900 placeholder-gray-400" />
+
+                            <!-- Search Icon -->
+                            <button class="absolute right-4 top-1/2 -translate-y-1/2">
+                                <div class=" w-12 h-12 rounded-xl shadow flex items-center justify-center"
+                                    style="background-color: #23221e;">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                </div>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Search idea -->
+                <div class="flex gap-5 mt-6 flex-wrap">
+                    <a
+                        class="bg-transparent border border-white hover:bg-white/10 px-8 py-2 rounded-md  text-white text-sm font-medium backdrop-blur transition cursor-pointer">
+                        iron baju →
+                    </a>
+                    <a
+                        class="bg-transparent border border-white hover:bg-white/10 px-8 py-2 rounded-md  text-white text-sm font-medium backdrop-blur transition cursor-pointer">
+                        video editing →
+                    </a>
+                    <a
+                        class="bg-transparent border border-white hover:bg-white/10 px-8 py-2 rounded-md  text-white text-sm font-medium backdrop-blur transition cursor-pointer">
+                        booth helper →
+                    </a>
+                    <a
+                        class="bg-transparent border border-white hover:bg-white/10 px-8 py-2 rounded-md  text-white text-sm font-medium backdrop-blur transition cursor-pointer">
+                        design poster →
+                    </a>
+                    <a
+                        class="bg-transparent border border-white hover:bg-white/10 px-8 py-2 rounded-md  text-white text-sm font-medium flex items-center gap-2 backdrop-blur transition cursor-pointer">
+                        pickup parcel →
+                    </a>
                 </div>
             </div>
         </section>
 
-        <!-- Stats Section -->
+
+        <section id="categories" class="py-16 bg-gray-50 ">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 text-center">
+
+                    @foreach ($categories as $category)
+                        <div class="group bg-white p-4 rounded-xl transform hover:-translate-y-1.5 transition-all duration-300 cursor-pointer"
+                            style="box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);">
+                            <!-- Icon -->
+                        <div class="mx-auto mb-3 w-12 h-12 flex items-center justify-center rounded-full shadow-sm"
+                            style="border: 2px solid {{ $category->color }};">
+                                <img src="{{ asset('images/' . $category->image_path) }}" alt="{{ $category->name }}"
+                                    class="w-6 h-6">
+                            </div>
+                            <!-- Name -->
+                            <div class="text-sm font-semibold text-gray-900" style="color: {{ $category->color }};">
+                                {{ $category->name }}
+                            </div>
+
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+
+
+
+        <!-- Top Services Section -->
+        <section class="py-5 bg-gray-50">
+            <div class="max-w-7xl mx-auto px-4">
+
+                <h2 style="color: #484745; font-weight:bold; font-size: 20px;">Popular Services</h2><br>
+
+                <!-- Clean Single Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                    @foreach ($services->take(6) as $service)
+                        <div
+                            class="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all overflow-hidden flex flex-col">
+
+                            <!-- Header Section -->
+                            <div class="p-4 pb-2">
+                                <div class="flex items-start justify-between">
+
+                                    <div class="flex items-center space-x-2">
+                                        <a href="{{ route('students.profile', $service->user) }}">
+                                            @if ($service->user->profile_photo_path)
+                                                <img src="{{ asset('storage/' . $service->user->profile_photo_path) }}"
+                                                    class="w-9 h-9 rounded-full object-cover ring-1 ring-gray-300">
+                                            @else
+                                                <div
+                                                    class="w-9 h-9 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                                                    {{ substr($service->user->name, 0, 1) }}
+                                                </div>
+                                            @endif
+                                        </a>
+
+                                        <div>
+                                            <a href="{{ route('students.profile', $service->user) }}"
+                                                class="font-medium text-gray-900 text-sm hover:text-indigo-600 transition hover:underline">
+                                                {{ Str::limit($service->user->name, 18) }}
+                                            </a>
+
+                                            <div class="flex items-center space-x-1 mt-0.5">
+                                                @if ($service->user->trust_badge)
+                                                    <span
+                                                        class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                                        <svg class="w-2.5 h-2.5 mr-0.5" fill="currentColor"
+                                                            viewBox="0 0 20 20">
+                                                            <path fill-rule="evenodd"
+                                                                d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                                clip-rule="evenodd"></path>
+                                                        </svg>
+                                                        Verified
+                                                    </span>
+                                                @endif
+
+                                                <!-- Rating -->
+                                                <div class="flex items-center">
+                                                    <div class="flex items-center">
+                                                        @for ($i = 1; $i <= 5; $i++)
+                                                            <svg class="w-2.5 h-2.5 {{ $i <= ($service->user->average_rating ?? 0) ? 'text-yellow-400' : 'text-gray-300' }}"
+                                                                fill="currentColor" viewBox="0 0 20 20">
+                                                                <path
+                                                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z">
+                                                                </path>
+                                                            </svg>
+                                                        @endfor
+                                                    </div>
+                                                    <span class="text-xs text-gray-500 ml-1">
+                                                        ({{ $service->user->reviews_count ?? 0 }})
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <!-- Availability Badge -->
+                                            <span
+                                                class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold
+                                                    {{ $service->user->is_available ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                                ● {{ $service->user->is_available ? 'Available' : 'Busy' }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Content Section -->
+                            <div class="px-4 flex-grow">
+
+                                <a href="{{ route('student-services.show', $service) }}"
+                                    class="block font-semibold text-upsi-dark text-sm mt-2 hover:text-indigo-600 hover:underline">
+                                    {{ Str::limit($service->title, 40) }}
+                                </a>
+
+                                <p class="text-xs text-gray-600 mt-1 line-clamp-2">
+                                    {{ Str::limit($service->description, 70) }}
+                                </p>
+
+                                <!-- Category Tag -->
+                                @if ($service->category)
+                                    <div class="mt-2">
+                                        <span class="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs">
+                                            {{ $service->category->name }}
+                                        </span>
+                                    </div>
+                                @endif
+
+                                <!-- Price -->
+                                @if ($service->suggested_price)
+                                    <div class="mt-3">
+                                        <span class="text-sm font-semibold text-gray-900">
+                                            RM {{ number_format($service->suggested_price, 2) }}
+                                        </span>
+                                        <span class="text-xs text-gray-500 ml-1">(suggested)</span>
+                                    </div>
+                                @endif
+                            </div> <br>
+                            <!-- Action Button - Always at bottom -->
+                            <div class="px-4 pb-4 mt-auto">
+                                @if (auth()->check() && auth()->user()->role === 'community')
+                                    <div class="flex space-x-2">
+                                        @if ($service->status === 'available')
+                                            <a href="{{ route('chat.request', ['user' => $service->user->id, 'service' => $service->title]) }}"
+                                                class="flex-1 inline-flex items-center justify-center px-3 py-2.5 border border-transparent rounded-lg text-sm font-semibold text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors shadow-sm">
+                                                Contact Provider
+                                                <svg class="w-4 h-4 ml-1.5" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
+                                                    </path>
+                                                </svg>
+                                            </a>
+                                        @else
+                                            <button disabled
+                                                class="flex-1 inline-flex items-center justify-center px-3 py-2.5 border border-transparent rounded-lg text-sm font-semibold text-white bg-gray-400 cursor-not-allowed shadow-sm">
+                                                Service Unavailable
+                                            </button>
+                                        @endif
+                                        <a href="{{ route('students.profile', $service->user) }}"
+                                            class="px-3 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
+                                                </path>
+                                            </svg>
+                                        </a>
+                                    </div>
+                                @else
+                                    <a href="{{ route('students.profile', $service->user) }}"
+                                        class="w-full inline-flex items-center justify-center px-4 py-2.5 border border-transparent rounded-lg text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors group-hover:bg-indigo-700 shadow-sm">
+                                        View Profile
+                                        <svg class="w-4 h-4 ml-1.5" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                    </a>
+                                @endif
+                            </div>
+
+                        </div>
+                    @endforeach
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Top Students Section -->
         <section id="stats" class="py-16 bg-gray-50">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-                    <div class="bg-white p-8 rounded-xl shadow-sm">
-                        <div class="text-4xl font-bold text-indigo-600 mb-2" x-text="animateStats ? stats.students : 0"></div>
-                        <div class="text-gray-600 font-medium">Active Students</div>
-                    </div>
-                    <div class="bg-white p-8 rounded-xl shadow-sm">
-                        <div class="text-4xl font-bold text-indigo-600 mb-2" x-text="animateStats ? stats.services : 0"></div>
-                        <div class="text-gray-600 font-medium">Services Available</div>
-                    </div>
-                    <div class="bg-white p-8 rounded-xl shadow-sm">
-                        <div class="text-4xl font-bold text-indigo-600 mb-2" x-text="animateStats ? stats.reviews : 0"></div>
-                        <div class="text-gray-600 font-medium">Positive Reviews</div>
-                    </div>
+                <h2 style="color: #484745; font-weight:bold; font-size: 20px;">Top Helper</h2>
+                <br>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 text-center">
+                    @foreach ($topStudents as $student)
+                        <div class="card rounded-xl shadow-md overflow-hidden mb-4">
+
+                            <div class="p-6 bg-gradient-to-r from-purple-500 to-purple-700 text-white text-center">
+                                <div
+                                    class="w-16 h-16 mx-auto rounded-full bg-white text-purple-600 flex items-center justify-center text-2xl font-bold">
+                                    {{ strtoupper(substr($student->name, 0, 1)) }}
+                                </div>
+
+                                <h2 class="mt-3 text-xl font-semibold">{{ $student->name }}</h2>
+                                <p class="text-sm opacity-80">Student Service Provider</p>
+                            </div>
+
+                            <div class="p-6 text-center">
+
+                                @if ($student->verified ?? true)
+                                    <span
+                                        class="inline-flex items-center px-3 py-1 text-sm border rounded-full text-blue-600 border-blue-600 mb-2">
+                                        ✅ Verified Student
+                                    </span>
+                                @endif
+
+                                <div class="mt-2">
+                                    <div class="flex justify-center text-gray-400 text-xl">
+                                        ★★★★★
+                                    </div>
+                                    <div class="text-lg font-bold" style="color: #484745;">
+                                        {{ number_format($student->average_rating ?? 0, 1) }}
+                                    </div>
+                                    <div class="text-gray-500 text-sm">
+                                        Based on {{ $student->reviews_count ?? 0 }} reviews
+                                    </div>
+                                </div>
+
+                                <div class="mt-3">
+                                    @if ($student->is_available)
+                                        <span
+                                            class="inline-flex items-center px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
+                                            ● Available
+                                        </span>
+                                    @else
+                                        <span
+                                            class="inline-flex items-center px-3 py-1 bg-gray-200 text-gray-600 rounded-full text-sm">
+                                            ● Not Available
+                                        </span>
+                                    @endif
+                                </div>
+
+                                <br>
+                                <a href="{{ route('students.profile', $service->user) }}"
+                                    class="w-full inline-flex items-center justify-center px-4 py-2.5 border border-transparent rounded-lg text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors group-hover:bg-indigo-700 shadow-sm">
+                                    View all {{ $student->services_count }} Services
+                                    <svg class="w-4 h-4 ml-1.5" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </a>
+
+                            </div>
+                        </div>
+                    @endforeach
+
                 </div>
             </div>
         </section>
 
-        <!-- Features Section -->
-        <section id="features" class="py-20 bg-white">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="text-center mb-16">
-                    <h2 class="text-3xl md:text-4xl font-bold text-upsi-dark mb-4">Why Choose UpsiConnect?</h2>
-                    <p class="text-xl text-upsi-text-primary max-w-2xl mx-auto">
-                        Built by students, for students. Our platform makes it easy to find help and offer your skills.
-                    </p>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="text-center p-8 card-hover bg-gray-50 rounded-xl">
-                        <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-xl font-semibold text-upsi-dark mb-4">Trusted Community</h3>
-                        <p class="text-upsi-text-primary">All users are verified UPSI students. Build trust through our rating and review system.</p>
-                    </div>
-                    
-                    <div class="text-center p-8 card-hover bg-gray-50 rounded-xl">
-                        <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-xl font-semibold text-upsi-dark mb-4">Instant Connections</h3>
-                        <p class="text-upsi-text-primary">Find help quickly with our smart search and instant messaging system.</p>
-                    </div>
-                    
-                    <div class="text-center p-8 card-hover bg-gray-50 rounded-xl">
-                        <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-xl font-semibold text-upsi-dark mb-4">Fair Pricing</h3>
-                        <p class="text-upsi-text-primary">Student-friendly rates with transparent pricing. No hidden fees or commissions.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- How It Works Section -->
-        <section id="how-it-works" class="py-20 bg-gray-50">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="text-center mb-16">
-                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">How UpsiConnect Works</h2>
-                    <p class="text-xl text-gray-600">Simple steps to connect with your peers</p>
-                </div>
-                
-                <!-- Tab Navigation -->
-                <div class="flex justify-center mb-12">
-                    <div class="bg-white p-1 rounded-lg shadow-sm">
-                        <button @click="activeTab = 'students'" 
-                                :class="activeTab === 'students' ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:text-indigo-600'"
-                                class="px-6 py-3 rounded-md font-medium transition">
-                            For Students Seeking Help
-                        </button>
-                        <button @click="activeTab = 'providers'" 
-                                :class="activeTab === 'providers' ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:text-indigo-600'"
-                                class="px-6 py-3 rounded-md font-medium transition">
-                            For Service Providers
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Tab Content -->
-                <div x-show="activeTab === 'students'" class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="text-center">
-                        <div class="w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">1</div>
-                        <h3 class="text-lg font-semibold mb-2">Search & Browse</h3>
-                        <p class="text-gray-600">Use our smart filters to find exactly what you need - tutoring, design, coding, and more.</p>
-                    </div>
-                    <div class="text-center">
-                        <div class="w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">2</div>
-                        <h3 class="text-lg font-semibold mb-2">Connect & Chat</h3>
-                        <p class="text-gray-600">Send a chat request to discuss your needs, timeline, and pricing with the service provider.</p>
-                    </div>
-                    <div class="text-center">
-                        <div class="w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">3</div>
-                        <h3 class="text-lg font-semibold mb-2">Learn & Review</h3>
-                        <p class="text-gray-600">Get the help you need and leave a review to help other students make informed decisions.</p>
-                    </div>
-                </div>
-                
-                <div x-show="activeTab === 'providers'" class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="text-center">
-                        <div class="w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">1</div>
-                        <h3 class="text-lg font-semibold mb-2">Create Your Profile</h3>
-                        <p class="text-gray-600">Set up your services, showcase your skills, and set your availability status.</p>
-                    </div>
-                    <div class="text-center">
-                        <div class="w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">2</div>
-                        <h3 class="text-lg font-semibold mb-2">Receive Requests</h3>
-                        <p class="text-gray-600">Get notified when students are interested in your services and start conversations.</p>
-                    </div>
-                    <div class="text-center">
-                        <div class="w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">3</div>
-                        <h3 class="text-lg font-semibold mb-2">Earn & Grow</h3>
-                        <p class="text-gray-600">Help fellow students while earning money and building your reputation in the community.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- CTA Section -->
-        <section class="py-20 gradient-bg">
-            <div class="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-                <h2 class="text-3xl md:text-4xl font-bold text-white mb-6">Ready to Join the Community?</h2>
-                <p class="text-xl text-indigo-100 mb-8">
-                    Whether you need help with your studies or want to share your skills, UpsiConnect is here for you.
-                </p>
-                @auth
-                    <a href="{{ route('dashboard') }}" class="bg-white text-indigo-600 px-8 py-4 rounded-lg font-semibold hover:bg-gray-50 transition transform hover:scale-105 inline-block">
-                        Go to Your Dashboard
-                    </a>
-                @else
-                    <a href="{{ route('register') }}" class="bg-white text-indigo-600 px-8 py-4 rounded-lg font-semibold hover:bg-gray-50 transition transform hover:scale-105 inline-block">
-                        Get Started Today
-                    </a>
-                @endauth
-            </div>
-        </section>
 
         <!-- Footer -->
-        <footer class="bg-gray-900 text-white py-12">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                    <div class="col-span-1 md:col-span-2">
-                        <h3 class="text-2xl font-bold mb-4">UpsiConnect</h3>
-                        <p class="text-gray-400 mb-4">
-                            Connecting UPSI students through peer-to-peer services. 
-                            Built by students, for students.
-                        </p>
-                    </div>
-                    <div>
-                        <h4 class="font-semibold mb-4">Quick Links</h4>
-                        <ul class="space-y-2 text-gray-400">
-                            <li><a href="{{ route('search.index') }}" class="hover:text-white transition">Browse Services</a></li>
-                            @auth
-                                <li><a href="{{ route('dashboard') }}" class="hover:text-white transition">Dashboard</a></li>
-                            @else
-                                <li><a href="{{ route('register') }}" class="hover:text-white transition">Sign Up</a></li>
-                                <li><a href="{{ route('login') }}" class="hover:text-white transition">Login</a></li>
-                            @endauth
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 class="font-semibold mb-4">Support</h4>
-                        <ul class="space-y-2 text-gray-400">
-                            <li><a href="{{ route('dashboard') }}" class="hover:text-white transition">Help Center</a></li>
-                            <li><a href="{{ route('dashboard') }}" class="hover:text-white transition">Contact Us</a></li>
-                            <li><a href="{{ route('dashboard') }}" class="hover:text-white transition">Community Guidelines</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-                    <p>&copy; {{ date('Y') }} UpsiConnect. Built with ❤️ for UPSI students.</p>
-                </div>
-            </div>
-        </footer>
+        @include('layouts.footer')
+
     </div>
 </body>
+
 </html>
