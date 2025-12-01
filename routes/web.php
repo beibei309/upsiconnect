@@ -19,6 +19,10 @@ use App\Http\Controllers\Admin\UserAdminController;
 use App\Http\Controllers\Pages\StudentPageController;
 use App\Http\Controllers\Pages\SearchPageController;
 use App\Http\Controllers\Pages\AdminPageController;
+use App\Http\Controllers\Admin\AdminAuthController;
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminStudentController;
+use App\Http\Controllers\Admin\SuperAdminController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -157,3 +161,63 @@ Route::get('/help', function () {
 Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
+
+/// Admin Login (public)
+Route::get('/admin/login', [AdminAuthController::class, 'showLogin'])
+    ->name('admin.login');
+
+Route::post('/admin/login', [AdminAuthController::class, 'login'])
+    ->name('admin.login.submit');
+
+
+Route::prefix('admin')->middleware('auth:admin')->group(function () {
+
+    // Dashboard
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])
+        ->name('admin.dashboard');
+
+    // Student Management
+     // Student List
+    Route::get('/students', [AdminStudentController::class, 'index'])->name('admin.students.index');
+
+    // Edit Student
+    Route::get('/students/{id}/edit', [AdminStudentController::class, 'edit'])->name('admin.students.edit');
+    Route::post('/students/{id}/update', [AdminStudentController::class, 'update'])->name('admin.students.update');
+
+    // NEW: Delete Student
+    Route::delete('/students/{id}', [AdminStudentController::class, 'destroy'])->name('admin.students.delete');
+
+    // NEW: Ban Student
+    Route::post('/students/{id}/ban', [AdminStudentController::class, 'ban'])->name('admin.students.ban');
+
+    // NEW: Unban Student
+    Route::post('/students/{id}/unban', [AdminStudentController::class, 'unban'])->name('admin.students.unban');
+
+    // Manage Admin Accounts
+    Route::get('/superadmin/admins/create', [SuperAdminController::class, 'create'])
+        ->name('admin.super.admins.create');
+
+    Route::get('/admins', [SuperAdminController::class, 'adminsIndex'])
+    ->name('admin.super.admins.index');
+
+Route::get('/admins/create', [SuperAdminController::class, 'create'])
+    ->name('admin.super.admins.create');
+
+Route::post('/admins/store', [SuperAdminController::class, 'store'])
+    ->name('admin.super.admins.store');
+
+Route::get('/admins/{id}/edit', [SuperAdminController::class, 'edit'])
+    ->name('admin.super.admins.edit');
+
+Route::post('/admins/{id}/update', [SuperAdminController::class, 'update'])
+    ->name('admin.super.admins.update');
+
+Route::delete('/admins/{id}', [SuperAdminController::class, 'destroy'])
+    ->name('admin.super.admins.delete');
+
+});
+
+Route::post('/admin/logout', [AdminAuthController::class, 'logout'])
+    ->name('admin.logout');
+
+    

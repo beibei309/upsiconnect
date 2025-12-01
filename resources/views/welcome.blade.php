@@ -40,26 +40,168 @@
                     <h1 class="text-4xl md:text-6xl font-bold text-white mb-6">
                         Connect. Learn. <span class="text-upsi-gold">Grow Together.</span>
                     </h1>
-                    <p class="text-xl md:text-2xl text-indigo-100 mb-8 max-w-3xl mx-auto">
-                        UpsiConnect is the premier platform connecting UPSI students with peer-to-peer services. 
-                        Find tutoring, design help, coding assistance, and more from your fellow students.
-                    </p>
-                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                        @auth
-                            <a href="{{ route('search.index') }}" class="bg-white text-indigo-600 px-8 py-4 rounded-lg font-semibold hover:bg-gray-50 transition transform hover:scale-105">
-                                Explore Services
-                            </a>
-                            <a href="{{ route('dashboard') }}" class="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-indigo-600 transition">
-                                Go to Dashboard
-                            </a>
-                        @else
-                            <a href="{{ route('register') }}" class="bg-white text-indigo-600 px-8 py-4 rounded-lg font-semibold hover:bg-gray-50 transition transform hover:scale-105">
-                                Join UpsiConnect
-                            </a>
-                            <a href="{{ route('search.index') }}" class="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-indigo-600 transition">
-                                Browse Services
-                            </a>
-                        @endauth
+
+                    <!-- Search and Filters -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8" x-data="{ showFilters: false }" style="color:#484745;">
+                        <!-- Search Bar -->
+                        <form method="GET" action="{{ route('search.index') }}" class="space-y-4" >
+                            <div class="flex flex-col lg:flex-row gap-4">
+                                <div class="flex-1">
+                                    <div class="relative">
+                                        <div
+                                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                            </svg>
+                                        </div>
+                                        <input type="text" name="q" value="{{ $q ?? '' }}"
+                                            placeholder="Search for services, skills, or student names..."
+                                            class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                    </div>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button type="button" @click="showFilters = !showFilters"
+                                        class="inline-flex items-center px-4 py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.707A1 1 0 013 7V4z">
+                                            </path>
+                                        </svg>
+                                        Filters
+                                    </button>
+                                    <button type="submit"
+                                        class="inline-flex items-center px-6 py-3 border border-transparent rounded-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                        Search
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Advanced Filters -->
+                            <div x-show="showFilters" x-transition:enter="transition ease-out duration-200"
+                                x-transition:enter-start="opacity-0 transform scale-95"
+                                x-transition:enter-end="opacity-100 transform scale-100"
+                                x-transition:leave="transition ease-in duration-150"
+                                x-transition:leave-start="opacity-100 transform scale-100"
+                                x-transition:leave-end="opacity-0 transform scale-95"
+                                class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-200">
+
+                                <!-- Category Filter -->
+                                <div>
+                                    <label class="block text-sm font-medium text-upsi-dark mb-2">Category</label>
+                                    <select name="category_id"
+                                        class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                        <option value="">All Categories</option>
+                                        @foreach ($categories as $category)
+                                            <option value="{{ $category->id }}"
+                                                {{ $category_id == $category->id ? 'selected' : '' }}>
+                                                {{ $category->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <!-- Rating Filter -->
+                                <div>
+                                    <label class="block text-sm font-medium text-upsi-dark mb-2">Minimum Rating</label>
+                                    <select name="min_rating"
+                                        class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                        <option value="">Any Rating</option>
+                                        <option value="4" {{ $min_rating == '4' ? 'selected' : '' }}>4+ Stars
+                                        </option>
+                                        <option value="3" {{ $min_rating == '3' ? 'selected' : '' }}>3+ Stars
+                                        </option>
+                                        <option value="2" {{ $min_rating == '2' ? 'selected' : '' }}>2+ Stars
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <!-- Availability Filter -->
+                                <div>
+                                    <label class="block text-sm font-medium text-upsi-dark mb-2">Availability</label>
+                                    <select name="available"
+                                        class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                        <option value="1" {{ $available == '1' ? 'selected' : '' }}>Available Now
+                                        </option>
+                                        <option value="">All Students</option>
+                                        <option value="0" {{ $available == '0' ? 'selected' : '' }}>Unavailable
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                        </form>
+
+                        <!-- Active Filters -->
+                        @if ($q || $category_id || $min_rating || ($available !== null && $available != '1'))
+                            <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-200">
+                                <span class="text-sm text-upsi-text-primary">Active filters:</span>
+
+                                @if ($q)
+                                    <span
+                                        class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                        Search: "{{ $q }}"
+                                        <a href="{{ route('search.index', array_filter(['category_id' => $category_id, 'min_rating' => $min_rating, 'available' => $available != '1' ? $available : null])) }}"
+                                            class="ml-1 text-indigo-600 hover:text-indigo-500">
+                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                                    clip-rule="evenodd"></path>
+                                            </svg>
+                                        </a>
+                                    </span>
+                                @endif
+
+                                @if ($category_id)
+                                    <span
+                                        class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        Category
+                                        <a href="{{ route('search.index', array_filter(['q' => $q, 'min_rating' => $min_rating, 'available' => $available != '1' ? $available : null])) }}"
+                                            class="ml-1 text-green-600 hover:text-green-500">
+                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                                    clip-rule="evenodd"></path>
+                                            </svg>
+                                        </a>
+                                    </span>
+                                @endif
+
+                                @if ($min_rating)
+                                    <span
+                                        class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        {{ $min_rating }}+ Stars
+                                        <a href="{{ route('search.index', array_filter(['q' => $q, 'category_id' => $category_id, 'available' => $available != '1' ? $available : null])) }}"
+                                            class="ml-1 text-yellow-600 hover:text-yellow-500">
+                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                                    clip-rule="evenodd"></path>
+                                            </svg>
+                                        </a>
+                                    </span>
+                                @endif
+
+                                @if ($available !== null && $available != '1')
+                                    <span
+                                        class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                        {{ $available ? 'Available' : 'Unavailable' }}
+                                        <a href="{{ route('search.index', array_filter(['q' => $q, 'category_id' => $category_id, 'min_rating' => $min_rating])) }}"
+                                            class="ml-1 text-purple-600 hover:text-purple-500">
+                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                                    clip-rule="evenodd"></path>
+                                            </svg>
+                                        </a>
+                                    </span>
+                                @endif
+
+                                <a href="{{ route('search.index') }}"
+                                    class="text-sm text-gray-500 hover:text-gray-700">Clear all</a>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>

@@ -134,5 +134,9 @@ class DatabaseSeeder extends Seeder
                 ]);
             }
         }
+
+        //admin 
+        $this->call(AdminSeeder::class);
+
     }
 }

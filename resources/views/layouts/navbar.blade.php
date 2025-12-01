@@ -9,6 +9,7 @@
                     
                     <div class="hidden md:block">
                         <div class="ml-10 flex items-baseline space-x-4">
+<<<<<<< HEAD
 
                             <a href="{{ route('welcome') }}"
                        class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">
@@ -25,6 +26,15 @@
                             <!--<a href="#features" class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">Home</a>
                             <a href="#how-it-works" class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">About Us</a>-->
                             <!--<a href="#stats" class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">Help</a>-->
+=======
+                            <a href="{{ route('welcome') }}"
+                                class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">
+                                Home
+                            </a>
+                            <a href="{{ route('about') }}"
+                                class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">About
+                                Us</a>
+>>>>>>> 53adc04 (Add admin login and dashboard)
                             <a href="{{ route('help') }}" 
                                 class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">
                             Help</a>
@@ -53,9 +63,14 @@
             <!-- Mobile menu -->
             <div x-show="mobileMenuOpen" class="md:hidden bg-white border-t">
                 <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                    <a href="#features" class="text-gray-600 hover:text-indigo-600 block px-3 py-2 rounded-md text-base font-medium">Home</a>
-                    <a href="#how-it-works" class="text-gray-600 hover:text-indigo-600 block px-3 py-2 rounded-md text-base font-medium">About Us</a>
-                    <a href="#stats" class="text-gray-600 hover:text-indigo-600 block px-3 py-2 rounded-md text-base font-medium">Help</a>
+                    <a href="{{ route('welcome') }}"
+                        class="text-gray-600 hover:text-indigo-600 block px-3 py-2 rounded-md text-base font-medium">Home</a>
+                    <a href="{{ route('about') }}"
+                        class="text-gray-600 hover:text-indigo-600 block px-3 py-2 rounded-md text-base font-medium">About
+                        Us</a>
+                    <a href="{{ route('help') }}"
+                        class="text-gray-600 hover:text-indigo-600 block px-3 py-2 rounded-md text-base font-medium">Help
+                    </a>
                     @auth
                         <a href="{{ route('dashboard') }}" class="bg-indigo-600 text-white block px-3 py-2 rounded-md text-base font-medium">Dashboard</a>
                     @else
