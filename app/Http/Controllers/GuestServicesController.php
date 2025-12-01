@@ -40,4 +40,11 @@ $query = StudentService::with(['student', 'category'])
             'sort' => $sort,
         ]);
     }
+
+     public function show($id)
+    {
+        $service = StudentService::with(['student', 'category'])->findOrFail($id);
+
+        return view('guest.detail-service', compact('service'));
+    }
 }

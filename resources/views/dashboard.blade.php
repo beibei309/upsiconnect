@@ -1,4 +1,69 @@
-<x-app-layout>
+
+    
+    
+    <!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>S2U - Student to Community</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+
+
+    <!-- Scripts -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        input::placeholder {
+            color: white;
+            opacity: 1;
+        }
+
+        select option {
+            border-radius: 10px;
+            color: #484745;
+            background-color: #F0F0F0;
+
+        }
+    </style>
+</head>
+
+<body class="antialiased">
+    <div x-data="{
+        mobileMenuOpen: false,
+        activeTab: 'students',
+        stats: { students: 1250, services: 340, reviews: 890 },
+        animateStats: false
+    }" x-init="setTimeout(() => animateStats = true, 1000)">
+
+        {{-- Navigation bar --}}
+        @include('layouts.navbar')
+    
     <div class="py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Welcome Header -->
@@ -493,4 +558,11 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+
+        <!-- Footer -->
+        @include('layouts.footer')
+
+    </div>
+</body>
+
+</html>

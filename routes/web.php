@@ -27,8 +27,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'home'])->name('home');
 Route::get('/about', function () { return view('about'); })->name('about');
 Route::get('/help', function () {return view('help');})->name('help');
-Route::get('/guest/services', [GuestServicesController::class, 'index'])
-    ->name('guest.services');
+Route::get('/guest/services', [GuestServicesController::class, 'index'])->name('guest.services');
+Route::get('/guest/services/{id}', [GuestServicesController::class, 'show'])->name('guest.detail-service');
+
 
 // When a guest clicks “Request Service”
 Route::get('/guest/request/{id}', function () {

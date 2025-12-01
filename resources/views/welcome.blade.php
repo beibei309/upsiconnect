@@ -343,20 +343,14 @@
 
                                     <script>
                                         function handleShare(button) {
-                                            const isGuest = button.dataset.guest === '1';
                                             const url = button.dataset.url;
 
-                                            if (isGuest) {
-                                                window.location.href = "{{ route('login') }}";
-                                            } else {
-                                                const modal = document.getElementById('shareModal');
-                                                document.getElementById('shareLinkInput').value = url;
+                                            const modal = document.getElementById('shareModal');
+                                            document.getElementById('shareLinkInput').value = url;
 
-                                                // Show modal with fade and scale
-                                                modal.classList.remove('opacity-0', 'pointer-events-none');
-                                                modal.querySelector('div').classList.remove('scale-95');
-                                                modal.querySelector('div').classList.add('scale-100');
-                                            }
+                                            modal.classList.remove('opacity-0', 'pointer-events-none');
+                                            modal.querySelector('div').classList.remove('scale-95');
+                                            modal.querySelector('div').classList.add('scale-100');
                                         }
 
                                         function copyShareLink() {
@@ -377,11 +371,6 @@
                                             modal.querySelector('div').classList.remove('scale-100');
                                         }
                                     </script>
-
-
-
-
-
 
                                 </div>
 
