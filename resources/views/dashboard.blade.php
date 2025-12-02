@@ -1,7 +1,4 @@
-
-    
-    
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
@@ -63,501 +60,376 @@
 
         {{-- Navigation bar --}}
         @include('layouts.navbar')
-    
-    <div class="py-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <!-- Welcome Header -->
-            <div class="mb-8">
-                <h1 class="text-3xl font-bold text-gray-900">Welcome back, {{ Auth::user()->name }}!</h1>
-                @if(Auth::user()->role === 'student')
-                    <p class="text-gray-600 mt-2">Manage your services and connect with the community</p>
-                @elseif(Auth::user()->role === 'community')
-                    <p class="text-gray-600 mt-2">Discover talented UPSI students and their services</p>
-                @else
-                    <p class="text-gray-600 mt-2">Manage your profile and platform activities</p>
-                @endif
-            </div>
 
-            @if(Auth::user()->role === 'student')
-                <!-- STUDENT DASHBOARD -->
-                <!-- Quick Stats -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <!-- Availability Status -->
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <h3 class="text-lg font-semibold text-gray-900">Availability Status</h3>
-                                <p class="text-sm text-gray-600 mt-1">Toggle your availability for new requests</p>
-                            </div>
-                            <div class="flex items-center">
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" 
-                                           id="availability-toggle"
-                                           class="sr-only peer" 
-                                           {{ Auth::user()->is_available ? 'checked' : '' }}
-                                           x-data="{ 
-                                               toggle() {
-                                                   this.updating = true;
-                                                   fetch('/availability/toggle', {
-                                                       method: 'POST',
-                                                       headers: {
-                                                           'Content-Type': 'application/json',
-                                                           'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content')
-                                                       }
-                                                   })
-                                                   .then(response => response.json())
-                                   .then(data => {
-                                       this.updating = false;
-                                       if (data.is_available !== undefined) {
-                                           // Update status text and reload to show updated status
-                                           window.location.reload();
-                                       } else if (data.error) {
-                                           alert(data.error);
-                                           // Revert the toggle
-                                           this.$el.checked = !this.$el.checked;
-                                       }
-                                   })
-                                                   .catch(error => {
-                                                       this.updating = false;
-                                                       console.error('Error:', error);
-                                                   });
-                                               }
-                                           }"
-                                           @change="toggle()">
-                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                                </label>
-                            </div>
-                        </div>
-                        <div class="mt-4">
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {{ Auth::user()->is_available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                <div class="w-2 h-2 rounded-full {{ Auth::user()->is_available ? 'bg-green-400' : 'bg-red-400' }} mr-2"></div>
-                                {{ Auth::user()->is_available ? 'Available' : 'Unavailable' }}
-                            </span>
-                        </div>
-                    </div>
 
-                    <!-- My Services -->
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <h3 class="text-lg font-semibold text-gray-900">My Services</h3>
-                                <p class="text-sm text-gray-600 mt-1">Services you're offering</p>
-                            </div>
-                            <div class="text-2xl font-bold text-indigo-600">{{ Auth::user()->studentServices()->count() }}</div>
-                        </div>
-                        <div class="mt-4">
-                            <a href="{{ route('services.manage') }}" class="text-sm text-indigo-600 hover:text-indigo-500 font-medium">
-                                Manage Services →
-                            </a>
-                        </div>
-                    </div>
+        <!-- Hero Section -->
+    <section class="relative bg-gradient-to-r from-green-400 to-blue-500 pt-16 pb-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Welcome Header -->
+        <div class="text-center mb-6">
+            <h1 class="text-3xl font-extrabold text-white">Welcome back, {{ Auth::user()->name }}!</h1>
+            <p class="text-base text-white mt-2">Discover talented UPSI students and their services</p>
+        </div>
 
-                    <!-- Recent Activity -->
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <h3 class="text-lg font-semibold text-gray-900">Recent Activity</h3>
-                                <p class="text-sm text-gray-600 mt-1">Your latest interactions</p>
-                            </div>
-                            <div class="text-2xl font-bold text-green-600">{{ Auth::user()->chatRequestsReceived()->where('status', 'pending')->count() }}</div>
-                        </div>
-                        <div class="mt-4">
-                            <p class="text-sm text-gray-500">Pending chat requests</p>
-                        </div>
-                    </div>
-                </div>
+        <!-- Search Bar Section -->
+        <div class="w-full max-w-3xl mx-auto">
+            <form action="{{ route('search.index') }}" method="GET" class="w-full">
+                <div class="relative">
+                    <input type="text" name="q" placeholder="Search for any service..."
+                        class="w-full py-3 pl-5 pr-12 rounded-xl text-lg shadow-md focus:outline-none text-gray-900 placeholder-gray-400" />
 
-                <!-- Student Quick Actions with Add Service -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <a href="{{ route('services.create') }}" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow group">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center group-hover:bg-indigo-200 transition-colors">
-                                    <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                            <div class="ml-4">
-                                <h3 class="text-sm font-medium text-gray-900">Add Service</h3>
-                                <p class="text-sm text-gray-500">Create a new service</p>
-                            </div>
-                        </div>
-                    </a>
-
-                    <a href="{{ route('services.manage') }}" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow group">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors">
-                                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                            <div class="ml-4">
-                                <h3 class="text-sm font-medium text-gray-900">Manage Services</h3>
-                                <p class="text-sm text-gray-500">Edit existing services</p>
-                            </div>
-                        </div>
-                    </a>
-
-                    <a href="{{ route('chat.index') }}" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow group">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                            <div class="ml-4">
-                                <h3 class="text-sm font-medium text-gray-900">Messages</h3>
-                                <p class="text-sm text-gray-500">Chat with community</p>
-                            </div>
-                        </div>
-                    </a>
-
-                    <a href="{{ route('profile.edit') }}" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow group">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center group-hover:bg-yellow-200 transition-colors">
-                                    <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                            <div class="ml-4">
-                                <h3 class="text-sm font-medium text-gray-900">My Profile</h3>
-                                <p class="text-sm text-gray-500">Update information</p>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-
-            @elseif(Auth::user()->role === 'community')
-                <!-- COMMUNITY DASHBOARD -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <!-- Verification Status -->
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <h3 class="text-lg font-semibold text-gray-900">Verification Status</h3>
-                                <p class="text-sm text-gray-600 mt-1">Your account verification</p>
-                            </div>
-                            <div class="text-2xl">
-                                @if(Auth::user()->isVerifiedPublic())
-                                    <span class="text-green-500">✓</span>
-                                @else
-                                    <span class="text-yellow-500">⏳</span>
-                                @endif
-                            </div>
-                        </div>
-                        <div class="mt-4">
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
-                                {{ Auth::user()->isVerifiedPublic() ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
-                                {{ Auth::user()->trust_badge }}
-                            </span>
-                        </div>
-                    </div>
-
-                    <!-- Available Students -->
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <h3 class="text-lg font-semibold text-gray-900">Available Students</h3>
-                                <p class="text-sm text-gray-600 mt-1">Students ready to help</p>
-                            </div>
-                            <div class="text-2xl font-bold text-indigo-600">{{ \App\Models\User::where('role', 'student')->where('is_available', true)->count() }}</div>
-                        </div>
-                        <div class="mt-4">
-                            <a href="{{ route('search.index') }}" class="text-sm text-indigo-600 hover:text-indigo-500 font-medium">
-                                Browse Students →
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- My Requests -->
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <h3 class="text-lg font-semibold text-gray-900">My Requests</h3>
-                                <p class="text-sm text-gray-600 mt-1">Chat requests sent</p>
-                            </div>
-                            <div class="text-2xl font-bold text-green-600">{{ Auth::user()->chatRequestsSent()->count() }}</div>
-                        </div>
-                        <div class="mt-4">
-                            <p class="text-sm text-gray-500">Total requests sent</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Community Quick Actions with Apply for Services -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <a href="{{ route('search.index') }}" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow group">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center group-hover:bg-indigo-200 transition-colors">
-                                    <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                            <div class="ml-4">
-                                <h3 class="text-sm font-medium text-gray-900">Browse Services</h3>
-                                <p class="text-sm text-gray-500">Find student services</p>
-                            </div>
-                        </div>
-                    </a>
-
-                    <a href="{{ route('services.apply') }}" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow group">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors">
-                                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                            <div class="ml-4">
-                                <h3 class="text-sm font-medium text-gray-900">Apply for Services</h3>
-                                <p class="text-sm text-gray-500">Request student help</p>
-                            </div>
-                        </div>
-                    </a>
-
-                    <a href="{{ route('chat.index') }}" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow group">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                            <div class="ml-4">
-                                <h3 class="text-sm font-medium text-gray-900">Messages</h3>
-                                <p class="text-sm text-gray-500">Chat with students</p>
-                            </div>
-                        </div>
-                    </a>
-
-                    <a href="{{ route('profile.edit') }}" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow group">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center group-hover:bg-yellow-200 transition-colors">
-                                    <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                            <div class="ml-4">
-                                <h3 class="text-sm font-medium text-gray-900">My Profile</h3>
-                                <p class="text-sm text-gray-500">Update information</p>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-
-                @if(!Auth::user()->isVerifiedPublic())
-                <!-- Verification Notice -->
-                <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-6 mb-8">
-                    <div class="flex items-start">
-                        <div class="flex-shrink-0">
-                            <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    <!-- Search Icon -->
+                    <button class="absolute right-4 top-1/2 transform -translate-y-1/2">
+                        <div class="w-10 h-10 rounded-xl shadow flex items-center justify-center bg-gray-800">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                             </svg>
                         </div>
-                        <div class="ml-3">
-                            <h3 class="text-sm font-medium text-yellow-800">Account Verification Required</h3>
-                            <p class="text-sm text-yellow-700 mt-1">Complete your account verification to access all features and connect with students.</p>
-                            <div class="mt-3">
-                                <a href="{{ route('onboarding.community.verify') }}" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-yellow-800 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
-                                    Complete Verification
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                    </button>
                 </div>
-                @endif
+            </form>
+        </div>
 
-                <!-- Featured Services Section -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-                    <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-xl font-semibold text-gray-900">Featured Services</h2>
-                        <a href="{{ route('search.index') }}" class="text-sm text-indigo-600 hover:text-indigo-500 font-medium">
-                            View All →
-                        </a>
-                    </div>
+        <!-- Suggested Search Ideas -->
+        <div class="flex gap-4 mt-6 justify-center flex-wrap">
+            <a class="bg-transparent border border-white hover:bg-white/10 px-6 py-2 rounded-md text-white text-sm font-medium backdrop-blur transition cursor-pointer">
+                iron baju →
+            </a>
+            <a class="bg-transparent border border-white hover:bg-white/10 px-6 py-2 rounded-md text-white text-sm font-medium backdrop-blur transition cursor-pointer">
+                video editing →
+            </a>
+            <a class="bg-transparent border border-white hover:bg-white/10 px-6 py-2 rounded-md text-white text-sm font-medium backdrop-blur transition cursor-pointer">
+                booth helper →
+            </a>
+            <a class="bg-transparent border border-white hover:bg-white/10 px-6 py-2 rounded-md text-white text-sm font-medium backdrop-blur transition cursor-pointer">
+                design poster →
+            </a>
+            <a class="bg-transparent border border-white hover:bg-white/10 px-6 py-2 rounded-md text-white text-sm font-medium flex items-center gap-2 backdrop-blur transition cursor-pointer">
+                pickup parcel →
+            </a>
+        </div>
+    </div>
+</section>
 
-                    @php
-                        $featuredServices = \App\Models\StudentService::with(['student', 'category'])
-                            ->where('is_active', true)
-                            ->whereHas('student', function($query) {
-                                $query->where('is_available', true)->where('role', 'student');
-                            })
-                            ->inRandomOrder()
-                            ->limit(6)
-                            ->get();
-                    @endphp
 
-                    @if($featuredServices->count() > 0)
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            @foreach($featuredServices as $service)
-                                <div class="border border-gray-200 rounded-lg p-4 hover:border-indigo-300 transition-colors">
-                                    <div class="flex items-start justify-between mb-3">
-                                        <div class="flex-1">
-                                            <h3 class="font-medium text-gray-900 mb-1">{{ $service->title }}</h3>
-                                            <p class="text-sm text-gray-600 mb-2">by {{ $service->student->name }}</p>
-                                            @if($service->category)
-                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                                                    {{ $service->category->name }}
+
+        <section id="categories" class="py-16 bg-gray-50 ">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 text-center">
+
+                    @foreach ($categories as $category)
+                        <div class="group bg-white p-4 rounded-xl transform hover:-translate-y-1.5 transition-all duration-300 cursor-pointer"
+                            style="box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);">
+                            <!-- Icon -->
+                            <div class="mx-auto mb-3 w-12 h-12 flex items-center justify-center rounded-full shadow-sm"
+                                style="border: 2px solid {{ $category->color }};">
+                                <img src="{{ asset('images/' . $category->image_path) }}" alt="{{ $category->name }}"
+                                    class="w-6 h-6">
+                            </div>
+                            <!-- Name -->
+                            <div class="text-sm font-semibold text-gray-900" style="color: {{ $category->color }};">
+                                {{ $category->name }}
+                            </div>
+
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+
+
+
+        <!-- Top Services Section -->
+        <section class="py-6 bg-gray-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-gray-800 font-normal text-2xl sm:text-3xl mb-6">Popular Services</h2>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    @foreach ($services->take(6) as $service)
+                        <div
+                            class="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all flex flex-col overflow-hidden">
+
+                            <!-- Service Image -->
+                            <a href="{{ route('student-services.show', $service) }}"
+                                class="relative block h-48 bg-gray-100 overflow-hidden group">
+
+                                @if ($service->image_path)
+                                    <img src="{{ asset('images/' . $service->image_path) }}"
+                                        alt="{{ $service->title }}"
+                                        class="w-full h-full object-cover hover:scale-105 transition-transform duration-300">
+                                @else
+                                    <div class="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+                                        No Image
+                                    </div>
+                                @endif
+
+                                <!-- Heart Icon -->
+                                <button type="button"
+                                    class="absolute top-4 right-6 text-gray-400 hover:text-red-500 transition-colors"
+                                    title="Add to favourites">
+                                    <svg class="w-9 h-9" fill="currentColor" viewBox="0 0 20 20">
+                                        <path
+                                            d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
+                                    </svg>
+                                </button>
+                            </a>
+
+
+                            <!-- Content -->
+                            <div class="p-4 flex flex-col flex-grow">
+                                <!-- Provider Info + Category Badge -->
+                                <div class="flex items-center justify-between pt-2 border-t border-gray-100">
+
+                                    <!-- Left: Avatar + Name + Verified -->
+                                    <div class="flex items-center space-x-2">
+                                        <!-- User Avatar -->
+                                        @if ($service->user->profile_photo_path)
+                                            <img src="{{ asset('storage/' . $service->user->profile_photo_path) }}"
+                                                class="w-9 h-9 rounded-full object-cover ring-1 ring-gray-300">
+                                        @else
+                                            <div
+                                                class="w-9 h-9 bg-gray-300 rounded-full flex items-center justify-center text-white text-xs">
+                                                {{ substr($service->user->name, 0, 1) }}
+                                            </div>
+                                        @endif
+
+                                        <!-- User Name + Verified Badge -->
+                                        <div class="flex items-center space-x-1">
+                                            <span class="font-medium text-[16px] text-[#2c2b29] font-semibold">
+                                                {{ Str::limit($service->user->name, 12) }}
+                                            </span>
+
+                                            @if ($service->user->trust_badge)
+                                                <span
+                                                    class="inline-flex items-center px-1.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded">
+                                                    Verified
                                                 </span>
                                             @endif
                                         </div>
-                                        @if($service->suggested_price)
-                                            <div class="text-right">
-                                                <span class="text-lg font-semibold text-green-600">RM {{ number_format($service->suggested_price, 2) }}</span>
-                                            </div>
-                                        @endif
                                     </div>
-                                    
-                                    @if($service->description)
-                                        <p class="text-sm text-gray-600 mb-4 line-clamp-2">{{ Str::limit($service->description, 100) }}</p>
+
+                                    <!-- Right: Service Category Badge -->
+                                    @if ($service->category)
+                                        <span
+                                            class="inline-block px-2 py-0.5 text-xs rounded-full font-semibold flex-shrink-0"
+                                            style="border: 1px solid {{ $service->category->color }}; color: {{ $service->category->color }};">
+                                            {{ $service->category->name }}
+                                        </span>
                                     @endif
 
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center space-x-2">
-                                            <div class="flex items-center">
-                                                @for($i = 1; $i <= 5; $i++)
-                                                    <svg class="w-4 h-4 {{ $i <= ($service->student->average_rating ?? 0) ? 'text-yellow-400' : 'text-gray-300' }}" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                                                    </svg>
-                                                @endfor
-                                                <span class="text-sm text-gray-500 ml-1">({{ $service->student->reviewsReceived->count() }})</span>
+                                </div>
+
+
+                                <!-- Title Below Provider Info -->
+                                <a href="{{ route('student-services.show', $service) }}"
+                                    class="mt-2 text-gray-900 font-semibold hover:text-indigo-600 line-clamp-2 block"
+                                    style="font-size: 16px;">
+                                    {{ Str::limit($service->title, 50) }}
+                                </a>
+
+
+                                <!-- Description -->
+                                <p class="line-clamp-2 mb-2" style="font-size: 16px; color:#484745;">
+                                    {{ Str::limit($service->description, 70) }}
+                                </p>
+
+                                <!-- Rating -->
+                                <div class="flex items-center mb-2">
+                                    <div class="flex items-center">
+                                        @for ($i = 1; $i <= 5; $i++)
+                                            <svg class="w-3 h-3 {{ $i <= ($service->user->average_rating ?? 0) ? 'text-yellow-400' : 'text-gray-300' }}"
+                                                fill="currentColor" viewBox="0 0 20 20">
+                                                <path
+                                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z">
+                                                </path>
+                                            </svg>
+                                        @endfor
+                                    </div>
+                                    <span
+                                        class="text-xs text-gray-500 ml-1">({{ $service->user->reviews_count ?? 0 }})</span>
+                                </div>
+
+
+                                <!-- Price -->
+                                @if ($service->suggested_price)
+                                    <div class="text-gray-900 mb-2" style="font-size: 16px;">
+                                        From <strong>RM{{ number_format($service->suggested_price, 2) }}</strong>
+                                    </div>
+                                @endif
+
+
+                                <!-- Action + Share -->
+                                <div class="mt-3 flex items-center justify-between space-x-2">
+
+                                    <!-- Request Service Button -->
+                                    <a href="{{ auth()->check() ? route('chat.request', ['user' => $service->user->id, 'service' => $service->title]) : route('login') }}"
+                                        class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-base font-medium rounded shadow transition duration-200">
+                                        {{ auth()->check() ? 'Request Service' : 'Request Service' }}
+                                    </a>
+
+                                    <!-- Share Modal -->
+                                    <div id="shareModal"
+                                        class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 z-50">
+                                        <div
+                                            class="bg-white rounded-xl shadow-xl w-80 md:w-96 p-6 transform scale-95 transition-transform duration-300">
+                                            <!-- Close Button -->
+                                            <button onclick="closeShareModal()"
+                                                class="absolute top-3 right-3 text-gray-400 hover:text-gray-600">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
+                                                    fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                                    stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
+
+                                            <!-- Header -->
+                                            <h3 class="text-xl font-semibold text-gray-800 mb-4 text-center">Share This
+                                                Service</h3>
+
+                                            <!-- Input + Copy -->
+                                            <div class="flex items-center border rounded-lg overflow-hidden mb-4">
+                                                <input type="text" id="shareLinkInput"
+                                                    class="flex-1 px-3 py-2 text-sm text-gray-700 focus:outline-none"
+                                                    readonly>
+                                                <button onclick="copyShareLink()"
+                                                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 text-sm font-medium transition-colors duration-200">
+                                                    Copy
+                                                </button>
                                             </div>
+
+                                            <!-- Copy Feedback -->
+                                            <p id="copyMessage"
+                                                class="text-sm text-green-600 hidden text-center mb-2">Link copied!</p>
                                         </div>
-                                        <a href="{{ route('students.profile', $service->student) }}" class="text-sm text-indigo-600 hover:text-indigo-500 font-medium">
-                                            View Profile
-                                        </a>
+                                    </div>
+
+                                    <!-- Example Share Button -->
+                                    <button type="button"
+                                        class="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-full transition"
+                                        title="Share Service" onclick="handleShare(this)"
+                                        data-url="{{ route('student-services.show', $service) }}"
+                                        data-guest="{{ auth()->guest() ? '1' : '0' }}">
+                                        <img src="{{ asset('images/share.png') }}" alt="Share" class="w-5 h-5">
+                                    </button>
+
+                                    <script>
+                                        function handleShare(button) {
+                                            const url = button.dataset.url;
+
+                                            const modal = document.getElementById('shareModal');
+                                            document.getElementById('shareLinkInput').value = url;
+
+                                            modal.classList.remove('opacity-0', 'pointer-events-none');
+                                            modal.querySelector('div').classList.remove('scale-95');
+                                            modal.querySelector('div').classList.add('scale-100');
+                                        }
+
+                                        function copyShareLink() {
+                                            const input = document.getElementById('shareLinkInput');
+                                            input.select();
+                                            input.setSelectionRange(0, 99999);
+                                            document.execCommand("copy");
+
+                                            const msg = document.getElementById('copyMessage');
+                                            msg.classList.remove('hidden');
+                                            setTimeout(() => msg.classList.add('hidden'), 2000);
+                                        }
+
+                                        function closeShareModal() {
+                                            const modal = document.getElementById('shareModal');
+                                            modal.classList.add('opacity-0', 'pointer-events-none');
+                                            modal.querySelector('div').classList.add('scale-95');
+                                            modal.querySelector('div').classList.remove('scale-100');
+                                        }
+                                    </script>
+
+                                </div>
+
+
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- Top Students Section -->
+        <section id="stats" class="py-16 bg-gray-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 style="color: #484745; font-weight:bold; font-size: 20px;">Top Helper</h2>
+                <br>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 text-center">
+                    @foreach ($topStudents as $student)
+                        <div class="card rounded-xl shadow-md overflow-hidden mb-4">
+
+                            <div class="p-6 bg-gradient-to-r from-purple-500 to-purple-700 text-white text-center">
+                                <div
+                                    class="w-16 h-16 mx-auto rounded-full bg-white text-purple-600 flex items-center justify-center text-2xl font-bold">
+                                    {{ strtoupper(substr($student->name, 0, 1)) }}
+                                </div>
+
+                                <h2 class="mt-3 text-xl font-semibold">{{ $student->name }}</h2>
+                                <p class="text-sm opacity-80">Student Service Provider</p>
+                            </div>
+
+                            <div class="p-6 text-center">
+
+                                @if ($student->verified ?? true)
+                                    <span
+                                        class="inline-flex items-center px-3 py-1 text-sm border rounded-full text-blue-600 border-blue-600 mb-2">
+                                        ✅ Verified Student
+                                    </span>
+                                @endif
+
+                                <div class="mt-2">
+                                    <div class="flex justify-center text-gray-400 text-xl">
+                                        ★★★★★
+                                    </div>
+                                    <div class="text-lg font-bold" style="color: #484745;">
+                                        {{ number_format($student->average_rating ?? 0, 1) }}
+                                    </div>
+                                    <div class="text-gray-500 text-sm">
+                                        Based on {{ $student->reviews_count ?? 0 }} reviews
                                     </div>
                                 </div>
-                            @endforeach
-                        </div>
-                    @else
-                        <div class="text-center py-8">
-                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                            </svg>
-                            <h3 class="mt-2 text-sm font-medium text-gray-900">No services available</h3>
-                            <p class="mt-1 text-sm text-gray-500">Check back later for new services from students.</p>
-                        </div>
-                    @endif
-                </div>
 
-            @else
-                <!-- ADMIN/STAFF DASHBOARD -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                        <h3 class="text-lg font-semibold text-gray-900">Pending Verifications</h3>
-                        <div class="text-2xl font-bold text-yellow-600 mt-2">
-                            {{ \App\Models\User::where('verification_status', 'pending')->count() }}
-                        </div>
-                        <a href="{{ route('admin.verifications.page') }}" class="text-sm text-indigo-600 hover:text-indigo-500 font-medium mt-2 inline-block">
-                            Review →
-                        </a>
-                    </div>
+                                <div class="mt-3">
+                                    @if ($student->is_available)
+                                        <span
+                                            class="inline-flex items-center px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
+                                            ● Available
+                                        </span>
+                                    @else
+                                        <span
+                                            class="inline-flex items-center px-3 py-1 bg-gray-200 text-gray-600 rounded-full text-sm">
+                                            ● Not Available
+                                        </span>
+                                    @endif
+                                </div>
 
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                        <h3 class="text-lg font-semibold text-gray-900">Open Reports</h3>
-                        <div class="text-2xl font-bold text-red-600 mt-2">
-                            {{ \App\Models\Report::where('status', 'open')->count() }}
-                        </div>
-                        <a href="{{ route('admin.reports.page') }}" class="text-sm text-indigo-600 hover:text-indigo-500 font-medium mt-2 inline-block">
-                            Review →
-                        </a>
-                    </div>
+                                <br>
+                                <a href="{{ route('students.profile', $service->user) }}"
+                                    class="w-full inline-flex items-center justify-center px-4 py-2.5 border border-transparent rounded-lg text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors group-hover:bg-indigo-700 shadow-sm">
+                                    View all {{ $student->services_count }} Services
+                                    <svg class="w-4 h-4 ml-1.5" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </a>
 
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                        <h3 class="text-lg font-semibold text-gray-900">Total Users</h3>
-                        <div class="text-2xl font-bold text-green-600 mt-2">
-                            {{ \App\Models\User::count() }}
-                        </div>
-                    </div>
-                </div>
-            @endif
-
-            <!-- Recent Activity Section (Common for all roles) -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-xl font-semibold text-gray-900">Recent Activity</h2>
-                </div>
-
-                <div class="space-y-4">
-                    <!-- Activity Item -->
-                    <div class="flex items-start space-x-3">
-                        <div class="flex-shrink-0">
-                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                                </svg>
                             </div>
                         </div>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-sm text-gray-900">
-                                <span class="font-medium">Profile updated</span>
-                            </p>
-                            <p class="text-sm text-gray-500">You updated your profile information</p>
-                            <p class="text-xs text-gray-400 mt-1">2 hours ago</p>
-                        </div>
-                    </div>
+                    @endforeach
 
-                    @if(Auth::user()->role === 'student')
-                    <!-- Activity Item for Students -->
-                    <div class="flex items-start space-x-3">
-                        <div class="flex-shrink-0">
-                            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                                </svg>
-                            </div>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-sm text-gray-900">
-                                <span class="font-medium">New chat request</span>
-                            </p>
-                            <p class="text-sm text-gray-500">Someone wants to connect with you</p>
-                            <p class="text-xs text-gray-400 mt-1">1 day ago</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start space-x-3">
-                        <div class="flex-shrink-0">
-                            <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
-                                <svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
-                                </svg>
-                            </div>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-sm text-gray-900">
-                                <span class="font-medium">New review received</span>
-                            </p>
-                            <p class="text-sm text-gray-500">You received a 5-star review for your service</p>
-                            <p class="text-xs text-gray-400 mt-1">3 days ago</p>
-                        </div>
-                    </div>
-                    @endif
-                </div>
-
-                <!-- View All Activity -->
-                <div class="mt-6 text-center">
-                    <a href="{{ route('dashboard') }}" class="text-sm text-indigo-600 hover:text-indigo-500 font-medium">
-                        View all activity →
-                    </a>
                 </div>
             </div>
-        </div>
-    </div>
+        </section>
+
 
         <!-- Footer -->
         @include('layouts.footer')

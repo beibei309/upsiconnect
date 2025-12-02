@@ -3,7 +3,7 @@
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\HelpController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\GuestServicesController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AvailabilityController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ChatRequestController;
@@ -27,8 +27,11 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'home'])->name('home');
 Route::get('/about', function () { return view('about'); })->name('about');
 Route::get('/help', function () {return view('help');})->name('help');
-Route::get('/guest/services', [GuestServicesController::class, 'index'])->name('guest.services');
-Route::get('/guest/services/{id}', [GuestServicesController::class, 'show'])->name('guest.detail-service');
+// Route::get('/guest/services', [GuestServicesController::class, 'index'])->name('guest.services');
+Route::get('/services', [StudentServiceController::class, 'index'])->name('services.index');
+Route::get('/services/{id}', [StudentServiceController::class, 'details'])->name('services.details');
+
+
 
 
 // When a guest clicks “Request Service”
@@ -36,10 +39,10 @@ Route::get('/guest/request/{id}', function () {
     return redirect()->route('login');
 })->name('guest.request');
 
-
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// after login
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 // Legal pages
 Route::get('/terms', function () {

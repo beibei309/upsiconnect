@@ -51,7 +51,6 @@ class SearchController extends Controller
 
         $services = $query->get();
 
-        // Attach derived fields for convenience
         $result = $services->map(function ($svc) {
             $student = $svc->student;
             return [

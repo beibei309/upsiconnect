@@ -4,37 +4,57 @@ namespace App\Http\Controllers;
 
 use App\Models\StudentService;
 use App\Models\User;
+use App\Models\Category;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class StudentServiceController extends Controller
 {
 
-    public function store(Request $request): JsonResponse
-    {
-        $user = $request->user();
-        if (!$user || $user->role !== 'student') {
-            return response()->json(['error' => 'Only authenticated students can create services.'], 403);
-        }
+  public function index(Request $request)
+{
+    $q = $request->string('q')->toString();
+    $category_id = $request->category_id;
+    $sort = $request->sort ?? 'newest';
 
-        $data = $request->validate([
-            'title' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'suggested_price' => ['nullable', 'numeric', 'min:0'],
-            'category_id' => ['nullable', 'exists:categories,id'],
-        ]);
+    $query = StudentService::with(['student', 'category'])
+        ->where('status', 'available'); // assuming status field is there, you can modify accordingly
 
-        $service = StudentService::create([
-            'user_id' => $user->id,
-            'category_id' => $data['category_id'] ?? null,
-            'title' => $data['title'],
-            'description' => $data['description'] ?? null,
-            'suggested_price' => $data['suggested_price'] ?? null,
-            'is_active' => true,
-        ]);
-
-        return response()->json(['service' => $service], 201);
+    // Search filter
+    if ($q) {
+        $query->where(function ($sub) use ($q) {
+            $sub->where('title', 'like', "%$q%")
+                ->orWhere('description', 'like', "%$q%");
+        });
     }
+
+    // Category filter
+    if ($category_id) {
+        $query->where('category_id', $category_id);
+    }
+
+    // Sorting
+    if ($sort == 'newest') {
+        $query->orderBy('created_at', 'desc');
+    } elseif ($sort == 'oldest') {
+        $query->orderBy('created_at', 'asc');
+    } elseif ($sort == 'price_low') {
+        $query->orderBy('suggested_price', 'asc');
+    } elseif ($sort == 'price_high') {
+        $query->orderBy('suggested_price', 'desc');
+    }
+
+    // Fetch the services
+    $services = $query->get();
+
+    // Return to the view (similar to what was done in GuestServicesController)
+    return view('services.index', [
+        'services' => $services,
+        'categories' => Category::all(),
+        'category_id' => $category_id,
+        'sort' => $sort,
+    ]);
+}
 
     public function update(Request $request, StudentService $service): JsonResponse
     {
@@ -140,4 +160,14 @@ class StudentServiceController extends Controller
             'viewer' => $viewer,
         ]);
     }
+
+    public function details($id)
+{
+    // Fetch the service by ID, including its related student and category
+    $service = StudentService::with(['student', 'category'])->findOrFail($id);
+
+    // Return the view with the service data
+    return view('services.details', compact('service'));
+}
+
 }

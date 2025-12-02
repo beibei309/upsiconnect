@@ -86,7 +86,7 @@
 
                 <!-- Find Services Link -->
                 <li class="inline-flex items-center">
-                    <a href="{{ route('guest.services') }}"
+                    <a href="{{ route('services.index') }}"
                         class="hover:text-green-600 hover:underline flex items-center gap-1">
                         Find Services
                     </a>
