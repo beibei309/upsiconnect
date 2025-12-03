@@ -11,29 +11,34 @@
     <!-- STAT CARDS -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-10">
 
-        <!-- CARD -->
-        <div class="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition border border-gray-100">
-            <p class="text-gray-500 font-medium">Total Students</p>
-            <p class="text-5xl font-bold text-blue-600 mt-2">{{ $totalStudents }}</p>
-        </div>
+        <!-- CARD: Total Students -->
+    <a href="{{ route('admin.students.index') }}"
+       class="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl hover:scale-[1.02] transition border border-gray-100 block">
+        <p class="text-gray-500 font-medium">Total Students</p>
+        <p class="text-5xl font-bold text-blue-600 mt-2">{{ $totalStudents }}</p>
+    </a>
 
-        <!-- CARD -->
-        <div class="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition border border-gray-100">
-            <p class="text-gray-500 font-medium">Total Community Users</p>
-            <p class="text-5xl font-bold text-purple-600 mt-2">{{ $totalCommunityUsers }}</p>
-        </div>
+    <!-- CARD: Total Community Users -->
+    <a href="#"
+       class="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl hover:scale-[1.02] transition border border-gray-100 block">
+        <p class="text-gray-500 font-medium">Total Community Users</p>
+        <p class="text-5xl font-bold text-purple-600 mt-2">{{ $totalCommunityUsers }}</p>
+    </a>
 
-        <!-- CARD -->
-        <div class="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition border border-gray-100">
-            <p class="text-gray-500 font-medium">Total Services</p>
-            <p class="text-5xl font-bold text-pink-600 mt-2">{{ $totalServices }}</p>
-        </div>
+    <!-- CARD: Total Services -->
+    <a href="#"
+       class="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl hover:scale-[1.02] transition border border-gray-100 block">
+        <p class="text-gray-500 font-medium">Total Services</p>
+        <p class="text-5xl font-bold text-pink-600 mt-2">{{ $totalServices }}</p>
+    </a>
 
-        <!-- CARD -->
-        <div class="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition border border-gray-100">
-            <p class="text-gray-500 font-medium">Pending Requests</p>
-            <p class="text-5xl font-bold text-yellow-600 mt-2">{{ $pendingRequests }}</p>
-        </div>
+    <!-- CARD: Pending Requests -->
+    <a href="#"
+       class="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl hover:scale-[1.02] transition border border-gray-100 block">
+        <p class="text-gray-500 font-medium">Pending Requests</p>
+        <p class="text-5xl font-bold text-yellow-600 mt-2">{{ $pendingRequests }}</p>
+    </a>
+
     </div>
 
     <!-- CHARTS -->
@@ -61,46 +66,38 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+    const monthLabels = [
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    ];
 
-    // Student Registration Chart (Line)
-    new Chart(document.getElementById('studentChart'), {
+    // Convert PHP → JS safely
+    const studentData = @json(array_values($studentsPerMonth));
+    const serviceData = @json(array_values($servicesPerMonth));
+
+    // LINE CHART (Students)
+    new Chart(document.getElementById('studentChart').getContext('2d'), {
         type: 'line',
         data: {
-            labels: months,
+            labels: monthLabels,
             datasets: [{
-                label: 'Students',
-                data: @json($studentMonthly),,
-                borderColor: '#2563eb',
-                backgroundColor: 'rgba(37, 99, 235, 0.15)',
-                borderWidth: 3,
-                tension: 0.4,
-                pointBorderWidth: 3,
-                pointRadius: 5,
+                label: "Students Registered",
+                data: studentData,
+                fill: true,
+                tension: 0.3
             }]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { display: false } }
         }
     });
 
-    // Service Count Chart (Bar)
-    new Chart(document.getElementById('serviceChart'), {
+    // BAR CHART (Services)
+    new Chart(document.getElementById('serviceChart').getContext('2d'), {
         type: 'bar',
         data: {
-            labels: months,
+            labels: monthLabels,
             datasets: [{
-                label: 'Services',
-                data: [8, 12, 9, 16, 20, 18],
-                backgroundColor: '#9333ea',
-                borderRadius: 10,
-                barThickness: 35
+                label: "Services Created",
+                data: serviceData
             }]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { display: false } }
         }
     });
 </script>

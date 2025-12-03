@@ -175,10 +175,10 @@ Route::get('/admin/login', [AdminAuthController::class, 'showLogin'])
 
 Route::post('/admin/login', [AdminAuthController::class, 'login'])
     ->name('admin.login.submit');
-
-
-Route::prefix('admin')->middleware('auth:admin')->group(function () {
-
+    
+    // Protected Admin Routes
+    Route::middleware(['auth:admin', 'prevent-back-history'])->prefix('admin')->group(function () {
+    
     // Dashboard
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])
         ->name('admin.dashboard');
@@ -189,7 +189,7 @@ Route::prefix('admin')->middleware('auth:admin')->group(function () {
 
     // Edit Student
     Route::get('/students/{id}/edit', [AdminStudentController::class, 'edit'])->name('admin.students.edit');
-    Route::post('/students/{id}/update', [AdminStudentController::class, 'update'])->name('admin.students.update');
+    Route::put('/students/{id}/update', [AdminStudentController::class, 'update'])->name('admin.students.update');
 
     // NEW: Delete Student
     Route::delete('/students/{id}', [AdminStudentController::class, 'destroy'])->name('admin.students.delete');

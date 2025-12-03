@@ -5,7 +5,7 @@
     <h1 class="text-3xl font-bold mb-4">Manage Students</h1>
 
     <!-- Search -->
-    <form class="mb-4">
+    <form class="mb-4" method="GET">
         <input type="text" name="search" placeholder="Search student..."
                class="p-2 border rounded w-1/3" value="{{ request('search') }}">
         <button class="px-4 py-2 bg-blue-600 text-white rounded">Search</button>

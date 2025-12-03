@@ -30,9 +30,14 @@ class AdminAuthController extends Controller
         return back()->with('error', 'Invalid credentials.');
     }
 
-    public function logout()
-    {
-        Auth::guard('admin')->logout();
-        return redirect()->route('admin.login');
-    }
+    public function logout(Request $request)
+{
+    Auth::guard('admin')->logout();   // Logout admin guard
+
+    $request->session()->invalidate();     // Destroy session
+    $request->session()->regenerateToken(); // Prevent CSRF issues
+
+    return redirect('/admin/login');       // Redirect to login page
+}
+
 }
