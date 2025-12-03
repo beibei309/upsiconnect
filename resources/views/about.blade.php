@@ -199,11 +199,11 @@
                         @endauth
                     </div>
 
-                    <!-- Right: Image Placeholder -->
+                    <!-- Right: Image -->
                     <div>
-                        <div class="hero-image-placeholder">
-                            <span>Student Image Here</span>
-                        </div>
+                        <img src="{{ asset('images/smile.jpg') }}" 
+                            alt="UPSI Student" 
+                            class="rounded-full w-full max-w-md mx-auto aspect-square object-cover shadow-lg">
                     </div>
                 </div>
 
@@ -227,160 +227,137 @@
             </div>
         </section>
 
-        <!-- How It Works Section -->
-        <section class="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
-            <div class="max-w-6xl mx-auto">
-                <h2 class="section-title">How S2U Works</h2>
-
+        <!-- How It Works Section / Why Choose Us -->
+        <section class="py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+            <!-- Background Image with Overlay -->
+            <div class="absolute inset-0 z-0">
+                <img src="{{ asset('images/background_about1.jpg') }}" 
+                     alt="Background" 
+                     class="w-full h-full object-cover opacity-90">
+                <div class="absolute inset-0 bg-gradient-to-r from-indigo-500/30 to-purple-500/30"></div>
+            </div>
+            
+            <!-- Content -->
+            <div class="max-w-6xl mx-auto relative z-10">
+                <h2 class="section-title text-white">Why Choose Us?</h2>
+                <p class="section-subtitle text-white/90">
+                    Built by students, for students. Our platform makes it easy to find help and offer your skills.
+                </p>
+                
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-                    <div class="bg-white rounded-lg shadow-sm p-8 text-center">
+                    <div class="bg-white/95 backdrop-blur-sm rounded-lg shadow-lg p-8 text-center hover:bg-white transition-all">
                         <div class="mb-6">
-                            <svg class="w-16 h-16 mx-auto text-indigo-600" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                                </path>
+                            <svg class="w-16 h-16 mx-auto text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
                             </svg>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-3">Explore Verified Service Listings</h3>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">Trusted Community</h3>
                         <p class="text-gray-600 leading-relaxed">
-                            All of S2U's services are thoroughly screened to ensure they are legitimate. When you log
-                            in, you'll only find high-quality opportunities from verified UPSI students—no scams, junk
-                            listings, or unreliable providers.
+                            All users are verified UPSI students. Build trust through our rating and review system.
                         </p>
                     </div>
-
-                    <div class="bg-white rounded-lg shadow-sm p-8 text-center">
+                    
+                    <div class="bg-white/95 backdrop-blur-sm rounded-lg shadow-lg p-8 text-center hover:bg-white transition-all">
                         <div class="mb-6">
-                            <svg class="w-16 h-16 mx-auto text-indigo-600" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            <svg class="w-16 h-16 mx-auto text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                             </svg>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-3">Search Smarter, Connect Faster</h3>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">Instant Connections</h3>
                         <p class="text-gray-600 leading-relaxed">
-                            Use advanced search filters to find services that match your needs, schedule, and budget.
-                            Save searches, track requests, and follow providers to stay updated on new services.
+                            Find help quickly with our smart search and instant messaging system.
                         </p>
                     </div>
-
-                    <div class="bg-white rounded-lg shadow-sm p-8 text-center">
+                    
+                    <div class="bg-white/95 backdrop-blur-sm rounded-lg shadow-lg p-8 text-center hover:bg-white transition-all">
                         <div class="mb-6">
-                            <svg class="w-16 h-16 mx-auto text-indigo-600" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
-                                </path>
+                            <svg class="w-16 h-16 mx-auto text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
                             </svg>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-3">Access Student Support & Resources</h3>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">Fair Pricing</h3>
                         <p class="text-gray-600 leading-relaxed">
-                            Get guidance with tutorials, guides, articles, and more, all designed to help you get the
-                            most out of our platform and succeed academically.
+                            Student-friendly rates with transparent pricing. No hidden fees or commissions.
                         </p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Benefits Section -->
-        <section class="py-20 px-4 sm:px-6 lg:px-8 bg-white">
-            <div class="max-w-6xl mx-auto">
+         <!-- Benefits Section -->
+        <section class="py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+            <!-- Background Image with Overlay -->
+            <div class="absolute inset-0 z-0">
+                <img src="{{ asset('images/background_about2.jpg') }}" 
+                     alt="Background" 
+                     class="w-full h-full object-cover opacity-95">
+                <div class="absolute inset-0 bg-white/70"></div>
+            </div>
+            
+            <!-- Content -->
+            <div class="max-w-6xl mx-auto relative z-10">
                 <h2 class="section-title">Benefits of Using S2U</h2>
-
-                <div class="text-center mb-12">
-                    @auth
-                        <a href="{{ route('dashboard') }}" class="btn-primary">
-                            Get Started
-                        </a>
-                    @else
-                        <a href="{{ route('register') }}" class="btn-primary">
-                            Get Started
-                        </a>
-                    @endauth
-                </div>
-
+                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="feature-box">
+                    <div class="bg-white/90 backdrop-blur-sm rounded-lg shadow-lg p-6 hover:bg-white transition-all">
                         <div class="flex items-start gap-4">
-                            <div
-                                class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                             </div>
                             <div>
                                 <h3 class="text-xl font-bold text-gray-900 mb-2">High-Quality Student Services</h3>
                                 <p class="text-gray-600 leading-relaxed">
-                                    We help students find professional peer-to-peer services in 50+ categories, from
-                                    academic tutoring to creative design, coding to language help, all within the UPSI
-                                    community.
+                                    We help students find professional peer-to-peer services in 50+ categories, from academic tutoring to creative design, coding to language help, all within the UPSI community.
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    <div class="feature-box">
+                    <div class="bg-white/90 backdrop-blur-sm rounded-lg shadow-lg p-6 hover:bg-white transition-all">
                         <div class="flex items-start gap-4">
-                            <div
-                                class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                 </svg>
                             </div>
                             <div>
-                                <h3 class="text-xl font-bold text-gray-900 mb-2">Every Service & Provider Verified for
-                                    You</h3>
+                                <h3 class="text-xl font-bold text-gray-900 mb-2">Every Service & Provider Verified for You</h3>
                                 <p class="text-gray-600 leading-relaxed">
-                                    Our expert team verifies and screens the best service providers and provides
-                                    information on each student to help you decide whether to connect.
+                                    Our expert team verifies and screens the best service providers and provides information on each student to help you decide whether to connect.
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    <div class="feature-box">
+                    <div class="bg-white/90 backdrop-blur-sm rounded-lg shadow-lg p-6 hover:bg-white transition-all">
                         <div class="flex items-start gap-4">
-                            <div
-                                class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                                 </svg>
                             </div>
                             <div>
                                 <h3 class="text-xl font-bold text-gray-900 mb-2">High-Quality Support & Resources</h3>
                                 <p class="text-gray-600 leading-relaxed">
-                                    When it comes to S2U's services, we offer great resources to provide support,
-                                    guidance, and tools so you can find the right service and succeed academically, and
-                                    that includes student support you can talk to.
+                                    When it comes to S2U's services, we offer great resources to provide support, guidance, and tools so you can find the right service and succeed academically, and that includes student support you can talk to.
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    <div class="feature-box">
+                    <div class="bg-white/90 backdrop-blur-sm rounded-lg shadow-lg p-6 hover:bg-white transition-all">
                         <div class="flex items-start gap-4">
-                            <div
-                                class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1">
-                                    </path>
+                            <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
                                 </svg>
                             </div>
                             <div>
                                 <h3 class="text-xl font-bold text-gray-900 mb-2">No-Risk Satisfaction Guarantee</h3>
                                 <p class="text-gray-600 leading-relaxed">
-                                    We want our users to be happy with our service. Student-friendly rates with
-                                    transparent pricing. No hidden fees or commissions. It's that easy.
+                                    We want our users to be happy with our service. Student-friendly rates with transparent pricing. No hidden fees or commissions. It's that easy.
                                 </p>
                             </div>
                         </div>
