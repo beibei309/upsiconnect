@@ -47,9 +47,9 @@ class ChatRequestController extends Controller
                 return response()->json(['error' => 'Authentication required.'], 401);
             }
 
-            if (!($requester->isVerifiedPublic() || $requester->isVerifiedStaff())) {
-                return response()->json(['error' => 'Only verified users may request to chat.'], 403);
-            }
+            // if (!($requester->isVerifiedPublic() || $requester->isVerifiedStaff())) {
+            //     return response()->json(['error' => 'Only verified users may request to chat.'], 403);
+            // }
 
             $chatRequest = ChatRequest::create([
                 'requester_id' => $requester->id,

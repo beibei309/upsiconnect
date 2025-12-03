@@ -66,6 +66,7 @@
     <section class="relative bg-gradient-to-r from-green-400 to-blue-500 pt-16 pb-8">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Welcome Header -->
+        <br>
         <div class="text-center mb-6">
             <h1 class="text-3xl font-extrabold text-white">Welcome back, {{ Auth::user()->name }}!</h1>
             <p class="text-base text-white mt-2">Discover talented UPSI students and their services</p>
