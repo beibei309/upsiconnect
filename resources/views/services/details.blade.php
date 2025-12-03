@@ -78,7 +78,8 @@
             <ol class="inline-flex items-center space-x-1 text-sm text-gray-700">
                 <!-- Home Link -->
                 <li class="inline-flex items-center">
-                    <a href="{{ route('home') }}" class="hover:text-green-600 hover:underline flex items-center gap-1">
+                    <a href="{{ route('welcome') }}"
+                        class="hover:text-green-600 hover:underline flex items-center gap-1">
                         <i class="fa-solid fa-house"></i> Home
                     </a>
                     <span class="mx-2 text-gray-400">/</span>
@@ -135,14 +136,14 @@
                             Verified
                         </span>
                     @endif
-                                                 <!-- Availability Status -->
-                                        <span
-                                            class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium {{ $service->user->is_available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                            <div
-                                                class="w-1 h-1 rounded-full {{ $service->user->is_available ? 'bg-green-400' : 'bg-red-400' }} mr-1">
-                                            </div>
-                                            {{ $service->user->is_available ? 'Available' : 'Busy' }}
-                                        </span>
+                    <!-- Availability Status -->
+                    <span
+                        class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium {{ $service->user->is_available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                        <div
+                            class="w-1 h-1 rounded-full {{ $service->user->is_available ? 'bg-green-400' : 'bg-red-400' }} mr-1">
+                        </div>
+                        {{ $service->user->is_available ? 'Available' : 'Busy' }}
+                    </span>
 
                     <div class="text-sm text-gray-500 flex items-center gap-3">
                         <span class="flex items-center gap-1"><i class="fa-solid fa-star text-yellow-400"></i>
@@ -396,10 +397,26 @@
                     </button>
 
                     <!-- Chat Button -->
-                    <button
-                        class="mt-4 w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-3 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center gap-2">
-                        <i class="fas fa-comment-alt text-lg"></i> Contact me
-                    </button>
+                    @auth
+                        @if ($viewer->id !== $provider->id && $viewer->isCommunity() && $provider->isStudent())
+                            <a href="{{ route('chat.request', ['user' => $provider->id]) }}">
+                                <button
+                                    class="mt-4 w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-3 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center gap-2
+                {{ !$provider->is_available ? 'cursor-not-allowed opacity-50' : '' }}"
+                                    {{ !$provider->is_available ? 'disabled' : '' }}>
+                                    <i class="fas fa-comment-alt text-lg"></i>
+                                    {{ $provider->is_available ? 'Contact me' : 'Currently Unavailable' }}
+                                </button>
+                            </a>
+                        @endif
+                    @else
+                        <a href="{{ route('login') }}">
+                            <button
+                                class="mt-4 w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-3 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center gap-2">
+                                <i class="fas fa-comment-alt text-lg"></i> Login to Contact
+                            </button>
+                        </a>
+                    @endauth
                     <br>
                     <hr class="border-t-2 border-gray-300 my-4">
 

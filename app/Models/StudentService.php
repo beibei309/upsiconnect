@@ -13,6 +13,7 @@ class StudentService extends Model
         'user_id',
         'category_id',
         'title',
+        'image_path',
         'description',
         'suggested_price',
         'price_range',

@@ -18,7 +18,7 @@ class StudentServiceController extends Controller
     $sort = $request->sort ?? 'newest';
 
     $query = StudentService::with(['student', 'category'])
-        ->where('status', 'available'); // assuming status field is there, you can modify accordingly
+        ->where('status', 'available'); 
 
     // Search filter
     if ($q) {
@@ -83,11 +83,12 @@ class StudentServiceController extends Controller
             return response()->json(['error' => 'You may only delete your own services.'], 403);
         }
 
-        // Prefer soft disable to keep history
-        $service->update(['is_active' => false]);
+        // Hard delete
+        $service->delete();
 
         return response()->json(['service' => $service], 200);
     }
+
 
     public function storefront(User $user): JsonResponse
     {
@@ -127,6 +128,38 @@ class StudentServiceController extends Controller
         return view('services.create', compact('categories'));
     }
 
+    public function store(Request $request)
+    {
+        $user = $request->user();
+        if (!$user || $user->role !== 'student') {
+            abort(403, 'Only students can create services.');
+        }
+
+        $data = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'category_id' => 'nullable|exists:categories,id',
+            'suggested_price' => 'nullable|numeric|min:0',
+            'image' => 'nullable|image|max:2048', // optional upload
+            'template_image' => 'nullable|string', // optional template
+        ]);
+
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('services', 'public');
+            $data['image_path'] = $path;
+        } elseif ($request->filled('template_image')) {
+            $data['image_path'] = $request->template_image;
+        }
+
+        $data['user_id'] = $user->id;
+        $data['approval_status'] = 'pending'; // Set the status to 'pending' by default
+
+        $service = StudentService::create($data);
+
+        return response()->json(['success' => true, 'service' => $service]);
+    }
+
+
     public function manage(Request $request)
     {
         $user = $request->user();
@@ -161,13 +194,51 @@ class StudentServiceController extends Controller
         ]);
     }
 
-    public function details($id)
-{
-    // Fetch the service by ID, including its related student and category
-    $service = StudentService::with(['student', 'category'])->findOrFail($id);
+    public function details(Request $request, $id)
+    {
+        $service = StudentService::with(['user', 'category'])->findOrFail($id);
 
-    // Return the view with the service data
-    return view('services.details', compact('service'));
-}
+        $viewer = $request->user(); // currently logged-in user (if any)
+
+        return view('services.details', [
+            'service' => $service,
+            'provider' => $service->user,
+            'viewer' => $viewer,
+        ]);
+    }
+
+    // ADMIN APPROVE/REJECT SERVICE
+    public function approve(StudentService $service)
+    {
+        // Ensure the user is an admin
+        $user = auth()->user();
+        if ($user->role !== 'admin') {
+            abort(403, 'You are not authorized to approve services.');
+        }
+
+        $service->approval_status = 'approved';
+        $service->save();
+
+        return response()->json(['success' => 'Service approved.']);
+    }
+
+    public function reject(StudentService $service)
+    {
+        // Ensure the user is an admin
+        $user = auth()->user();
+        if ($user->role !== 'admin') {
+            abort(403, 'You are not authorized to reject services.');
+        }
+
+        $service->approval_status = 'rejected';
+        $service->save();
+
+        return response()->json(['success' => 'Service rejected.']);
+    }
+
+
+
+    
+
 
 }

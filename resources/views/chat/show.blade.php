@@ -994,5 +994,48 @@ if (typeof window.Echo === 'undefined') {
     };
     document.head.appendChild(pusherScript);
 }
+// Find the message form by ID (assuming your form has an ID 'messageForm')
+const messageForm = document.getElementById('messageForm');
+const messageInput = document.getElementById('messageInput');
+
+// Add an event listener to handle the form submission
+messageForm.addEventListener('submit', async function(e) {
+    e.preventDefault();  // Prevent default form submission (which reloads the page)
+
+    const formData = new FormData(this);  // Capture the form data
+    const sendButton = this.querySelector('button[type="submit"]');
+    sendButton.disabled = true;  // Disable the send button to prevent multiple submissions
+    sendButton.textContent = 'Sending...';  // Change button text
+
+    try {
+        // Make the fetch request to send the message to the backend
+        const response = await fetch('{{ route("messages.store") }}', {
+            method: 'POST',  // Use POST to send data
+            body: formData,  // Send the form data as the body of the request
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json',  // Expect JSON response
+                'X-Requested-With': 'XMLHttpRequest'  // Let the backend know it's an AJAX request
+            }
+        });
+
+        const data = await response.json();  // Parse the response as JSON
+
+        if (response.ok) {
+            messageInput.value = '';  // Clear the input field after sending the message
+            addMessageToChat(data.message);  // Call your function to display the new message in the chat
+            scrollToBottom();  // Ensure the chat scrolls to the latest message
+        } else {
+            throw new Error(data.message || 'Failed to send message');
+        }
+    } catch (error) {
+        console.error('Error sending message:', error);
+        alert('Failed to send message. Please try again.');
+    } finally {
+        sendButton.disabled = false;  // Re-enable the send button
+        sendButton.textContent = 'Send';  // Reset button text
+    }
+});
+
 </script>
 </x-app-layout>

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
@@ -145,7 +146,7 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 text-center">
 
-                    @foreach ($categories as $category)
+        @foreach ($categories ?? [] as $category)
                         <div class="group bg-white p-4 rounded-xl transform hover:-translate-y-1.5 transition-all duration-300 cursor-pointer"
                             style="box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);">
                             <!-- Icon -->
@@ -173,7 +174,7 @@
                 <h2 class="text-gray-800 font-normal text-2xl sm:text-3xl mb-6">Popular Services</h2>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    @foreach ($services->take(6) as $service)
+@foreach (($services ?? collect())->take(6) as $service)
                         <div
                             class="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all flex flex-col overflow-hidden">
 
@@ -390,7 +391,7 @@
                 <h2 style="color: #484745; font-weight:bold; font-size: 20px;">Top Helper</h2>
                 <br>
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 text-center">
-                    @foreach ($topStudents as $student)
+@foreach ($topStudents ?? [] as $student)
                         <div class="card rounded-xl shadow-md overflow-hidden mb-4">
 
                             <div class="p-6 bg-gradient-to-r from-purple-500 to-purple-700 text-white text-center">

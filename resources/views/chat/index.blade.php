@@ -78,13 +78,13 @@
                                                 </div>
                                                 <div class="flex space-x-2 ml-4">
                                                     <button onclick="acceptChatRequest({{ $request->id }})" 
-                                                            class="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm">
-                                                        Accept
-                                                    </button>
-                                                    <button onclick="declineChatRequest({{ $request->id }})" 
-                                                            class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition-colors text-sm">
-                                                        Decline
-                                                    </button>
+        class="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm">
+    Accept
+</button>
+<button onclick="declineChatRequest({{ $request->id }})" 
+        class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition-colors text-sm">
+    Decline
+</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -203,5 +203,88 @@
             activeTab.classList.remove('border-transparent', 'text-gray-500');
             activeTab.classList.add('border-indigo-500', 'text-indigo-600');
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+    // Function to handle accept chat request
+    window.acceptChatRequest = function(requestId) {
+        // Confirm action
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You are about to accept this chat request.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, accept it!',
+            cancelButtonText: 'No, cancel',
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#d33'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // AJAX request to accept the chat
+                fetch(`/chat-requests/${requestId}/accept`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json'
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.conversation) {
+                        Swal.fire('Accepted!', 'The chat request has been accepted.', 'success')
+                            .then(() => {
+                                window.location.reload(); // Reload to update the state
+                            });
+                    } else {
+                        Swal.fire('Error', 'Something went wrong while accepting the request.', 'error');
+                    }
+                })
+                .catch(error => {
+                    Swal.fire('Error', 'An error occurred while processing your request.', 'error');
+                });
+            }
+        });
+    }
+
+    // Function to handle decline chat request
+    window.declineChatRequest = function(requestId) {
+        // Confirm action
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You are about to decline this chat request.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, decline it!',
+            cancelButtonText: 'No, cancel',
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // AJAX request to decline the chat
+                fetch(`/chat-requests/${requestId}/decline`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json'
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.chat_request) {
+                        Swal.fire('Declined!', 'The chat request has been declined.', 'success')
+                            .then(() => {
+                                window.location.reload(); // Reload to update the state
+                            });
+                    } else {
+                        Swal.fire('Error', 'Something went wrong while declining the request.', 'error');
+                    }
+                })
+                .catch(error => {
+                    Swal.fire('Error', 'An error occurred while processing your request.', 'error');
+                });
+            }
+        });
+    }
+});
+
     </script>
 </x-app-layout>
