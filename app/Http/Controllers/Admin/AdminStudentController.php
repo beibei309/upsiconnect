@@ -9,14 +9,28 @@ use Illuminate\Http\Request;
 class AdminStudentController extends Controller
 {
     // LIST STUDENTS
-    public function index()
-    {
-        $students = User::where('role', 'student')
-                        ->orderBy('created_at', 'desc')
-                        ->paginate(10);
+    public function index(Request $request)
+{
+    $query = User::where('role', 'student')->orderBy('created_at', 'desc');
 
-        return view('admin.students.index', compact('students'));
+    if ($request->search) {
+        $query->where(function ($q) use ($request) {
+            $q->where('name', 'like', "%{$request->search}%")
+              ->orWhere('email', 'like', "%{$request->search}%")
+              ->orWhere('phone', 'like', "%{$request->search}%")
+              ->orWhere('student_id', 'like', "%{$request->search}%");
+        });
     }
+
+    $students = $query->paginate(10);
+
+    // keep search value on pagination
+    $students->appends($request->only('search'));
+
+    return view('admin.students.index', compact('students'));
+}
+
+
 
     // EDIT STUDENT
     public function edit($id)

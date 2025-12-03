@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
         // Custom middleware aliases
         'superadmin' => \App\Http\Middleware\SuperAdmin::class,
+        'prevent-back-history' => \App\Http\Middleware\PreventBackHistory::class,
     ]);
     })
     

@@ -3,34 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Models\Admin;
-use App\Models\StudentService;
-use App\Models\ServiceApplication;
 use Illuminate\Http\Request;
 
 class SuperAdminController extends Controller
 {
-    public function dashboard()
-    {
-        // Stats
-        $totalStudents = User::where('role', 'student')->count();
-        $totalCommunityUsers = User::where('role', 'community')->count();
-        $totalServices = StudentService::count();
-        $pendingRequests = ServiceApplication::where('status', 'pending')->count();
-
-        // All admins
-        $admins = Admin::orderBy('role')->get();
-
-        return view('admin.superdashboard', compact(
-            'totalStudents',
-            'totalCommunityUsers',
-            'totalServices',
-            'pendingRequests',
-            'admins'
-        ));
-    }
-
     public function adminsIndex()
 {
     $admins = \App\Models\Admin::orderBy('role')->get();
@@ -45,6 +22,11 @@ public function create()
 
 public function store(Request $request)
 {
+    // LIMIT 3 ADMINS
+        if (Admin::count() >= 3) {
+            return back()->with('error', 'You can only have up to 3 admin accounts.');
+        }
+
     $request->validate([
         'name' => 'required',
         'email' => 'required|email|unique:admins,email',
@@ -96,6 +78,14 @@ public function update(Request $request, $id)
 
 public function destroy($id)
 {
+    if (Admin::count() <= 1) {
+    return back()->with('error', 'At least 1 admin account is required.');
+}
+
+if (Admin::count() <= 1) {
+    return back()->with('error', 'At least 1 admin account is required.');
+}
+
     $admin = \App\Models\Admin::findOrFail($id);
     $admin->delete();
 
