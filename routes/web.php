@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::get('/', [HomeController::class, 'home'])->name('home');
-Route::get('/about', function () { return view('about'); })->name('about');
+Route::get('/about', [AboutController::class, 'show'])->name('about');
 Route::get('/help', function () {return view('help');})->name('help');
 // Route::get('/guest/services', [GuestServicesController::class, 'index'])->name('guest.services');
 Route::get('/services', [StudentServiceController::class, 'index'])->name('services.index');

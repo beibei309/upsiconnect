@@ -201,9 +201,11 @@
 
                     <!-- Right: Image -->
                     <div>
-                        <img src="{{ asset('images/smile.jpg') }}" 
+                        @if($about->image_path)
+                            <img src="{{ asset('images/smile.jpg' . $about->image_path) }}" class="w-full rounded mb-6">
                             alt="UPSI Student" 
                             class="rounded-full w-full max-w-md mx-auto aspect-square object-cover shadow-lg">
+                        @endif
                     </div>
                 </div>
 
@@ -399,7 +401,9 @@
 
                     <!-- Right: Image Placeholder -->
                     <div>
-                        <img src="{{ !empty($imagePath) ? asset('images/' . $imagePath) : asset('images/service_tutor.jpg') }}"
+                        @if($about->image_path)
+                            <img src="{{ asset('images/service_tutor.jpg' . $about->image_path) }}" class="w-full rounded mb-6">
+                        @endif
                             alt="Students Collaborating" class="w-full h-auto rounded-lg border">
                     </div>
 
