@@ -92,7 +92,7 @@ class StudentServiceController extends Controller
 
     public function storefront(User $user): JsonResponse
     {
-        if ($user->role !== 'student') {
+        if ($user->role !== 'helper') {
             return response()->json(['error' => 'User is not a student.'], 422);
         }
 
@@ -118,7 +118,7 @@ class StudentServiceController extends Controller
     public function create(Request $request)
     {
         $user = $request->user();
-        if (!$user || $user->role !== 'student') {
+        if (!$user || $user->role !== 'helper') {
             abort(403, 'Only students can create services.');
         }
 
@@ -129,42 +129,88 @@ class StudentServiceController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $user = $request->user();
-        if (!$user || $user->role !== 'student') {
-            abort(403, 'Only students can create services.');
-        }
+{
+    $user = $request->user();
+    if (!$user || $user->role !== 'helper') {
+        abort(403, 'Only students can create services.');
+    }
 
-        $data = $request->validate([
+    $currentSection = $request->input('current_section'); // which tab
+    $serviceId = $request->input('service_id'); // existing service (if updating)
+
+    // Validation for each section separately
+    $rules = [];
+    if ($currentSection === 'overview') {
+        $rules = [
             'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
             'category_id' => 'nullable|exists:categories,id',
-            'suggested_price' => 'nullable|numeric|min:0',
-            'image' => 'nullable|image|max:2048', // optional upload
-            'template_image' => 'nullable|string', // optional template
-        ]);
+            'image' => 'nullable|image|max:2048',
+            'template_image' => 'nullable|string',
+        ];
+    } elseif ($currentSection === 'pricing') {
+        $rules = [
+            'packages' => 'nullable|array',
+            'packages.*.package_type' => 'required|string|in:basic,standard,premium',
+            'packages.*.duration' => 'required|string',
+            'packages.*.price' => 'required|numeric|min:0',
+            'packages.*.description' => 'nullable|string',
+        ];
+    } elseif ($currentSection === 'description') {
+        $rules = [
+            'description' => 'nullable|string',
+        ];
+    }
 
-        if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('services', 'public');
-            $data['image_path'] = $path;
-        } elseif ($request->filled('template_image')) {
-            $data['image_path'] = $request->template_image;
+    $data = $request->validate($rules);
+
+    // If service_id exists, update; else create
+    if ($serviceId) {
+        $service = StudentService::findOrFail($serviceId);
+        if ($service->user_id !== $user->id) {
+            return response()->json(['error' => 'You may only edit your own services.'], 403);
+        }
+        $service->update($data);
+    } else {
+        // handle image upload if overview
+        if ($currentSection === 'overview') {
+            if ($request->hasFile('image')) {
+                $path = $request->file('image')->store('services', 'public');
+                $data['image_path'] = $path;
+            } elseif ($request->filled('template_image')) {
+                $data['image_path'] = $request->template_image;
+            }
         }
 
         $data['user_id'] = $user->id;
-        $data['approval_status'] = 'pending'; // Set the status to 'pending' by default
-
+        $data['approval_status'] = 'pending';
         $service = StudentService::create($data);
-
-        return response()->json(['success' => true, 'service' => $service]);
     }
+
+    // Save packages if pricing section
+    if ($currentSection === 'pricing' && $request->filled('packages')) {
+        foreach ($request->packages as $packageData) {
+            // Update existing packages or create new ones
+            $service->packages()->updateOrCreate(
+                ['package_type' => $packageData['package_type']],
+                [
+                    'duration' => $packageData['duration'],
+                    'price' => $packageData['price'],
+                    'description' => $packageData['description'] ?? null,
+                ]
+            );
+        }
+    }
+
+    return response()->json(['success' => true, 'service' => $service]);
+}
+
 
 
     public function manage(Request $request)
     {
         $user = $request->user();
-        if (!$user || $user->role !== 'student') {
-            abort(403, 'Only students can manage services.');
+        if (!$user || $user->role !== 'helper') {
+            abort(403, 'Only students helper can manage services.');
         }
 
         $services = StudentService::query()

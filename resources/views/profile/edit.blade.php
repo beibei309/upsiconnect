@@ -1,6 +1,9 @@
-<x-app-layout>
+@extends('layouts.helper')
+
+@section('content')
     <div class="py-8">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <br><br>
             <!-- Page Header -->
             <div class="mb-8">
                 <h1 class="text-3xl font-bold text-gray-900">Profile Settings</h1>
@@ -325,4 +328,4 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+@endsection

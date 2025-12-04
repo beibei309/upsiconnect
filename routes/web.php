@@ -7,8 +7,10 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AvailabilityController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ChatRequestController;
+use App\Http\Controllers\StudentsController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\VerificationController;
 use App\Http\Controllers\ServiceApplicationController;
 use App\Http\Controllers\StudentServiceController;
 use App\Http\Controllers\SearchController;
@@ -32,6 +34,17 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'home'])->name('home');
 Route::get('/about', function () { return view('about'); })->name('about');
 Route::get('/help', function () {return view('help');})->name('help');
+
+
+// Display the form to join as a part-timer
+Route::get('/students/create', [ProfileController::class, 'create'])->name('students.create');
+// Handle the profile form submission
+Route::get('/students', [StudentsController::class, 'index'])->name('students.index');
+Route::post('/students/create', [StudentsController::class, 'store'])->name('students.store');
+// Route::get('/onboarding/students', fn() => view('onboarding.students_verification'))->name('onboarding.students.verify');
+// routes/web.php
+Route::get('/onboarding/students', [VerificationController::class,'index'])->name('onboarding.students');
+Route::post('/onboarding/students/upload-photo', [VerificationController::class,'uploadPhoto'])->name('students_verification.upload');
 
 
 // services

@@ -80,4 +80,12 @@ class ProfileController extends Controller
 
         return Redirect::to('/');
     }
+
+    public function create()
+{
+    return view('students.create'); // Return the view where the student can fill their profile
+}
+
+
+
 }

@@ -1,4 +1,7 @@
-<x-app-layout>
+@extends('layouts.helper')
+
+@section('content')
+
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ __('Service Requests') }}
@@ -7,10 +10,11 @@
 
     @php($sentRequests = $sentRequests ?? collect())
     @php($receivedRequests = $receivedRequests ?? collect())
-    @php($defaultTab = (auth()->user()->role === 'student') ? 'received' : 'sent')
+    @php($defaultTab = (auth()->user()->role === 'helper') ? 'received' : 'sent')
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <br><br>
             <!-- Tabs -->
             <div class="mb-6">
                 <div class="border-b border-gray-200">
@@ -428,4 +432,4 @@
             }
         });
     </script>
-</x-app-layout>
+@endsection

@@ -98,7 +98,7 @@
                     </svg>
                     <h3 class="text-lg font-medium text-gray-900 mb-2">No favorites yet</h3>
                     <p class="text-gray-500">Start adding providers to your favorites to keep track of them.</p>
-                    <a href="{{ route('search.index') }}" class="mt-4 inline-flex px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">Browse Services</a>
+                    <a href="{{ route('services.index') }}" class="mt-4 inline-flex px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">Browse Services</a>
                 </div>
             @endif
         </div>

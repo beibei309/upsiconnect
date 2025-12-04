@@ -21,7 +21,6 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        // extended fields
         'role',
         'phone',
         'student_id',
@@ -38,6 +37,10 @@ class User extends Authenticatable
         'bio',
         'faculty',
         'course',
+        'address',
+        'skills',
+        'work_experience_message',
+        'work_experience_file',   
     ];
 
     /**
