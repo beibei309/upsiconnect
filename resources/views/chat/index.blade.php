@@ -1,9 +1,12 @@
-<x-app-layout>
+@extends('layouts.helper')
+
+@section('content')
+
     <div class="container mx-auto px-4 py-8">
         <div class="max-w-4xl mx-auto">
-
-            <div class="mb-8 text-left mt-10">
-                <p class="text-gray-800 mt-2 text-xl font-semibold">Chat</p>
+<br>
+        <div class="mb-8 text-left mt-10">
+                <h1 class="text-4xl font-bold text-gray-900">My Chat</h1>
             </div>
 
             <!-- Chat Box -->
@@ -287,4 +290,4 @@
 });
 
     </script>
-</x-app-layout>
+@endsection

@@ -1,6 +1,12 @@
 <x-app-layout>
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-4xl mx-auto">
+        <br>
+        <div class="mb-8 text-left mt-10">
+                <h1 class="text-4xl font-bold text-gray-900">My Favorites</h1>
+                <p class="text-gray-600 mt-2">Here are all the services you’ve added to your favorites.</p>
+            </div>
+            
         <div class="bg-white rounded-lg shadow-md">
             <!-- Chat Header -->
             <div class="bg-blue-600 text-white p-4 rounded-t-lg">

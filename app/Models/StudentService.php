@@ -72,4 +72,9 @@ class StudentService extends Model
     {
         $this->update(['status' => 'available']);
     }
+
+      public function packages()
+    {
+        return $this->hasMany(ServicePackage::class);
+    }
 }
