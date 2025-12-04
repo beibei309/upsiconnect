@@ -51,10 +51,35 @@
         </div>
 
         {{-- Student ID --}}
-        <div class="mb-8">
+        <div class="mb-5">
             <label class="font-semibold text-gray-700 mb-1 block">Student ID</label>
             <input type="text" name="student_id" value="{{ old('student_id', $student->student_id) }}"
                 class="w-full p-3 border rounded-lg focus:ring-blue-500 focus:border-blue-500">
+        </div>
+
+        {{-- Faculty --}}
+        <div class="mb-5">
+            <label class="font-semibold text-gray-700 mb-1 block">Faculty</label>
+            <input type="text" name="faculty" value="{{ old('faculty', $student->faculty) }}"
+                class="w-full p-3 border rounded-lg focus:ring-blue-500 focus:border-blue-500">
+        </div>
+
+        {{-- Course --}}
+        <div class="mb-5">
+            <label class="font-semibold text-gray-700 mb-1 block">Course</label>
+            <input type="text" name="course" value="{{ old('course', $student->course) }}"
+                class="w-full p-3 border rounded-lg focus:ring-blue-500 focus:border-blue-500">
+        </div>
+
+        {{-- Verification Status --}}
+        <div class="mb-8">
+            <label class="font-semibold text-gray-700 mb-1 block">Verification Status</label>
+            <select name="verification_status"
+                class="w-full p-3 border rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                <option value="pending"  {{ $student->verification_status == 'pending' ? 'selected' : '' }}>Pending</option>
+                <option value="approved" {{ $student->verification_status == 'approved' ? 'selected' : '' }}>Approved</option>
+                <option value="rejected" {{ $student->verification_status == 'rejected' ? 'selected' : '' }}>Rejected</option>
+            </select>
         </div>
 
         {{-- Account Status Toggle --}}
@@ -73,15 +98,22 @@
                       method="POST">
                     @csrf
 
-                    <!-- Toggle Switch -->
-                    <button type="submit"
-                        class="relative inline-flex items-center h-8 w-16 rounded-full transition-all 
-                        {{ $student->is_suspended ? 'bg-red-500' : 'bg-green-500' }}">
+                    {{-- Status Display --}}
+<div class="mb-5">
+    <label class="font-semibold text-gray-700 mb-1 block">Account Status</label>
 
-                        <span class="absolute left-1 top-1 h-6 w-6 rounded-full bg-white shadow-md transform transition-all
-                            {{ $student->is_suspended ? 'translate-x-8' : 'translate-x-0' }}">
-                        </span>
-                    </button>
+    @if($student->is_suspended)
+        <span class="px-3 py-1 bg-red-200 text-red-700 rounded-full">Banned</span>
+        <p class="text-sm text-red-600 mt-1">{{ $student->blacklist_reason }}</p>
+    @else
+        <span class="px-3 py-1 bg-green-200 text-green-700 rounded-full">Active</span>
+    @endif
+
+    <p class="text-xs text-gray-500 mt-2">
+        *Ban / Unban can be managed from the main student list.
+    </p>
+</div>
+
                 </form>
 
             </div>
