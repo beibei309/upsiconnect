@@ -8,86 +8,112 @@ use Illuminate\Http\Request;
 
 class AdminStudentController extends Controller
 {
-    // LIST STUDENTS
     public function index(Request $request)
-{
-    $query = User::where('role', 'student')->orderBy('created_at', 'desc');
+    {
+        $search = $request->input('search');
+        $status = $request->input('status'); // banned | active | null
 
-    if ($request->search) {
-        $query->where(function ($q) use ($request) {
-            $q->where('name', 'like', "%{$request->search}%")
-              ->orWhere('email', 'like', "%{$request->search}%")
-              ->orWhere('phone', 'like', "%{$request->search}%")
-              ->orWhere('student_id', 'like', "%{$request->search}%");
-        });
+        $students = User::where('role', 'student')
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%")
+                      ->orWhere('phone', 'like', "%{$search}%")
+                      ->orWhere('student_id', 'like', "%{$search}%");
+                });
+            })
+            ->when($status === 'banned', function ($query) {
+                $query->where('is_suspended', 1);
+            })
+            ->when($status === 'active', function ($query) {
+                $query->where('is_suspended', 0);
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        // Keep filters when navigating pagination
+        $students->appends($request->only('search', 'status'));
+
+        return view('admin.students.index', compact('students', 'search', 'status'));
     }
 
-    $students = $query->paginate(10);
-
-    // keep search value on pagination
-    $students->appends($request->only('search'));
-
-    return view('admin.students.index', compact('students'));
-}
-
-
+    // VIEW STUDENT (PROFILE PAGE)
+    public function view($id)
+    {
+        $student = User::where('role', 'student')->findOrFail($id);
+        return view('admin.students.view', compact('student'));
+    }
 
     // EDIT STUDENT
     public function edit($id)
     {
-        $student = User::findOrFail($id);
+        $student = User::where('role', 'student')->findOrFail($id);
         return view('admin.students.edit', compact('student'));
     }
 
     // UPDATE STUDENT
     public function update(Request $request, $id)
     {
-        $student = User::findOrFail($id);
+        $student = User::where('role', 'student')->findOrFail($id);
 
         $request->validate([
-            'name' => 'required',
+            'name' => 'required|string',
             'email' => 'required|email',
-            'phone' => 'nullable',
-            'student_id' => 'nullable'
+            'phone' => 'nullable|string',
+            'student_id' => 'nullable|string',
         ]);
 
-        $student->update($request->only([
-            'name', 'email', 'phone', 'student_id', 'verification_status'
-        ]));
+        $student->update([
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'student_id' => $request->student_id,
+            'faculty' => $request->faculty,
+            'course' => $request->course,
+            'verification_status' => $request->verification_status,
+        ]);
+
 
         return redirect()->route('admin.students.index')
                          ->with('success', 'Student updated successfully.');
     }
 
-        //delete 
-        public function destroy($id)
-        {
-            $student = User::findOrFail($id);
-            
-            $student->delete();
-            return redirect()->route('admin.students.index')
+    // DELETE STUDENT
+    public function destroy($id)
+    {
+        $student = User::where('role', 'student')->findOrFail($id);
+        $student->delete();
+
+        return redirect()->route('admin.students.index')
             ->with('success', 'Student deleted successfully.');
-        }
+    }
 
-        //ban
-        public function ban($id)
-        {
-            $student = User::findOrFail($id);
-            
-            $student->update(['is_suspended' => true]);
-            
-            return redirect()->route('admin.students.index')
-            ->with('success', 'Student has been suspended.');
-        }
+    // BAN STUDENT WITH REASON
+    public function ban(Request $request, $id)
+    {
+        $request->validate([
+            'blacklist_reason' => 'required|string|max:255'
+        ]);
 
-        public function unban($id)
-{
-    $student = User::findOrFail($id);
+        $student = User::where('role', 'student')->findOrFail($id);
+        $student->is_suspended = 1;
+        $student->blacklist_reason = $request->blacklist_reason;
+        $student->save();
 
-    $student->update(['is_suspended' => false]);
+        return redirect()->route('admin.students.index')
+                         ->with('success', 'Student has been banned.');
+    }
 
-    return redirect()->route('admin.students.index')
-        ->with('success', 'Student has been unsuspended.');
-}
+    // UNBAN STUDENT
+    public function unban($id)
+    {
+        $student = User::where('role', 'student')->findOrFail($id);
+        $student->is_suspended = 0;
+        $student->blacklist_reason = null;
+        $student->save();
+
+        return redirect()->route('admin.students.index')
+                         ->with('success', 'Student has been unbanned.');
+    }
 
 }

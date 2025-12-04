@@ -46,7 +46,7 @@
                 </li>
 
                 <li>
-                    <a href="#"
+                    <a href="{{ route('admin.community.index') }}"
                        class="block px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 font-medium">
                         Manage Users
                     </a>
