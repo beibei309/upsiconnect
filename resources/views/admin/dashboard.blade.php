@@ -19,14 +19,14 @@
     </a>
 
     <!-- CARD: Total Community Users -->
-    <a href="#"
+    <a href="{{ route('admin.community.index') }}"
        class="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl hover:scale-[1.02] transition border border-gray-100 block">
         <p class="text-gray-500 font-medium">Total Community Users</p>
         <p class="text-5xl font-bold text-purple-600 mt-2">{{ $totalCommunityUsers }}</p>
     </a>
 
     <!-- CARD: Total Services -->
-    <a href="#"
+    <a href="{{ route('admin.services.index') }}"
        class="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl hover:scale-[1.02] transition border border-gray-100 block">
         <p class="text-gray-500 font-medium">Total Services</p>
         <p class="text-5xl font-bold text-pink-600 mt-2">{{ $totalServices }}</p>
