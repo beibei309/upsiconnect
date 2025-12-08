@@ -1,4 +1,6 @@
-<x-app-layout>
+@extends('layouts.helper')
+
+@section('content')
     <div class="py-12 bg-gray-50">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
@@ -197,4 +199,4 @@
             window.location.href = `/services/${serviceId}/edit`;
         }
     </script>
-</x-app-layout>
+@endsection

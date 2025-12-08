@@ -1,8 +1,12 @@
-<x-app-layout>
+@extends('layouts.helper')
+
+@section('content')
+
     <div class="py-8 px-4 sm:px-6 lg:px-8">
         <div class="max-w-7xl mx-auto">
             <!-- Header -->
             <div class="mb-8">
+                <br><br><br>
                 <div class="flex items-center justify-between">
                     <h1 class="text-3xl font-bold text-upsi-text-primary">
                         @if(auth()->user()->role === 'student')
@@ -364,4 +368,4 @@
         }
     </script>
     @endpush
-</x-app-layout>
+@endsection
