@@ -1,5 +1,6 @@
 @extends('layouts.helper')
-
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 @section('content')
     <div class="py-12 bg-gray-50">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -79,9 +80,9 @@
 
                                         @if ($service->category)
                                             <span
-                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                                                {{ $service->category->name }}
-                                            </span>
+                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                                style="color: {{ $service->category->color }}; border: 1px solid {{ $service->category->color }}; font-size: 13px;">
+                                                {{ $service->category->name }} </span>
                                         @endif
                                     </div>
 
@@ -100,8 +101,45 @@
                                         </span>
                                     </div>
                                 </div>
+                                
 
                                 <p class="text-gray-600 text-sm mb-4 line-clamp-3">{{ $service->description }}</p>
+
+                                <div class="text-sm text-gray-700 mt-4 space-y-2">
+
+                                    @if ($service->basic_price)
+                                        <div
+                                            class="flex justify-between items-center border border-gray-100 rounded-lg p-2">
+                                            <span class="font-medium">Basic Package</span>
+                                            <span
+                                                class="font-semibold text-gray-800">RM{{ number_format($service->basic_price, 2) }}
+                                                per {{ $service->basic_frequency }}</span>
+
+                                        </div>
+                                    @endif
+
+                                    @if ($service->standard_price)
+                                        <div
+                                            class="flex justify-between items-center border border-gray-100 rounded-lg p-2">
+                                            <span class="font-medium">Standard Package</span>
+                                            <span
+                                                class="font-semibold text-gray-800">RM{{ number_format($service->standard_price, 2) }}
+                                                per {{ $service->standard_frequency }}</span>
+                                        </div>
+                                    @endif
+
+                                    @if ($service->premium_price)
+                                        <div
+                                            class="flex justify-between items-center border border-gray-100 rounded-lg p-2">
+                                            <span class="font-medium">Premium Package</span>
+                                            <span
+                                                class="font-semibold text-gray-800">RM{{ number_format($service->premium_price, 2) }}
+                                                per {{ $service->premium_frequency }}</span>
+                                        </div>
+                                    @endif
+
+                                </div>
+
 
                                 <div class="flex items-center justify-between pt-4 border-t border-gray-100">
                                     <button onclick="editService({{ $service->id }})"
@@ -124,7 +162,6 @@
 
     <!-- JS -->
     <script>
-        // Tab logic
         document.addEventListener('DOMContentLoaded', function() {
             const tabButtons = document.querySelectorAll('.tab-btn');
             const tabContents = document.querySelectorAll('.tab-content');
@@ -142,7 +179,7 @@
                     tabButtons.forEach(b => b.classList.remove('text-indigo-600', 'border-b-2',
                         'border-indigo-600'));
                     btn.classList.add('text-indigo-600', 'border-b-2', 'border-indigo-600');
-                    
+
                 });
             });
 
@@ -150,6 +187,61 @@
             tabButtons[0].click();
         });
 
+        // Handle service status toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.service-toggle').forEach(toggle => {
+                toggle.addEventListener('change', function() {
+                    const serviceId = this.dataset.serviceId;
+                    const isActive = this.checked;
+
+                    fetch(`/student-services/${serviceId}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector(
+                                    'meta[name="csrf-token"]').getAttribute('content')
+                            },
+                            body: JSON.stringify({
+                                is_active: isActive
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.service) {
+                                // Update status badge
+                                const statusBadge = this.closest('.bg-white').querySelector(
+                                    '.inline-flex.items-center.px-2.py-1');
+                                const statusDot = statusBadge.querySelector('.w-1\\.5');
+
+                                if (isActive) {
+                                    statusBadge.className =
+                                        'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800';
+                                    statusDot.className =
+                                        'w-1.5 h-1.5 rounded-full bg-green-400 mr-1';
+                                    statusBadge.textContent = 'Active';
+                                } else {
+                                    statusBadge.className =
+                                        'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800';
+                                    statusDot.className =
+                                        'w-1.5 h-1.5 rounded-full bg-red-400 mr-1';
+                                    statusBadge.textContent = 'Inactive';
+                                }
+                                statusBadge.prepend(statusDot);
+                            } else {
+                                // Revert toggle if update failed
+                                this.checked = !isActive;
+                                alert('Error updating service status. Please try again.');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            // Revert toggle if update failed
+                            this.checked = !isActive;
+                            alert('Error updating service status. Please try again.');
+                        });
+                });
+            });
+        });
         // Delete service
         function deleteService(serviceId) {
             Swal.fire({

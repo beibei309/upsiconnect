@@ -1,9 +1,18 @@
 <!-- AlpineJS -->
 <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+<style>
+  nav {
+        background-color: #ffffff !important; /* Navy Dark */
+    }
+
+    nav a:hover {
+        color: #367588 !important; /* Yellow hover */
+    }
+</style>
 
 <nav x-data="{ mobileMenuOpen: false, userOpen: false }" class="bg-white shadow-sm fixed w-full top-0 z-50">
     <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-16">
+        <div class="flex justify-between items-center h-20">
 
             <!-- Logo -->
             <div class="flex items-center">
@@ -13,19 +22,19 @@
             <!-- Desktop Menu -->
             <div class="hidden md:flex items-center space-x-4">
                 <!-- Main Links -->
-                <a href="{{ auth()->check() ? route('dashboard') : route('welcome') }}"
-                    class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">Home</a>
+                <a href="{{ auth()->check() ? route('dashboard') : route('home') }}"
+                    class="hover:text-indigo-600 px-3 py-2 text-gray-800 rounded-md text-m font-medium transition">Home</a>
 
                 <a href="{{ route('services.index') }}"
-                    class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">Find
+                    class="hover:text-indigo-600 px-3 py-2 text-gray-800 rounded-md text-m font-medium transition">Find
                     Services</a>
 
                 <a href="{{ route('about') }}"
-                    class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">About
+                    class="hover:text-indigo-600 px-3 py-2 text-gray-800 rounded-md text-m font-medium transition">About
                     Us</a>
 
                 <a href="{{ route('help') }}"
-                    class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">Help</a>
+                    class="hover:text-indigo-600 px-3 py-2 text-gray-800 rounded-md text-m font-medium transition">Help</a>
             </div>
 
             <!-- Desktop Right Section -->
@@ -56,20 +65,26 @@
                                 d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                         </svg>
                     </a>
-                
-          @if (auth()->user()->role === 'student')
-    <a href="{{ route('onboarding.students') }}" 
-       class="relative p-2 rounded-md hover:bg-gray-100 transition"
-       style="color: green; background-color: white; border: 1px solid green; padding: 8px 16px;">
-        Join as Part-timer
-    </a>
-@elseif (auth()->user()->role === 'helper')
-    <a href="{{ route('students.index') }}" 
-       class="relative p-2 rounded-md hover:bg-gray-100 transition"
-       style="color: black; background-color: white; border: 1px solid black; padding: 8px 16px;">
-        Dashboard
-    </a>
-@endif
+
+                     <!-- Orders Button (all roles) -->
+                    <a href="{{ route('service-requests.index') }}"
+                        class="relative p-2 rounded-md hover:bg-gray-100 transition"
+                        style="color: #367588; padding: 8px 16px;">
+                        Orders
+                    </a>
+
+                    @if (auth()->user()->role === 'student')
+                        <a href="{{ route('onboarding.students') }}"
+                            class="relative p-2 rounded-md hover:bg-gray-100 transition"
+                            style="color: green; background-color: white; border: 1px solid green; padding: 8px 16px;">
+                            Join as Part-timer
+                        </a>
+                    @elseif (auth()->user()->role === 'helper')
+                      <a href="{{ route('students.index') }}"
+   class="relative p-2 rounded-md border border-green-600 bg-white text-green-600 hover:bg-green-300 transition">
+   Switch to selling
+</a>
+                    @endif
 
 
                     <!-- Avatar Dropdown -->
@@ -91,10 +106,8 @@
                                 class="block px-4 py-2 hover:bg-gray-100 rounded-md">Profile</a>
 
                             {{-- @if (auth()->user()->isCommunity()) --}}
-                            <a href="{{ route('search.index') }}"
-                                class="block px-4 py-2 hover:bg-gray-100 rounded-md">Browse Services</a>
-                            <a href="{{ route('favorites.index') }}"
-                                class="block px-4 py-2 hover:bg-gray-100 rounded-md">My Favorites</a>
+                        
+                          
                             <a href="{{ route('service-requests.index') }}"
                                 class="block px-4 py-2 hover:bg-gray-100 rounded-md">My Service Requests</a>
                             <a href="{{ route('services.applications.index') }}"
@@ -114,15 +127,15 @@
                 @else
                     <!-- Guest -->
                     <a href="{{ route('login') }}"
-                        class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm">Login</a>
+                        class="hover:text-indigo-600 px-3 py-2 text-gray-800 rounded-md text-m">Login</a>
                     <a href="{{ route('register') }}"
-                        class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">Sign Up</a>
+                        class="bg-custom-teal text-white-100 px-4 py-2 rounded-lg hover:bg-indigo-700" >Sign Up</a>
                 @endauth
             </div>
 
             <!-- Mobile Menu Button -->
             <div class="md:hidden">
-                <button @click="mobileMenuOpen = !mobileMenuOpen" class="text-gray-600 hover:text-indigo-600">
+                <button @click="mobileMenuOpen = !mobileMenuOpen" class="hover:text-indigo-600">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M4 6h16M4 12h16M4 18h16" />
@@ -135,7 +148,7 @@
     <!-- Mobile Menu -->
     <div x-show="mobileMenuOpen" x-transition class="md:hidden bg-white border-t">
         <div class="px-4 pt-4 pb-6 space-y-1">
-            <a href="{{ auth()->check() ? route('dashboard') : route('welcome') }}"
+            <a href="{{ auth()->check() ? route('dashboard') : route('home') }}"
                 class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">Home</a>
             <a href="{{ route('services.index') }}"
                 class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">Find Services</a>
@@ -163,7 +176,7 @@
                 <a href="{{ route('login') }}"
                     class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">Login</a>
                 <a href="{{ route('register') }}"
-                    class="block px-3 py-2 bg-indigo-600 text-white rounded-md text-center hover:bg-indigo-700">Sign Up</a>
+                    class="block px-3 py-2 bg-custom-teal  text-white rounded-md text-center hover:bg-indigo-700">Sign Up</a>
             @endauth
         </div>
     </div>

@@ -18,13 +18,15 @@ export default {
             colors: {
                 upsi: {
                     red: '#C41E3A',      // More vibrant UPSI red for action & attention
-                    blue: '#1E3A8A',     // Professional UPSI blue for trust & navigation
+                    blue: '#367588',     // Professional UPSI blue for trust & navigation
                     gold: '#F59E0B',     // Brighter UPSI gold for highlights & verification
                     light: '#FFFFFF',    // Pure white for clean backgrounds
                     'light-gray': '#F9FAFB', // Very light gray for subtle backgrounds
                     dark: '#111827',     // Dark for primary text
                     'text-primary': '#1F2937', // Primary text color for maximum readability
                 },
+                            'custom-teal': '#367588', // <- add your color here
+
             },
         },
     },
@@ -37,12 +39,12 @@ export default {
                 upsi: {
                     primary: '#C41E3A',    // Vibrant UPSI Red for CTAs and action buttons
                     secondary: '#F59E0B',  // Bright UPSI Gold for badges & secondary actions
-                    accent: '#1E3A8A',     // Professional UPSI Blue for links and accents
+                    accent: '#367588',     // Professional UPSI Blue for links and accents
                     neutral: '#1F2937',    // Dark gray for neutral elements
                     'base-100': '#FFFFFF', // Pure white for main backgrounds
                     'base-200': '#F9FAFB', // Very light gray for subtle backgrounds
                     'base-300': '#F3F4F6', // Light gray for borders and dividers
-                    info: '#1E3A8A',       // UPSI Blue for informational elements
+                    info: '#367588',       // UPSI Blue for informational elements
                     success: '#10B981',    // Green for success states
                     warning: '#F59E0B',    // UPSI Gold for warnings
                     error: '#C41E3A',      // UPSI Red for errors

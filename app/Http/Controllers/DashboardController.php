@@ -15,17 +15,22 @@ public function index(Request $request)
         $min_rating = $request->query('min_rating');
         $available = $request->query('available');
 
-        $services = StudentService::with('category', 'user')
-                    ->where('is_active', true)
-                    ->latest()
-                    ->get();        
-                    
+        $services = StudentService::with([
+            'category',
+            'user' => function ($q) {
+                $q->withCount('reviewsReceived')
+                ->withAvg('reviewsReceived as average_rating', 'rating');
+            }
+        ])->where('is_active', true)->latest()->get();
+
+    
+                        
         $categories = Category::withCount(['services' => function ($q) {
             $q->where('is_active', true);
         }])->get();
 
         //Display top provider
-        $topStudents = \App\Models\User::where('role', 'student')
+        $topStudents = \App\Models\User::where('role', 'helper')
         ->whereHas('services', function ($q) {
             $q->where('is_active', true);
         })
@@ -50,7 +55,7 @@ public function index(Request $request)
 
     $query = StudentService::query()
         ->where('is_active', true)
-        ->with(['category', 'student' => function ($query) {
+        ->with(['category', 'helper' => function ($query) {
             $query->select(['id', 'name', 'role', 'is_available']);
         }]);
 
@@ -89,7 +94,7 @@ public function index(Request $request)
             'id' => $svc->id,
             'title' => $svc->title,
             'description' => $svc->description,
-            'suggested_price' => $svc->suggested_price,
+            'basic_price' => $svc->basic_price,
             'category' => $svc->category,
             'student' => [
                 'id' => $student->id,

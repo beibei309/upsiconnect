@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\StudentService;
 use App\Models\User;
 use App\Models\Category;
-use App\Models\ServiceRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -18,11 +17,8 @@ class StudentServiceController extends Controller
     $category_id = $request->category_id;
     $sort = $request->sort ?? 'newest';
 
-       $query = StudentService::with(['student', 'category'])
-        ->where('status', 'available')
-        ->whereHas('student', function ($q) {
-            $q->where('role', 'helper');
-        });
+    $query = StudentService::with(['student', 'category'])
+        ->where('status', 'available'); 
 
     // Search filter
     if ($q) {
@@ -60,99 +56,25 @@ class StudentServiceController extends Controller
     ]);
 }
 
-    public function edit(StudentService $service)
+    public function update(Request $request, StudentService $service): JsonResponse
     {
-        $user = auth()->user();
+        $user = $request->user();
         if (!$user || $user->id !== $service->user_id) {
-            abort(403, 'You may only edit your own services.');
+            return response()->json(['error' => 'You may only update your own services.'], 403);
         }
 
-        // Get categories for dropdown
-        $categories = \App\Models\Category::all();
+        $data = $request->validate([
+            'title' => ['sometimes', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'basic_price' => ['nullable', 'numeric', 'min:0'],
+            'category_id' => ['nullable', 'exists:categories,id'],
+            'is_active' => ['nullable', 'boolean'],
+        ]);
 
-        return view('services.edit', compact('service', 'categories'));
+        $service->update($data);
+
+        return response()->json(['service' => $service], 200);
     }
-
-
-   public function update(Request $request, StudentService $service): JsonResponse
-{
-    $user = $request->user();
-    if (!$user || $user->id !== $service->user_id) {
-        return response()->json(['error' => 'You may only update your own services.'], 403);
-    }
-
-    $validated = $request->validate([
-        'title' => 'required|string|max:255',
-        'category_id' => 'required|exists:categories,id',
-        'image' => 'nullable|image|max:2048',
-        'description' => 'nullable|string',
-        'packages' => 'nullable|array',
-        'packages.*.duration' => 'nullable|string',
-        'packages.*.frequency' => 'nullable|string',
-        'packages.*.price' => 'nullable|numeric|min:0',
-        'packages.*.description' => 'nullable|string',
-        'offer_packages' => 'nullable', // checkbox toggle
-        'unavailable_dates' => 'nullable|string',
-    ]);
-
-    // Image
-    if ($request->hasFile('image')) {
-        $service->image_path = $request->file('image')->store('services','public');
-    }
-
-    $service->title = $validated['title'];
-    $service->category_id = $validated['category_id'];
-    $service->description = $validated['description'] ?? '';
-
-    // Packages
-    $packages = $request->input('packages', []);
-
-    // Always save Basic package
-    $service->basic_duration = $packages[0]['duration'] ?? null;
-    $service->basic_frequency = $packages[0]['frequency'] ?? null;
-    $service->basic_price = $packages[0]['price'] ?? null;
-    $service->basic_description = $packages[0]['description'] ?? null;
-
-    // Check if student wants to offer Standard/Premium
-    if ($request->has('offer_packages')) {
-        // Save Standard
-        $service->standard_duration = $packages[1]['duration'] ?? null;
-        $service->standard_frequency = $packages[1]['frequency'] ?? null;
-        $service->standard_price = $packages[1]['price'] ?? null;
-        $service->standard_description = $packages[1]['description'] ?? null;
-
-        // Save Premium
-        $service->premium_duration = $packages[2]['duration'] ?? null;
-        $service->premium_frequency = $packages[2]['frequency'] ?? null;
-        $service->premium_price = $packages[2]['price'] ?? null;
-        $service->premium_description = $packages[2]['description'] ?? null;
-    } else {
-        // Clear Standard & Premium if toggle is off
-        $service->standard_duration = null;
-        $service->standard_frequency = null;
-        $service->standard_price = null;
-        $service->standard_description = null;
-
-        $service->premium_duration = null;
-        $service->premium_frequency = null;
-        $service->premium_price = null;
-        $service->premium_description = null;
-    }
-
-    // Unavailable Dates
-    $dates = $request->input('unavailable_dates', '');
-    $service->unavailable_dates = $dates ? json_encode(array_filter(explode(',', $dates))) : '[]';
-
-    $service->save();
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Service updated successfully!',
-        'service' => $service
-    ]);
-}
-
-
 
     public function destroy(Request $request, StudentService $service): JsonResponse
     {
@@ -259,12 +181,8 @@ class StudentServiceController extends Controller
             $rules = [
                 'description' => 'required|string',
             ];
-       } elseif ($currentSection === 'availability') {
-            $rules = [
-                'unavailable_dates' => 'nullable|string'
-            ];
         }
-        
+
         $validated = $request->validate($rules);
 
         // --- HANDLE IMAGE IN OVERVIEW ---
@@ -279,16 +197,6 @@ class StudentServiceController extends Controller
             $service->category_id = $validated['category_id'];
             if (isset($validated['image_path'])) $service->image_path = $validated['image_path'];
         }
-       if ($currentSection === 'availability') {
-        $dates = $request->input('unavailable_dates', []);
-        
-        if (is_string($dates)) {
-            $dates = array_filter(explode(',', $dates));
-        }
-
-        $service->unavailable_dates = json_encode(array_values($dates));
-    }
-
 
         // --- DESCRIPTION ---
         if ($currentSection === 'description') {
@@ -364,35 +272,13 @@ class StudentServiceController extends Controller
 
     public function details(Request $request, $id)
     {
-        $service = StudentService::with(['user', 'category', 'orders'])->findOrFail($id);
+        $service = StudentService::with(['user', 'category'])->findOrFail($id);
         $viewer = $request->user(); // currently logged-in user (if any)
-
-        // Fetch orders for this service
-        $orders = ServiceRequest::where('student_service_id', $service->id)
-                    ->whereIn('status', ['completed', 'accepted'])
-                    ->get();
-
-        $service->min_price = $orders->min('offered_price') ?? 0;
-        $service->max_price = $orders->max('offered_price') ?? 0;
-
-        // Completed orders count
-    $service->completed_orders = $service->orders()
-        ->whereIn('status', ['completed', 'accepted'])
-        ->count();
-
-    // Average rating from reviews received by the user
-    $service->rating = round($service->user->reviewsReceived()->avg('rating'), 1) ?? 0;
-
-        // Optional: calculate average delivery time in days
-        $service->avg_days = $orders->avg(function($order) {
-            return \Carbon\Carbon::parse($order->selected_dates)->diffInDays(now());
-        }) ?? 0;
 
         return view('services.details', [
             'service' => $service,
             'provider' => $service->user,
             'viewer' => $viewer,
-            
         ]);
     }
 

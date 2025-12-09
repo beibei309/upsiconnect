@@ -1,4 +1,6 @@
 <x-app-layout>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
     <style>
         .tab-btn {
@@ -79,8 +81,11 @@
                         <button class="tab-btn disabled" data-target="pricing" disabled>
                             <span class="py-2 px-4 text-gray-500">Pricing</span>
                         </button>
-                        <button class="tab-btn disabled" data-target="description-section" disabled>
+                        <button class="tab-btn disabled" data-target="description" disabled>
                             <span class="py-2 px-4 text-gray-500">Description</span>
+                        </button>
+                        <button class="tab-btn disabled" data-target="availability" disabled>
+                            <span class="py-2 px-4 text-gray-500">Availability</span>
                         </button>
                         <button class="tab-btn disabled" data-target="publish" disabled>
                             <span class="py-2 px-4 text-gray-500">Publish</span>
@@ -96,7 +101,7 @@
                     @csrf
 
                     <!-- Overview Section -->
-<div id="overview" class="tab-section mt-8">
+                    <div id="overview" class="tab-section mt-8">
                         <div class="mb-6">
                             <h2 class="text-xl font-semibold text-gray-900">Start defining your service</h2>
                             <p class="text-gray-600 mt-1">Choose a clear, descriptive title and suitable category for
@@ -191,15 +196,16 @@
 
                         <!-- Save & Continue Button -->
                         <div class="mt-8 flex justify-end">
-                 <button type="button" data-target="pricing" class="save-continue px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg shadow-md hover:bg-indigo-700 transition">
-    Save & Continue →
-</button>
+                            <button type="submit" name="save_step" value="overview" data-target="pricing"
+                                class="save-continue px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg shadow-md hover:bg-indigo-700 transition">
+                                Save & Continue →
+                            </button>
                         </div>
                     </div>
 
 
                     {{-- Pricing and package --}}
-<div id="pricing" class="tab-section mt-8 hidden">
+                    <div id="pricing" class="tab-section mt-8 hidden">
                         <div class="mb-6">
                             <h2 class="text-xl font-semibold text-gray-900">Scope & Pricing</h2>
                             <p class="text-gray-600 mt-1">Set your price for the service.</p>
@@ -208,9 +214,9 @@
                         <!-- Package 1 - Basic -->
                         <div class="mb-4">
                             <label for="package_name" class="block text-dark mb-2"
-                                style="font-size: 20px; font-weight:600; color: #7C86FF">Basic
+                                style="font-size: 20px; font-weight:600; color: #367588">Basic
                                 Package</label>
-
+                            <input type="hidden" name="packages[0][package_type]" value="basic">
                         </div>
 
                         <!-- Duration and Frequency -->
@@ -240,7 +246,7 @@
                                     </label>
                                     <select id="frequency0" name="packages[0][frequency]" required
                                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
-                                        <option value="daily">session</option>
+                                        <option value="session">session</option>
 
                                     </select>
                                 </div>
@@ -293,7 +299,9 @@
                                     style="font-size: 20px; font-weight:600; color: #F0B13B">Standard
                                     Package</label>
 
+                                <input type="hidden" name="packages[1][package_type]" value="standard">
                             </div>
+
 
                             <!-- Duration and Frequency -->
                             <div class="mb-6">
@@ -304,6 +312,7 @@
                                             class="block text-sm font-medium text-gray-700 mb-2">Duration</label>
                                         <select id="duration1" name="packages[1][duration]"
                                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                                            <option value="">--Select an option--</option>
                                             <option value="1">1 Hour</option>
                                             <option value="2">2 Hours</option>
                                             <option value="3">3 Hours</option>
@@ -322,9 +331,10 @@
                                         </label>
                                         <select id="frequency1" name="packages[1][frequency]"
                                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
-                                            <option value="daily">session</option>
-                                            <option value="daily">weekly</option>
-                                            <option value="daily">monthly</option>
+                                            <option value="">--Select an option--</option>
+                                            <option value="session">session</option>
+                                            <option value="weekly">weekly</option>
+                                            <option value="monthly">monthly</option>
 
                                         </select>
                                     </div>
@@ -355,7 +365,10 @@
                                 <label for="package_name" class="block text-dark mb-2"
                                     style="font-size: 20px; font-weight:600; color: #E7180B">Premium
                                     Package</label>
+
+                                <input type="hidden" name="packages[2][package_type]" value="premium">
                             </div>
+
 
                             <!-- Duration and Frequency -->
                             <div class="mb-6">
@@ -366,6 +379,7 @@
                                             class="block text-sm font-medium text-gray-700 mb-2">Duration</label>
                                         <select id="duration2" name="packages[2][duration]"
                                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                                            <option value="">--Select an option--</option>
                                             <option value="1">1 Hour</option>
                                             <option value="2">2 Hours</option>
                                             <option value="3">3 Hours</option>
@@ -384,9 +398,10 @@
                                         </label>
                                         <select id="frequency2" name="packages[2][frequency]"
                                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
-                                            <option value="daily">session</option>
-                                            <option value="daily">weekly</option>
-                                            <option value="daily">monthly</option>
+                                            <option value="">--Select an option--</option>
+                                            <option value="session">session</option>
+                                            <option value="weekly">weekly</option>
+                                            <option value="monthly">monthly</option>
 
                                         </select>
                                     </div>
@@ -413,13 +428,17 @@
                             </div>
                         </div>
 
+
+
                         <!-- Save & Continue Button -->
                         <div class="mt-8 flex justify-end">
-               <button type="button" data-target="description-section" class="save-continue px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg shadow-md hover:bg-indigo-700 transition">
-    Save & Continue →
-</button>
-
+                            <button type="submit" name="save_step" value="pricing" data-target="description"
+                                class="save-continue px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg shadow-md hover:bg-indigo-700 transition">
+                                Save & Continue →
+                            </button>
                         </div>
+
+
                     </div>
                     <script>
                         document.getElementById('offer_packages').addEventListener('change', function() {
@@ -433,7 +452,7 @@
                     </script>
 
                     <!-- Description Section -->
-<div id="description-section" class="tab-section mt-8 hidden">
+                    <div id="description" class="tab-section mt-8 hidden">
                         <div class="mb-6">
                             <h2 class="text-xl font-semibold text-gray-900">Service Description</h2>
                             <p class="text-gray-600 mt-1">
@@ -449,7 +468,7 @@
 
                             <textarea id="description" name="description" rows="8" required
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg 
-            focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
                                 placeholder="Describe your service in detail. What do you offer? What makes you qualified? What can clients expect?"></textarea>
 
                             <p class="text-sm text-gray-500 mt-1">
@@ -457,302 +476,374 @@
                             </p>
                         </div>
                         <div class="mt-8 flex justify-end">
-                            <button type="button" data-target="publish" class="save-continue px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg shadow-md hover:bg-indigo-700 transition">
-    Save & Continue →
-</button>
-
-                        </div>
-                    </div>
-
-
-                    <!-- Publish Section -->
-                    <div id="publish" class="mt-8 hidden">
-                        <div class="mb-6">
-                            <h2 class="text-xl font-semibold text-gray-900">Publish Your Service</h2>
-                            <p class="text-gray-600 mt-1">Review everything and publish your service.</p>
-                        </div>
-                        <!-- Form Actions -->
-                        <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
-                            <a href="{{ route('services.manage') }}"
-                                class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors">
-                                Cancel
-                            </a>
-                            <button type="submit"
-                                class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors flex items-center space-x-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                </svg>
-                                <span>Create Service</span>
+                            <button type="submit" name="save_step" value="description" data-target="availability"
+                                class="save-continue px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg shadow-md hover:bg-indigo-700 transition">
+                                Save & Continue →
                             </button>
                         </div>
                     </div>
-                </form>
+
+                    <!-- Availability Section -->
+                    <div id="availability" class="tab-section mt-8 hidden">
+                        <div class="mb-6">
+                            <h2 class="text-xl font-semibold text-gray-900">Availability</h2>
+                            <p class="text-gray-600 mt-1">
+                                Pilih tarikh yang anda TIDAK available untuk menerima service.
+                            </p>
+                        </div>
+
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Select Unavailable Dates
+                            </label>
+
+                            <input id="unavailable_dates" name="unavailable_dates"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg 
+            focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                                placeholder="Choose dates" />
+
+                            <p class="text-sm text-gray-500 mt-1">
+                                Tarikh yang dipilih akan ditanda sebagai warna merah pada calendar.
+                            </p>
+                        </div>
+
+                        <div class="mt-8 flex justify-end">
+                            <button type="submit" name="save_step" value="availability" data-target="publish"
+                                class="save-continue px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg shadow-md hover:bg-indigo-700 transition">
+                                Save & Continue →
+                            </button>
+                        </div>
+                    </div>
+                    <script>
+                        document.addEventListener("DOMContentLoaded", function() {
+
+                            // Use $service only if it exists, otherwise default to empty array
+                            let existingUnavailable = @json(isset($service) && $service->unavailable_dates ? json_decode($service->unavailable_dates) : []);
+
+                            flatpickr("#unavailable_dates", {
+                                mode: "multiple",
+                                dateFormat: "Y-m-d",
+                                defaultDate: existingUnavailable,
+                                onDayCreate: function(dObj, dStr, fp, dayElem) {
+                                    let date = dayElem.dateObj.toISOString().split("T")[0];
+                                    if (existingUnavailable.includes(date)) {
+                                        dayElem.classList.add("unavailable-dates");
+                                    }
+                                },
+                                onChange: function(selectedDates, dateStr, instance) {
+                                    let formattedDates = selectedDates.map(d => d.toISOString().split("T")[0]);
+                                    instance.input.value = formattedDates.join(",");
+
+                                    instance.calendarContainer.querySelectorAll(".flatpickr-day").forEach(dayElem => {
+                                        let date = dayElem.dateObj.toISOString().split("T")[0];
+                                        if (formattedDates.includes(date)) {
+                                            dayElem.classList.add("unavailable-dates");
+                                        } else {
+                                            dayElem.classList.remove("unavailable-dates");
+                                        }
+                                    });
+                                }
+                            });
+                        });
+                    </script>
+
+                   <!-- Publish Section -->
+<div id="publish" class="mt-8 hidden">
+    <div class="mb-6">
+        <h2 class="text-xl font-semibold text-gray-900">Publish Your Service</h2>
+        <p class="text-gray-600 mt-1">Review everything before publishing your service.</p>
+    </div>
+
+    <!-- Live Preview Container -->
+    <div class="bg-gray-50 p-6 rounded-lg shadow-sm border">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Live Preview</h3>
+
+        <!-- Two-column layout -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- Left Column -->
+            <div class="space-y-4">
+                <!-- Service Title -->
+                <div>
+                    <h4 class="text-sm text-gray-600">Service Title:</h4>
+                    <p id="previewTitle" class="text-lg font-semibold text-gray-800">Loading...</p>
+                </div>
+
+                <!-- Category -->
+                <div>
+                    <h4 class="text-sm text-gray-600">Category:</h4>
+                    <p id="previewCategory" class="text-md text-gray-800">Loading...</p>
+                </div>
+
+                <!-- Availability -->
+                <div>
+                    <h4 class="text-sm text-gray-600">Unavailable dates:</h4>
+                    <p id="previewAvailability" class="text-gray-800">Select a date to check availability</p>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <h4 class="text-sm text-gray-600">Description:</h4>
+                    <p id="previewDescription" class="text-gray-800">Loading...</p>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="space-y-4">
+                <!-- Image -->
+                <div>
+                    <h4 class="text-sm text-gray-600">Service Image:</h4>
+                    <div id="previewImage"
+                        class="w-full h-48 bg-gray-200 flex items-center justify-center rounded-lg">
+                        <span class="text-gray-500">Image Preview</span>
+                    </div>
+                </div>
+
+                <!-- Packages -->
+                <div>
+                    <h4 class="text-sm text-gray-600 mb-2">Packages:</h4>
+                    <div id="previewPackages" class="grid grid-cols-1 gap-4">
+                        <p class="text-gray-500">No packages added</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
- 
 
+    <!-- Form Actions -->
+    <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
+        <a href="{{ route('services.manage') }}"
+            class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors">Cancel</a>
+        <button type="submit"
+            class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors flex items-center space-x-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+            <span>Create Service</span>
+        </button>
+    </div>
+</div>
+
+<!-- Script for Live Preview -->
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-    const tabButtons = document.querySelectorAll(".tab-btn");
-    const sections = document.querySelectorAll(".tab-section");
-    const form = document.getElementById('createServiceForm');
+document.addEventListener("DOMContentLoaded", function() {
+    // Inputs
+    const titleInput = document.getElementById('title');
+    const categorySelect = document.getElementById('category_id');
+    const imageInput = document.getElementById('image');
+    const descriptionInput = document.getElementById('description');
+    const dateInput = document.getElementById('unavailable_dates');
 
-    let serviceId = null; // store service ID after first save
-    const completed = { overview: false, pricing: false, description: false };
+    // Preview Elements
+    const previewTitle = document.getElementById('previewTitle');
+    const previewCategory = document.getElementById('previewCategory');
+    const previewImage = document.getElementById('previewImage');
+    const previewPackages = document.getElementById('previewPackages');
+    const previewAvailability = document.getElementById('previewAvailability');
+    const previewDescription = document.getElementById('previewDescription');
 
-    // Show a tab
-    function showTab(id) {
-        sections.forEach(sec => sec.classList.add("hidden"));
-        document.getElementById(id).classList.remove("hidden");
+    // Update functions
+    titleInput.addEventListener('input', () => {
+        previewTitle.textContent = titleInput.value || 'Service Title';
+    });
 
-        tabButtons.forEach(btn => btn.classList.remove("active"));
-        const activeBtn = document.querySelector(`.tab-btn[data-target="${id}"]`);
-        if(activeBtn) activeBtn.classList.add("active");
-    }
+    categorySelect.addEventListener('change', () => {
+        const selected = categorySelect.options[categorySelect.selectedIndex];
+        previewCategory.textContent = selected ? selected.text : 'Select a category';
+    });
 
-    // Unlock next tab
-    function unlockNextTab(nextId) {
-        const btn = document.querySelector(`.tab-btn[data-target="${nextId}"]`);
-        if(btn){
-            btn.classList.remove("disabled");
-            showTab(nextId);
+    imageInput.addEventListener('change', (event) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImage.style.backgroundImage = `url(${e.target.result})`;
+            previewImage.style.backgroundSize = 'cover';
+            previewImage.style.backgroundPosition = 'center';
+            previewImage.textContent = '';
+        };
+        if (imageInput.files[0]) reader.readAsDataURL(imageInput.files[0]);
+    });
+
+    descriptionInput.addEventListener('input', () => {
+        previewDescription.textContent = descriptionInput.value || 'Service description';
+    });
+
+    dateInput.addEventListener('change', () => {
+        previewAvailability.textContent = dateInput.value || 'Select a date to check availability';
+    });
+
+    // Dynamic Packages Preview
+    function updatePackages() {
+        previewPackages.innerHTML = '';
+
+        const packageElements = document.querySelectorAll('[name^="packages"]');
+        let packagesAdded = false;
+
+        // Loop through all package inputs (assumes your package inputs follow this naming)
+        const totalPackages = 3; // Basic, Standard, Premium
+        for (let i = 0; i < totalPackages; i++) {
+            const type = document.querySelector(`[name="packages[${i}][package_type]"]`)?.value;
+            const price = document.querySelector(`[name="packages[${i}][price]"]`)?.value;
+            const duration = document.querySelector(`[name="packages[${i}][duration]"]`)?.value;
+            const frequency = document.querySelector(`[name="packages[${i}][frequency]"]`)?.value;
+            const description = document.querySelector(`[name="packages[${i}][description]"]`)?.value;
+
+            if (type && (price || duration || frequency || description)) {
+                packagesAdded = true;
+                const card = document.createElement('div');
+                card.classList.add('bg-white', 'border', 'border-gray-200', 'rounded-lg', 'p-4', 'shadow-sm');
+
+                const titleEl = document.createElement('h5');
+                titleEl.classList.add('text-md', 'font-semibold', 'text-gray-800');
+                titleEl.textContent = type.charAt(0).toUpperCase() + type.slice(1) + ' Package';
+
+                const priceEl = document.createElement('p');
+                priceEl.classList.add('text-gray-700');
+                priceEl.textContent = `Price: RM ${price || '0.00'}`;
+
+                const durationEl = document.createElement('p');
+                durationEl.classList.add('text-gray-700');
+                durationEl.textContent = `Duration: ${duration || '-'} ${frequency || ''}`;
+
+                const descEl = document.createElement('p');
+                descEl.classList.add('text-gray-600', 'mt-2');
+                descEl.textContent = description || 'No description';
+
+                card.appendChild(titleEl);
+                card.appendChild(priceEl);
+                card.appendChild(durationEl);
+                card.appendChild(descEl);
+
+                previewPackages.appendChild(card);
+            }
+        }
+
+        if (!packagesAdded) {
+            previewPackages.innerHTML = '<p class="text-gray-500">No packages added</p>';
         }
     }
 
-    // Only check visible required fields
-    function checkRequiredFields(section) {
-        const requiredFields = section.querySelectorAll('[required]');
-        for(let field of requiredFields){
-            if(field.offsetParent === null) continue; // skip hidden
-            if(!field.value.trim()){
-                return false;
-            }
-        }
-        return true;
-    }
-
-    // Save data via AJAX
-    function saveData(sectionId) {
-        const formData = new FormData(form);
-        formData.append("current_section", sectionId);
-        if(serviceId) formData.append("service_id", serviceId);
-
-        fetch("{{ route('services.store') }}", {
-            method: "POST",
-            body: formData,
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if(data.success){
-                serviceId = data.service.id; // store service ID
-                completed[sectionId] = true;
-
-                // determine next tab
-                let nextTabId = '';
-                if(sectionId === 'overview') nextTabId = 'pricing';
-                else if(sectionId === 'pricing') nextTabId = 'description-section';
-                else if(sectionId === 'description-section') nextTabId = 'publish';
-
-                if(nextTabId) unlockNextTab(nextTabId);
-            } else {
-                alert("Error saving data. Please try again.");
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            alert("Error saving data. Please try again.");
-        });
-    }
-
-    // Handle Save & Continue button click
-    document.querySelectorAll('.save-continue').forEach(btn => {
-        btn.addEventListener('click', function(){
-            const targetId = this.dataset.target;
-            const section = document.getElementById(targetId === 'pricing' ? 'overview' : targetId === 'description-section' ? 'pricing' : 'description-section');
-            
-            if(!checkRequiredFields(section)){
-                alert('Please fill in all required fields before proceeding.');
-                return;
-            }
-
-            saveData(section.id);
-        });
+    // Listen for changes in package inputs
+    document.querySelectorAll('[name^="packages"]').forEach(input => {
+        input.addEventListener('input', updatePackages);
     });
 
-    // Tab button click
-    tabButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            if(btn.classList.contains('disabled')) return;
-            showTab(btn.dataset.target);
-        });
-    });
-
-    // Show first tab initially
-    showTab('overview');
-
-    // Toggle package section visibility
-    document.getElementById('offer_packages')?.addEventListener('change', function() {
-        const packageSection = document.getElementById('packageSection');
-        if(this.checked) packageSection.classList.remove('hidden');
-        else packageSection.classList.add('hidden');
-    });
-
-    // Template image selection
-    const images = document.querySelectorAll('.template-image');
-    images.forEach(img => {
-        img.addEventListener('click', function() {
-            images.forEach(i => {
-                i.classList.remove('border-indigo-500');
-                i.classList.add('border-gray-300');
-            });
-            this.classList.remove('border-gray-300');
-            this.classList.add('border-indigo-500');
-
-            const fileInput = document.getElementById('image');
-            if(fileInput) fileInput.value = "";
-
-            let input = document.getElementById('selected_template');
-            if(!input){
-                input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'template_image';
-                input.id = 'selected_template';
-                form.appendChild(input);
-            }
-            input.value = this.dataset.template;
-        });
-    });
-
+    // Initialize preview
+    previewTitle.textContent = titleInput.value || 'Service Title';
+    previewCategory.textContent = categorySelect.options[categorySelect.selectedIndex]?.text || 'Select a category';
+    previewDescription.textContent = descriptionInput.value || 'Service description';
+    previewAvailability.textContent = dateInput.value || 'Select a date to check availability';
+    updatePackages();
 });
 </script>
 
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const tabs = document.querySelectorAll('nav a[href^="#"]'); // all tab links
-            const sections = document.querySelectorAll('#overview, #pricing, #description-section, #publish');
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.getElementById('createServiceForm');
+            const tabButtons = document.querySelectorAll(".tab-btn");
+            const sections = document.querySelectorAll(".tab-section");
+            let serviceId = "{{ $service->id ?? '' }}";
 
-            // Set the first tab to be visible on page load
-            sections.forEach(sec => sec.classList.add('hidden')); // Hide all sections
-            document.querySelector('#overview').classList.remove('hidden'); // Show the overview section initially
+            function showTab(id) {
+                sections.forEach(sec => sec.classList.add("hidden"));
+                document.getElementById(id).classList.remove("hidden");
+                tabButtons.forEach(btn => btn.classList.remove("active"));
+                const activeBtn = document.querySelector(`.tab-btn[data-target="${id}"]`);
+                if (activeBtn) activeBtn.classList.add("active");
+            }
 
-            tabs.forEach(tab => {
-                tab.addEventListener('click', function(e) {
-                    e.preventDefault(); // prevent the default jump to anchor behavior
+            function unlockTab(id) {
+                const btn = document.querySelector(`.tab-btn[data-target="${id}"]`);
+                if (btn) {
+                    btn.classList.remove("disabled");
+                    btn.disabled = false;
+                }
+            }
 
-                    // Remove active classes from all tabs
-                    tabs.forEach(t => t.classList.remove('text-indigo-600', 'border-indigo-600'));
-                    tabs.forEach(t => t.classList.add('text-gray-500', 'hover:text-gray-700',
-                        'hover:border-gray-300'));
+            function checkRequiredFields(section) {
+                const requiredFields = section.querySelectorAll('[required]');
+                for (let field of requiredFields) {
+                    if (field.offsetParent === null) continue; // hidden
+                    if (!field.value.trim()) return false;
+                }
+                return true;
+            }
 
-                    // Add active classes to the clicked tab
-                    this.classList.add('text-indigo-600', 'border-indigo-600');
+            async function saveSection(sectionId) {
+                const formData = new FormData(form);
+                formData.append("current_section", sectionId);
+                if (serviceId) formData.append("service_id", serviceId);
 
-                    // Hide all sections
-                    sections.forEach(sec => sec.classList.add('hidden'));
+                // include all fields from pricing section
+                if (sectionId === 'pricing') {
+                    document.querySelectorAll('#pricing select, #pricing input, #pricing textarea').forEach(
+                        el => {
+                            if (el.name) formData.append(el.name, el.value);
+                        });
+                }
 
-                    // Get the target section based on the href attribute of the clicked tab
-                    const target = document.querySelector(this.getAttribute('href'));
+                try {
+                    const res = await fetch("{{ route('services.store') }}", {
+                        method: "POST",
+                        body: formData,
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                .getAttribute('content')
+                        }
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        serviceId = data.service.id;
+                        let nextTab = '';
+                        if (sectionId === 'overview') nextTab = 'pricing';
+                        else if (sectionId === 'pricing') nextTab = 'description';
+                        else if (sectionId === 'description') nextTab = 'availability';
+                        else if (sectionId === 'availability') nextTab = 'publish';
 
-                    if (target) {
-                        target.classList.remove('hidden'); // Show the clicked section
+                        if (nextTab) {
+                            unlockTab(nextTab);
+                            showTab(nextTab);
+                        }
+                    } else {
+                        alert(data.error || "Error saving data.");
                     }
+                } catch (err) {
+                    console.error(err);
+                    alert("Error saving data. Please try again.");
+                }
+            }
+
+            // Save & Continue buttons
+            document.querySelectorAll('.save-continue').forEach(btn => {
+                btn.addEventListener('click', e => {
+                    e.preventDefault();
+                    let currentSection = '';
+
+                    if (btn.dataset.target === 'pricing') currentSection = 'overview';
+                    else if (btn.dataset.target === 'description') currentSection = 'pricing';
+                    else if (btn.dataset.target === 'availability') currentSection = 'description';
+                    else if (btn.dataset.target === 'publish') currentSection = 'availability';
+
+                    if (!checkRequiredFields(document.getElementById(currentSection))) {
+                        alert('Please fill all required fields before proceeding.');
+                        return;
+                    }
+                    saveSection(currentSection);
                 });
             });
-        });
 
-        // DELETE SCRIPT - for handling delete requests on the form
-        document.getElementById('deleteServiceForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            const formData = new FormData(this);
-            const submitButton = this.querySelector('button[type="submit"]');
-            const originalText = submitButton.innerHTML;
-
-            // Show loading state
-            submitButton.disabled = true;
-            submitButton.innerHTML = `
-                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Deleting...
-            `;
-
-            try {
-                const response = await fetch('/services/delete', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
-                            'content')
-                    }
+            // Tab buttons
+            tabButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (btn.classList.contains('disabled')) return;
+                    showTab(btn.dataset.target);
                 });
+            });
 
-                const data = await response.json();
-
-                if (response.ok) {
-                    showMessage('Service deleted successfully!', 'success');
-                    setTimeout(() => {
-                        window.location.href = '{{ route('services.manage') }}';
-                    }, 1500);
-                } else {
-                    showMessage(data.error || 'Failed to delete service', 'error');
-                }
-            } catch (error) {
-                showMessage('An error occurred. Please try again.', 'error');
-            } finally {
-                // Restore button state
-                submitButton.disabled = false;
-                submitButton.innerHTML = originalText;
-            }
+            showTab('overview');
         });
-
-        function showMessage(message, type) {
-            const messageContainer = document.getElementById('messageContainer');
-            const messageDiv = document.createElement('div');
-
-            const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
-
-            messageDiv.className =
-                `${bgColor} text-white px-6 py-3 rounded-lg shadow-lg mb-4 transform transition-all duration-300 translate-x-full`;
-            messageDiv.textContent = message;
-
-            messageContainer.appendChild(messageDiv);
-
-            // Animate in
-            setTimeout(() => {
-                messageDiv.classList.remove('translate-x-full');
-            }, 100);
-
-            // Remove after 5 seconds
-            setTimeout(() => {
-                messageDiv.classList.add('translate-x-full');
-                setTimeout(() => {
-                    messageContainer.removeChild(messageDiv);
-                }, 300);
-            }, 5000);
-        }
-
-    function loadPreview() {
-    if (!serviceId) return;
-    fetch(`/services/${serviceId}/details`)
-        .then(res => res.text())
-        .then(html => {
-            document.getElementById('preview-container').innerHTML = html;
-        });
-}
-
-// Call this when publish tab is clicked
-document.querySelector('.tab-btn[data-target="publish"]').addEventListener('click', loadPreview);
-
     </script>
-
 
 
     <!-- Success/Error Messages -->
