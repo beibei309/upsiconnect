@@ -6,15 +6,19 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up(): void
+public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            // Tambah column baru
-            $table->text('work_experience_message')->nullable()->after('work_experience');
-            $table->string('work_experience_file')->nullable()->after('work_experience_message');
+            // Kita cuma tambah column baru sahaja.
+            // JANGAN letak 'after' dan JANGAN letak 'dropColumn'.
+            
+            if (!Schema::hasColumn('users', 'work_experience_message')) {
+                $table->text('work_experience_message')->nullable();
+            }
 
-            // Optional: kalau nak drop old column
-            $table->dropColumn('work_experience');
+            if (!Schema::hasColumn('users', 'work_experience_file')) {
+                $table->string('work_experience_file')->nullable();
+            }
         });
     }
 
