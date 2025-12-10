@@ -25,6 +25,7 @@ use App\Http\Controllers\Admin\ReportAdminController;
 use App\Http\Controllers\Pages\StudentPageController;
 use App\Http\Controllers\Admin\AdminStudentController;
 use App\Http\Controllers\ServiceApplicationController;
+use App\Http\Controllers\Admin\AdminRequestController;
 use App\Http\Controllers\Admin\AdminServicesController;
 use App\Http\Controllers\Admin\AdminCommunityController;
 use App\Http\Controllers\Admin\AdminDashboardController;
@@ -241,6 +242,11 @@ Route::post('/admin/login', [AdminAuthController::class, 'login'])
 
     // NEW: Unban Student
     Route::post('/students/{id}/unban', [AdminStudentController::class, 'unban'])->name('admin.students.unban');
+
+    // Manage Service Requests (Skrin Monitor User Request)
+    Route::get('/requests', [AdminRequestController::class, 'index'])->name('admin.requests.index');
+    Route::delete('/requests/{serviceRequest}', [AdminRequestController::class, 'destroy'])->    
+         name('admin.requests.destroy');
 
     // Manage Admin Accounts (superadmin)
     Route::get('/superadmin/admins/create', [SuperAdminController::class, 'create'])

@@ -71,9 +71,10 @@
             </li>
 
             <li>
-                <a href="#"
-                   class="block px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 font-medium">
-                    Manage Requests
+                <a href="{{ route('admin.requests.index') }}" 
+                   class="block px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 font-medium
+                   {{ request()->routeIs('admin.requests.index') ? 'bg-blue-100 text-blue-700 font-semibold' : 'text-gray-700' }}">
+                    <i class="fa fa-list"></i> Manage Requests
                 </a>
             </li>
 

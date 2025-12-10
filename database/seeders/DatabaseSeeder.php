@@ -137,6 +137,20 @@ class DatabaseSeeder extends Seeder
                 ]);
             }
         }
+               $allServices = \App\Models\StudentService::all();
+               $requester = $communityUser; // Guna user community sedia ada
+
+               foreach ($allServices->random(3) as $service) {
+                \App\Models\ServiceRequest::create([
+                    'student_service_id' => $service->id,      // Ikut Model (bukan service_id)
+                    'requester_id'       => $requester->id,    // Ikut Model (bukan user_id)
+                    'provider_id'        => $service->user_id, // Ambil owner servis tu
+                    'status'             => 'pending',
+                    'message'            => 'Hi, I need help with this!',
+                    'offered_price'      => $service->suggested_price,
+                    'created_at'         => now(),
+               ]);
+            }
 
         //admin 
         $this->call(AdminSeeder::class);

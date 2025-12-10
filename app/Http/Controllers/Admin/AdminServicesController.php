@@ -46,4 +46,12 @@ class AdminServicesController extends Controller
 
         return redirect()->route('admin.services.index')->with('success', 'Service rejected.');
     }
+
+    // Delete/Destroy service record
+    public function destroy(StudentService $service)
+    {
+        $service->delete();
+
+        return redirect()->route('admin.services.index')->with('success', 'Service has been permanently deleted.');
+    }
 }
