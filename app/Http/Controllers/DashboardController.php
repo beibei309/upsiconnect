@@ -8,38 +8,51 @@ use Illuminate\Http\Request;
 class DashboardController extends Controller
 {
 public function index(Request $request)
-    {
-        $q = $request->query('q'); // get ?q= from URL, or null if not present
+{
+    $q = $request->query('q'); 
+    $category_id = $request->query('category_id'); 
+    $min_rating = $request->query('min_rating');
+    $available = $request->query('available');
 
-        $category_id = $request->query('category_id'); 
-        $min_rating = $request->query('min_rating');
-        $available = $request->query('available');
+    // 1. Get Services
+    $services = StudentService::with([
+        'category',
+        'user' => function ($q) {
+            $q->withCount('reviewsReceived')
+              ->withAvg('reviewsReceived as average_rating', 'rating');
+        }
+    ])
+    ->where('is_active', true)
+    ->where('approval_status', 'approved') // <--- Added: Only show approved services
+    ->latest()
+    ->get();
 
-        $services = StudentService::with('category', 'user')
-                    ->where('is_active', true)
-                    ->latest()
-                    ->get();        
-                    
-        $categories = Category::withCount(['services' => function ($q) {
-            $q->where('is_active', true);
-        }])->get();
+    // 2. Get Categories with Count of APPROVED services
+    $categories = Category::withCount(['services' => function ($q) {
+        $q->where('is_active', true)
+          ->where('approval_status', 'approved'); // <--- Added: Only count approved
+    }])->get();
 
-        //Display top provider
-        $topStudents = \App\Models\User::where('role', 'student')
-        ->whereHas('services', function ($q) {
-            $q->where('is_active', true);
-        })
-        ->withCount(['services' => function ($q) {
-            $q->where('is_active', true);
-        }])
-        ->withAvg('reviewsReceived as average_rating', 'rating')
-        ->orderByDesc('services_count')
-        ->take(6)
-        ->get();
+    // 3. Get Top Providers (based on active & approved services)
+    $topStudents = \App\Models\User::where('role', 'helper')
+    ->whereHas('services', function ($q) {
+        $q->where('is_active', true)
+          ->where('approval_status', 'approved'); // <--- Added
+    })
+    ->withCount([
+        'services' => function ($q) {
+            $q->where('is_active', true)
+              ->where('approval_status', 'approved'); // <--- Added
+        },
+        'reviewsReceived' // Ensure review count is loaded
+    ])
+    ->withAvg('reviewsReceived as average_rating', 'rating')
+    ->orderByDesc('services_count')
+    ->take(6)
+    ->get();
 
-
-        return view('dashboard', compact('services', 'categories','q', 'category_id', 'min_rating', 'available', 'topStudents'));
-    }
+    return view('dashboard', compact('services', 'categories', 'q', 'category_id', 'min_rating', 'available', 'topStudents'));
+}
 
     public function services(Request $request): JsonResponse
 {
@@ -50,7 +63,7 @@ public function index(Request $request)
 
     $query = StudentService::query()
         ->where('is_active', true)
-        ->with(['category', 'student' => function ($query) {
+        ->with(['category', 'helper' => function ($query) {
             $query->select(['id', 'name', 'role', 'is_available']);
         }]);
 
@@ -89,7 +102,7 @@ public function index(Request $request)
             'id' => $svc->id,
             'title' => $svc->title,
             'description' => $svc->description,
-            'suggested_price' => $svc->suggested_price,
+            'basic_price' => $svc->basic_price,
             'category' => $svc->category,
             'student' => [
                 'id' => $student->id,

@@ -130,4 +130,48 @@ class FavoriteController extends Controller
             'favorited' => $isFavorited
         ]);
     }
+
+    // ADD SERVICE TO FAV
+    public function toggleService(Request $request): JsonResponse
+{
+    $request->validate([
+        'service_id' => 'required|exists:student_services,id'
+    ]);
+
+    $user = Auth::user();
+    $serviceId = $request->service_id;
+
+    $exists = $user->favoriteServices()->where('service_id', $serviceId)->exists();
+
+    if ($exists) {
+        // remove
+        $user->favoriteServices()->detach($serviceId);
+        return response()->json([
+            'success' => true,
+            'favorited' => false,
+            'message' => 'Service removed from favorites'
+        ]);
+    } else {
+        // add
+        $user->favoriteServices()->attach($serviceId);
+        return response()->json([
+            'success' => true,
+            'favorited' => true,
+            'message' => 'Service added to favorites'
+        ]);
+    }
+}
+
+    public function checkService($serviceId): JsonResponse
+    {
+        $isFavorited = Auth::user()
+            ->favoriteServices()
+            ->where('service_id', $serviceId)
+            ->exists();
+
+        return response()->json([
+            'favorited' => $isFavorited
+        ]);
+    }
+
 }

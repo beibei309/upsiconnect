@@ -19,31 +19,38 @@ class ServiceRequestController extends BaseController
      * Store a new service request
      */
     public function store(Request $request)
-{
-    try {
+    {
         $user = Auth::user();
+        
+        // Only community members (including staff) can request services
         if (!$user->isCommunity()) {
             return response()->json(['error' => 'Only community members can request services.'], 403);
         }
 
+        // Check if user is verified (staff are automatically verified)
+        if (!$user->isVerifiedPublic() && !$user->isVerifiedStaff()) {
+            return response()->json(['error' => 'Please complete your account verification first.'], 403);
+        }
+
         $validated = $request->validate([
             'student_service_id' => 'required|exists:student_services,id',
-            'selected_dates' => 'required|string',
-            'selected_package' => 'required|string',
             'message' => 'nullable|string|max:1000',
             'offered_price' => 'nullable|numeric|min:0|max:99999.99'
         ]);
 
         $studentService = StudentService::findOrFail($validated['student_service_id']);
-
+        
+        // Check if service is active
         if (!$studentService->is_active) {
             return response()->json(['error' => 'This service is no longer available.'], 400);
         }
 
+        // Check if provider is available
         if (!$studentService->user->is_available) {
             return response()->json(['error' => 'This service provider is currently unavailable.'], 400);
         }
 
+        // Check if user already has a pending request for this service
         $existingRequest = ServiceRequest::where('student_service_id', $studentService->id)
             ->where('requester_id', $user->id)
             ->whereIn('status', ['pending', 'accepted', 'in_progress'])
@@ -57,8 +64,6 @@ class ServiceRequestController extends BaseController
             'student_service_id' => $studentService->id,
             'requester_id' => $user->id,
             'provider_id' => $studentService->user_id,
-            'selected_dates' => $validated['selected_dates'],
-            'selected_package' => $validated['selected_package'],
             'message' => $validated['message'],
             'offered_price' => $validated['offered_price'],
             'status' => 'pending'
@@ -66,47 +71,41 @@ class ServiceRequestController extends BaseController
 
         return response()->json([
             'success' => true,
-            'message' => 'Service request sent successfully!',
+            'message' => 'Service request sent successfully! The provider will be notified.',
             'request_id' => $serviceRequest->id
         ]);
-    } catch (\Exception $e) {
-        \Log::error('ServiceRequest store error: ' . $e->getMessage());
-        return response()->json(['error' => $e->getMessage()], 500);
     }
-}
-
 
     /**
      * Show service requests for the authenticated user
      */
-   public function index(Request $request)
-{
-    $user = Auth::user();
+    public function index(Request $request)
+    {
+        $user = Auth::user();
+        $status = $request->get('status', 'all');
+        // Normalize status filter (supports hyphen or underscore) and validate
+        $status = str_replace('-', '_', strtolower($status));
+        $validStatuses = ['all', 'pending', 'accepted', 'rejected', 'in_progress', 'completed', 'cancelled'];
+        if (!in_array($status, $validStatuses, true)) {
+            $status = 'all';
+        }
 
-    // 1. Jika User adalah HELPER
-    if ($user->role === 'helper') {
-        // Ambil request yang DITERIMA oleh helper ini
-        $receivedRequests = \App\Models\ServiceRequest::where('provider_id', $user->id)
-            ->with(['requester', 'studentService']) // Eager loading
-            ->orderBy('created_at', 'desc')
-            ->get();
+        // Build both lists so the view can render tabs reliably
+        $sentQuery = ServiceRequest::where('requester_id', $user->id)
+            ->with(['studentService', 'provider']);
+        $receivedQuery = ServiceRequest::where('provider_id', $user->id)
+            ->with(['studentService', 'requester']);
 
-        // Hantar ke fail 'service-requests.helper'
-        return view('service-requests.helper', compact('receivedRequests'));
+        if ($status !== 'all') {
+            $sentQuery->where('status', $status);
+            $receivedQuery->where('status', $status);
+        }
+
+        $sentRequests = $sentQuery->orderBy('created_at', 'desc')->get();
+        $receivedRequests = $receivedQuery->orderBy('created_at', 'desc')->get();
+
+        return view('service-requests.index', compact('sentRequests', 'receivedRequests', 'status'));
     }
-
-    // 2. Jika User adalah BIASA (Student/User)
-    else {
-        // Ambil request yang DIHANTAR oleh user ini
-        $sentRequests = \App\Models\ServiceRequest::where('requester_id', $user->id)
-            ->with(['provider', 'studentService']) // Eager loading
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        // Hantar ke fail 'service-requests.index'
-        return view('service-requests.index', compact('sentRequests'));
-    }
-}
 
     /**
      * Show a specific service request

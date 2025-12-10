@@ -16,6 +16,12 @@ use App\Http\Controllers\StudentsController;
 use App\Http\Controllers\VerificationController;
 use App\Http\Controllers\StudentServiceController;
 use App\Http\Controllers\ServiceRequestController;
+use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\Admin\VerificationController as AdminVerificationController;
+use App\Http\Controllers\Admin\ReportAdminController;
+use App\Http\Controllers\Admin\UserAdminController;
+use App\Http\Controllers\Pages\SearchPageController;
+use App\Http\Controllers\Pages\AdminPageController;
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\UserAdminController;
 use App\Http\Controllers\Pages\AdminPageController;
@@ -43,12 +49,27 @@ Route::get('/students/create', [ProfileController::class, 'create'])->name('stud
 // Handle the profile form submission
 Route::get('/students', [StudentsController::class, 'index'])->name('students.index');
 Route::post('/students/create', [StudentsController::class, 'store'])->name('students.store');
-// Route::get('/onboarding/students', fn() => view('onboarding.students_verification'))->name('onboarding.students.verify');
-// routes/web.php
-Route::get('/onboarding/students', [VerificationController::class,'index'])->name('onboarding.students');
-Route::post('/onboarding/students/upload-photo', [VerificationController::class,'uploadPhoto'])->name('students_verification.upload');
+Route::get('/students/edit-profile', [StudentsController::class, 'edit'])->name('students.edit');
+Route::patch('/students/edit-profile', [StudentsController::class, 'update'])->name('students.update');
 
 
+// ... kod route lain ...
+
+Route::middleware(['auth'])->group(function () {
+    
+    // Route untuk paparkan page verification
+    Route::get('/onboarding/students', [VerificationController::class, 'index'])
+        ->name('onboarding.students');
+
+    // Route untuk Upload Profile Photo (INI YANG MISSING DALAM ERROR ANDA)
+    Route::post('/verification/upload-photo', [VerificationController::class, 'uploadPhoto'])
+        ->name('students_verification.upload');
+
+    // Route untuk Upload Live Selfie (Untuk fungsi kamera nanti)
+    Route::post('/verification/upload-selfie', [VerificationController::class, 'uploadSelfie'])
+        ->name('students_verification.upload_selfie');
+
+});
 // services
 Route::get('/services', [StudentServiceController::class, 'index'])->name('services.index');
 Route::get('/services/manage', [StudentServiceController::class, 'manage'])->middleware(['auth'])->name('services.manage');
@@ -62,6 +83,10 @@ Route::delete('/services/manage/{service}', [StudentServiceController::class, 'd
 Route::put('/services/manage/{service}', [StudentServiceController::class, 'update'])
     ->middleware(['auth'])
     ->name('services.update');
+Route::get('/services/{service}/edit', [StudentServiceController::class, 'edit'])
+    ->middleware(['auth'])
+    ->name('services.edit');
+
 
 
 Route::get('/student-services/{service}', [StudentServiceController::class, 'show'])->name('student-services.show');
@@ -79,6 +104,7 @@ Route::post('/services/applications/{application}/accept', [App\Http\Controllers
 Route::post('/services/applications/{application}/reject', [App\Http\Controllers\ServiceApplicationController::class, 'reject'])->middleware(['auth'])->name('services.applications.reject');
 Route::post('/services/applications/{application}/mark-completed', [App\Http\Controllers\ServiceApplicationController::class, 'markCompleted'])->middleware(['auth'])->name('services.applications.mark-completed');
 Route::get('/service-requests', [ServiceRequestController::class, 'index'])->middleware(['auth'])->name('service-requests.index');
+Route::post('/service-request', [ServiceRequestController::class, 'store'])->name('service-request.store');
 
 // Service Request routes
 Route::middleware(['auth'])->group(function () {
@@ -93,6 +119,11 @@ Route::middleware(['auth'])->group(function () {
 });
 Route::get('/services/{id}', [StudentServiceController::class, 'details'])->name('services.details');
 
+
+
+Route::post('/service-requests', [ServiceRequestController::class, 'store'])
+    ->name('service-requests.store')
+    ->middleware('auth'); // pastikan user logged in
 
 
 
@@ -123,7 +154,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // UI pages
-Route::get('/students/{user}/profile', [StudentPageController::class, 'profile'])->middleware(['auth'])->name('students.profile');
+Route::get('/students/{user}/profile', [StudentsController::class, 'profile'])->name('students.profile');
 Route::get('/search', [SearchPageController::class, 'index'])->middleware(['auth'])->name('search.index');
 
 
@@ -143,7 +174,8 @@ Route::get('/admin/reports', [AdminPageController::class, 'reports'])->middlewar
 
 // Authenticated JSON endpoints
 Route::middleware(['auth'])->group(function () {
-    Route::post('/availability/toggle', [AvailabilityController::class, 'toggle']);
+    Route::post('/availability/toggle', [AvailabilityController::class, 'toggle'])->name('availability.toggle');
+Route::post('/availability/update-settings', [AvailabilityController::class, 'updateSettings'])->name('availability.updateSettings');
 
     Route::post('/chat-requests', [ChatRequestController::class, 'store'])->name('chat-requests.store');
     Route::post('/chat-requests/{chatRequest}/accept', [ChatRequestController::class, 'accept']);
@@ -175,6 +207,14 @@ Route::post('/services/applications/{application}/interests/confirm', [ServiceAp
     Route::delete('/favorites/{user}', [FavoriteController::class, 'destroy'])->name('favorites.destroy');
     Route::post('/favorites/toggle', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
     Route::get('/favorites/{user}/check', [FavoriteController::class, 'check'])->name('favorites.check');
+    // Service
+    Route::post('/favourites/service/toggle', [FavoriteController::class, 'toggleService'])
+    ->name('favorites.service.toggle')
+    ->middleware('auth');
+    Route::get('/favourites/service/check/{id}', [FavoriteController::class, 'checkService'])
+    ->name('favorites.service.check')
+    ->middleware('auth');
+
 
     // Admin moderation endpoints
     Route::post('/admin/verifications/{user}/approve', [AdminVerificationController::class, 'approve']);
@@ -205,9 +245,6 @@ Route::get('/help', function () {
     return view('help');
 })->name('help');
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('welcome');
 
 /// Admin Login (public)
 Route::get('/admin/login', [AdminAuthController::class, 'showLogin'])

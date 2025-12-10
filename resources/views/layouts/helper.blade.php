@@ -8,474 +8,244 @@
 
     <title>{{ config('S2U', 'S2U - Student to Community') }}</title>
 
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
 
-    <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+    <style>
+        nav {
+            background-color: #ffffff !important;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        /* Navigation Link Styles */
+        .nav-link {
+            @apply px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 cursor-pointer;
+            color: #4b5563;
+        }
+
+        .nav-link:hover {
+            color: #0d9488 !important;
+            background-color: #f0fdfa;
+        }
+
+        .nav-link.active {
+            color: #0f766e !important;
+            background-color: #f0fdfa;
+        }
+    </style>
 </head>
 
-<body class="font-sans antialiased bg-white">
-    <div x-data="{
-        sidebarOpen: false,
-        isMobile: window.innerWidth < 1024,
-        init() {
-            this.checkScreenSize();
-            window.addEventListener('resize', () => this.checkScreenSize());
-        },
-        checkScreenSize() {
-            this.isMobile = window.innerWidth < 1024;
-            if (!this.isMobile) {
-                this.sidebarOpen = false;
-            }
-        },
-        toggleSidebar() {
-            this.sidebarOpen = !this.sidebarOpen;
-        }
-    }" class="min-h-screen bg-white">
+<body class="font-sans antialiased bg-gray-50">
+    <div class="min-h-screen">
 
-    @include('layouts.navbar')
-        <!-- Mobile Navigation Bar -->
-        <div class="lg:hidden bg-upsi-blue shadow-lg text-white sticky top-0 z-50">
-            <div class="flex items-center justify-between px-4 py-4">
-                <button @click="toggleSidebar()" class="p-2 rounded-lg hover:bg-white/10 transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
+        <nav x-data="{ mobileMenuOpen: false, userOpen: false }" class="bg-white fixed w-full top-0 z-50 h-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
+                <div class="flex justify-between items-center h-full">
 
-                <div class="flex items-center space-x-2">
-                    <div class="w-8 h-8 bg-upsi-gold rounded-lg flex items-center justify-center">
-                        <span class="text-upsi-blue font-bold text-sm">U</span>
+                    <div class="flex items-center">
+                        <a href="{{ route('dashboard') }}" class="flex-shrink-0 flex items-center">
+                            <h1 class="text-3xl font-bold text-indigo-600 tracking-tight">S2U</h1>
+                            <span
+                                class="ml-2 px-2 py-0.5 rounded text-xs font-semibold bg-indigo-100 text-indigo-700">Helper</span>
+                        </a>
+
+                        <div class="hidden md:ml-10 md:flex md:space-x-10 items-center">
+                            <a href="{{ route('students.index') }}"
+                                class="nav-link {{ request()->routeIs('students.index') ? 'active' : '' }}">
+                                Dashboard
+                            </a>
+                            <a href="{{ route('services.manage') }}"
+                                class="nav-link {{ request()->routeIs('students.index') ? 'active' : '' }}">
+                                My Services
+                            </a>
+
+
+                            <a href="{{ route('service-requests.index') }}"
+                                class="nav-link {{ request()->routeIs('service-requests.*') ? 'active' : '' }}">
+                                Orders
+                            </a>
+
+                        </div>
                     </div>
-                    <h1 class="text-lg font-bold">UpsiConnect</h1>
+
+                    <div class="hidden md:flex items-center space-x-4">
+                        @auth
+    
+
+                            <button type="button" class="relative p-2 text-gray-400 hover:text-gray-500 transition ml-2">
+                                <span class="sr-only">View notifications</span>
+                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C8.67 6.165 7 8.388 7 11v3.159c0 .538-.214 1.055-.595 1.436L5 17h10z" />
+                                </svg>
+                                <span
+                                    class="absolute top-2 right-2 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
+                            </button>
+
+                            <a href="{{ route('chat.index') }}" class="p-2 text-gray-400 hover:text-gray-500 transition">
+                                <span class="sr-only">Messages</span>
+                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                </svg>
+                            </a>
+                                                   @if (auth()->user()->role === 'helper')
+                                <a href="{{ route('dashboard') }}"
+                                    class="group relative inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-green-600 transition-all duration-200 bg-green-50 border border-green-200 rounded-full hover:bg-green-600 hover:text-white hover:border-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-600">
+                                    <span class="mr-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                                        </svg>
+                                    </span>
+                                    Switch to Buying
+                                </a>
+                            @endif
+
+                            <div class="relative ml-3" x-data="{ userOpen: false }">
+                                <button @click="userOpen = !userOpen"
+                                    class="flex items-center max-w-xs bg-white rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                    id="user-menu-button" aria-expanded="false" aria-haspopup="true">
+                                    <img class="h-9 w-9 rounded-full object-cover border border-gray-200 shadow-sm"
+                                        src="{{ auth()->user()->profile_photo_path ? asset('storage/' . auth()->user()->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) }}"
+                                        alt="">
+                                </button>
+
+                                <div x-show="userOpen" @click.away="userOpen = false"
+                                    x-transition:enter="transition ease-out duration-100"
+                                    x-transition:enter-start="transform opacity-0 scale-95"
+                                    x-transition:enter-end="transform opacity-100 scale-100"
+                                    x-transition:leave="transition ease-in duration-75"
+                                    x-transition:leave-start="transform opacity-100 scale-100"
+                                    x-transition:leave-end="transform opacity-0 scale-95"
+                                    class="origin-top-right absolute right-0 mt-2 w-56 rounded-xl shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
+                                    role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button"
+                                    tabindex="-1" style="display: none;">
+
+                                    <div class="px-4 py-3 border-b border-gray-100">
+                                        <p class="text-sm font-semibold text-gray-900 truncate">{{ Auth::user()->name }}
+                                        </p>
+                                        <p class="text-xs text-gray-500 truncate">{{ Auth::user()->email }}</p>
+                                    </div>
+
+                                    <a href="{{ route('profile.edit') }}"
+                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 transition-colors"
+                                        role="menuitem">
+                                        Your Profile
+                                    </a>
+                                    <a href="#"
+                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 transition-colors"
+                                        role="menuitem">
+                                        Settings
+                                    </a>
+
+                                    <div class="border-t border-gray-100 mt-1"></div>
+
+                                    <form method="POST" action="{{ route('logout') }}">
+                                        @csrf
+                                        <button type="submit"
+                                            class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                                            role="menuitem">
+                                            Sign out
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        @else
+                            <div class="flex space-x-4">
+                                <a href="{{ route('login') }}"
+                                    class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                                    Log in
+                                </a>
+                                <a href="{{ route('register') }}"
+                                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium shadow-sm transition-colors">
+                                    Sign up
+                                </a>
+                            </div>
+                        @endauth
+                    </div>
+
+                    <div class="-mr-2 flex md:hidden">
+                        <button @click="mobileMenuOpen = !mobileMenuOpen" type="button"
+                            class="bg-white inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            aria-controls="mobile-menu" aria-expanded="false">
+                            <span class="sr-only">Open main menu</span>
+                            <svg :class="{ 'hidden': mobileMenuOpen, 'block': !mobileMenuOpen }" class="block h-6 w-6"
+                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                            <svg :class="{ 'block': mobileMenuOpen, 'hidden': !mobileMenuOpen }" class="hidden h-6 w-6"
+                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div x-show="mobileMenuOpen" class="md:hidden border-t border-gray-200 bg-white shadow-lg"
+                id="mobile-menu">
+                <div class="pt-2 pb-3 space-y-1">
+                    <a href="{{ route('students.index') }}"
+                        class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium {{ request()->routeIs('students.index') ? 'bg-indigo-50 border-indigo-500 text-indigo-700' : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700' }}">Dashboard</a>
+                    <a href="{{ route('services.manage') }}"
+                        class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium {{ request()->routeIs('services.*') ? 'bg-indigo-50 border-indigo-500 text-indigo-700' : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700' }}">My
+                        Services</a>
+                    <a href="#"
+                        class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700">Orders</a>
+
                 </div>
 
-                <!-- Mobile User Menu -->
-                <div class="relative" x-data="{ open: false }">
-                    <button @click="open = !open"
-                        class="flex items-center p-2 rounded-lg hover:bg-white/10 transition-colors">
-                        <img class="h-8 w-8 rounded-full border-2 border-upsi-gold"
-                            src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&color=ffffff&background=C41E3A"
-                            alt="{{ Auth::user()->name }}">
-                    </button>
-
-                    <div x-show="open" @click.away="open = false" x-transition:enter="transition ease-out duration-100"
-                        x-transition:enter-start="transform opacity-0 scale-95"
-                        x-transition:enter-end="transform opacity-100 scale-100"
-                        x-transition:leave="transition ease-in duration-75"
-                        x-transition:leave-start="transform opacity-100 scale-100"
-                        x-transition:leave-end="transform opacity-0 scale-95"
-                        class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl ring-1 ring-black/5 divide-y divide-gray-100">
-
-                        <div class="px-4 py-3">
-                            <p class="text-sm text-upsi-text-primary/60">Signed in as</p>
-                            <p class="text-sm font-semibold text-upsi-text-primary truncate">{{ Auth::user()->name }}
-                            </p>
+                @auth
+                    <div class="pt-4 pb-4 border-t border-gray-200">
+                        <div class="flex items-center px-4">
+                            <div class="flex-shrink-0">
+                                <img class="h-10 w-10 rounded-full"
+                                    src="{{ auth()->user()->profile_photo_path ? asset('storage/' . auth()->user()->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) }}"
+                                    alt="">
+                            </div>
+                            <div class="ml-3">
+                                <div class="text-base font-medium text-gray-800">{{ Auth::user()->name }}</div>
+                                <div class="text-sm font-medium text-gray-500">{{ Auth::user()->email }}</div>
+                            </div>
                         </div>
+                        <div class="mt-3 space-y-1">
+                            @if (auth()->user()->role === 'helper')
+                                <a href="{{ route('dashboard') }}"
+                                    class="block px-4 py-2 text-base font-medium text-green-600 hover:text-green-800 hover:bg-gray-100">
+                                    Switch to Buying
+                                </a>
+                            @endif
 
-                        <div class="py-1">
-                            <a href="{{ route('profile.edit') }}"
-                                class="block px-4 py-2 text-sm text-upsi-text-primary hover:bg-upsi-light-gray transition-colors">
-                                Profile Settings
-                            </a>
-                        </div>
 
-                        <div class="py-1">
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <button type="submit"
-                                    class="block w-full text-left px-4 py-2 text-sm text-upsi-red hover:bg-red-50 transition-colors">
-                                    Sign out
-                                </button>
+                                    class="block w-full text-left px-4 py-2 text-base font-medium text-red-600 hover:text-red-800 hover:bg-red-50">Sign
+                                    out</button>
                             </form>
                         </div>
                     </div>
-                </div>
+                @endauth
             </div>
-        </div>
+        </nav>
 
-        <!-- Mobile Sidebar Overlay -->
-        <div x-show="sidebarOpen && isMobile" x-transition:enter="transition-opacity ease-linear duration-300"
-            x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-            x-transition:leave="transition-opacity ease-linear duration-300" x-transition:leave-start="opacity-100"
-            x-transition:leave-end="opacity-0" @click="sidebarOpen = false"
-            class="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"></div>
-
-        <div class="flex">
-            <!-- Desktop Sidebar -->
-            <div
-                class="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 bg-white border-r border-gray-100 shadow-sm">
-                <!-- Desktop Header -->
-                <div class="flex items-center justify-center h-16 px-6 bg-upsi-blue shadow-sm">
-                    <div class="flex items-center space-x-2">
-                        <div class="w-8 h-8 bg-upsi-gold rounded-lg flex items-center justify-center">
-                            <span class="text-upsi-blue font-bold text-sm">U</span>
-                        </div>
-                        <a href="{{ route('dashboard') }}"
-                            class="text-xl font-bold text-white hover:text-upsi-gold transition-colors">
-                            UpsiConnect
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Desktop Navigation -->
-                <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto bg-white">
-                    <a href="{{ route('dashboard') }}"
-                        class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('dashboard') ? 'bg-upsi-blue text-white shadow-md' : 'text-upsi-text-primary hover:bg-upsi-light-gray hover:text-upsi-blue' }}">
-                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6H8V5z"></path>
-                        </svg>
-                        Dashboard
-                    </a>
-
-                    <!-- Student-specific menu items -->
-                    @if (auth()->user()->role === 'helper')
-                        <a href="{{ route('services.manage') }}"
-                            class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('services.manage') ? 'bg-upsi-blue text-white shadow-md' : 'text-upsi-text-primary hover:bg-upsi-light-gray hover:text-upsi-blue' }}">
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                            </svg>
-                            Service Management
-                        </a>
-
-                        <a href="{{ route('service-requests.index') }}"
-                            class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('service-requests.*') ? 'bg-upsi-blue text-white shadow-md' : 'text-upsi-text-primary hover:bg-upsi-light-gray hover:text-upsi-blue' }}">
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                            </svg>
-                            Service Requests
-                        </a>
-
-                        <a href="{{ route('services.applications.index') }}"
-                            class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('services.applications.*') ? 'bg-upsi-blue text-white shadow-md' : 'text-upsi-text-primary hover:bg-upsi-light-gray hover:text-upsi-blue' }}">
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            Open Applications
-                        </a>
-                    @endif
-
-                    <!-- Community-specific menu items -->
-                    @if (auth()->user()->isCommunity())
-                        <a href="{{ route('search.index') }}"
-                            class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('search.*') ? 'bg-upsi-blue text-white shadow-md' : 'text-upsi-text-primary hover:bg-upsi-light-gray hover:text-upsi-blue' }}">
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                            Browse Services
-                        </a>
-
-                        <a href="{{ route('favorites.index') }}"
-                            class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('favorites.*') ? 'bg-upsi-blue text-white shadow-md' : 'text-upsi-text-primary hover:bg-upsi-light-gray hover:text-upsi-blue' }}">
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                            </svg>
-                            My Favorites
-                        </a>
-
-                        <a href="{{ route('service-requests.index') }}"
-                            class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('service-requests.*') ? 'bg-upsi-blue text-white shadow-md' : 'text-upsi-text-primary hover:bg-upsi-light-gray hover:text-upsi-blue' }}">
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                            </svg>
-                            My Service Requests
-                        </a>
-
-                        <a href="{{ route('services.applications.index') }}"
-                            class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('services.applications.*') ? 'bg-upsi-blue text-white shadow-md' : 'text-upsi-text-primary hover:bg-upsi-light-gray hover:text-upsi-blue' }}">
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            My Applications
-                        </a>
-
-                        <a href="{{ route('services.apply') }}"
-                            class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('services.apply') ? 'bg-upsi-blue text-white shadow-md' : 'text-upsi-text-primary hover:bg-upsi-light-gray hover:text-upsi-blue' }}">
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                            </svg>
-                            Request Custom Service
-                        </a>
-                    @endif
-
-                    <!-- Common menu items -->
-                    <a href="{{ route('chat.index') }}"
-                        class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('chat.*') ? 'bg-upsi-blue text-white shadow-md' : 'text-upsi-text-primary hover:bg-upsi-light-gray hover:text-upsi-blue' }}">
-                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                        </svg>
-                        Messages
-                        <span id="messageNotificationBadge"
-                            class="ml-auto bg-upsi-red text-white text-xs font-semibold px-2.5 py-1 rounded-full shadow-sm hidden">0</span>
-                    </a>
-
-                    <!-- Divider -->
-                    <div class="border-t border-gray-200 my-4"></div>
-
-                    <!-- Settings -->
-                    <a href="{{ route('profile.edit') }}"
-                        class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('profile.*') ? 'bg-upsi-blue text-white shadow-md' : 'text-upsi-text-primary hover:bg-upsi-light-gray hover:text-upsi-blue' }}">
-                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        Settings
-                    </a>
-                </nav>
-
-    
-            </div>
-
-            <!-- Mobile Sidebar -->
-            <div x-show="sidebarOpen && isMobile" x-transition:enter="transition ease-in-out duration-300 transform"
-                x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0"
-                x-transition:leave="transition ease-in-out duration-300 transform"
-                x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full"
-                class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg lg:hidden">
-
-                <!-- Mobile Sidebar Header -->
-                <div class="flex items-center justify-between h-16 px-6 bg-upsi-blue">
-                    <a href="{{ route('dashboard') }}" class="text-xl font-bold text-white">
-                        UpsiConnect
-                    </a>
-                    <button @click="sidebarOpen = false" class="text-white hover:text-gray-200">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
-
-                <!-- Mobile Navigation -->
-                <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-                    <a href="{{ route('dashboard') }}" @click="sidebarOpen = false"
-                        class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('dashboard') ? 'bg-upsi-blue text-white' : 'text-gray-700 hover:bg-upsi-light hover:text-upsi-blue' }}">
-                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6H8V5z"></path>
-                        </svg>
-                        Dashboard
-                    </a>
-
-                    <!-- Student-specific menu items -->
-                    @if (auth()->user()->role === 'helper')
-                        <a href="{{ route('services.manage') }}" @click="sidebarOpen = false"
-                            class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('services.manage') ? 'bg-upsi-blue text-white' : 'text-gray-700 hover:bg-upsi-light hover:text-upsi-blue' }}">
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                            </svg>
-                            Service Management
-                        </a>
-
-                        <a href="{{ route('service-requests.index') }}" @click="sidebarOpen = false"
-                            class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('service-requests.*') ? 'bg-upsi-blue text-white' : 'text-gray-700 hover:bg-upsi-light hover:text-upsi-blue' }}">
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                            </svg>
-                            Service Requests
-                        </a>
-
-                        <a href="{{ route('services.applications.index') }}" @click="sidebarOpen = false"
-                            class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('services.applications.*') ? 'bg-upsi-blue text-white' : 'text-gray-700 hover:bg-upsi-light hover:text-upsi-blue' }}">
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            Open Applications
-                        </a>
-                    @endif
-
-                    <!-- Community-specific menu items -->
-                    @if (auth()->user()->isCommunity())
-                        <a href="{{ route('search.index') }}" @click="sidebarOpen = false"
-                            class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('search.*') ? 'bg-upsi-blue text-white' : 'text-gray-700 hover:bg-upsi-light hover:text-upsi-blue' }}">
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                            Browse Services
-                        </a>
-
-                        <a href="{{ route('favorites.index') }}" @click="sidebarOpen = false"
-                            class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('favorites.*') ? 'bg-upsi-blue text-white' : 'text-gray-700 hover:bg-upsi-light hover:text-upsi-blue' }}">
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                            </svg>
-                            My Favorites
-                        </a>
-
-                        <a href="{{ route('service-requests.index') }}" @click="sidebarOpen = false"
-                            class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('service-requests.*') ? 'bg-upsi-blue text-white' : 'text-gray-700 hover:bg-upsi-light hover:text-upsi-blue' }}">
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                            </svg>
-                            My Service Requests
-                        </a>
-
-                        <a href="{{ route('services.applications.index') }}" @click="sidebarOpen = false"
-                            class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('services.applications.*') ? 'bg-upsi-blue text-white' : 'text-gray-700 hover:bg-upsi-light hover:text-upsi-blue' }}">
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            My Applications
-                        </a>
-
-                        <a href="{{ route('services.apply') }}" @click="sidebarOpen = false"
-                            class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('services.apply') ? 'bg-upsi-blue text-white' : 'text-gray-700 hover:bg-upsi-light hover:text-upsi-blue' }}">
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                            </svg>
-                            Request Custom Service
-                        </a>
-                    @endif
-
-                    <!-- Common menu items -->
-                    <a href="{{ route('chat.index') }}" @click="sidebarOpen = false"
-                        class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors text-gray-700 hover:bg-upsi-light hover:text-upsi-blue">
-                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
-                            </path>
-                        </svg>
-                        Messages
-                        <span id="mobileMessageNotificationBadge"
-                            class="ml-auto bg-upsi-red text-white text-xs font-medium px-2 py-1 rounded-full hidden">0</span>
-                    </a>
-
-                    <!-- Divider -->
-                    <div class="border-t border-gray-200 my-4"></div>
-
-                    <!-- Settings -->
-                    <a href="{{ route('profile.edit') }}" @click="sidebarOpen = false"
-                        class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('profile.*') ? 'bg-upsi-blue text-white' : 'text-gray-700 hover:bg-upsi-light hover:text-upsi-blue' }}">
-                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        Settings
-                    </a>
-
-                    <a href="{{ route('dashboard') }}" @click="sidebarOpen = false"
-                        class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors text-gray-700 hover:bg-upsi-light hover:text-upsi-blue">
-                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
-                            </path>
-                        </svg>
-                        Settings
-                    </a>
-                </nav>
-
-               
-            </div>
-           
-                <!-- Main Content Area -->
-                <div class="flex-1 lg:ml-64 bg-white">
-                    @yield('content')
-                </div>
-
-            </div>
-        </div>
+        <main class="pt-20">
+            @yield('content')
+        </main>
     </div>
 
-
-
-    <script>
-        // Initialize notification system
-        let unreadCount = 0;
-
-        // Function to update notification badges
-        function updateNotificationBadges(count) {
-            const desktopBadge = document.getElementById('messageNotificationBadge');
-            const mobileBadge = document.getElementById('mobileMessageNotificationBadge');
-
-            if (count > 0) {
-                if (desktopBadge) {
-                    desktopBadge.textContent = count;
-                    desktopBadge.classList.remove('hidden');
-                }
-                if (mobileBadge) {
-                    mobileBadge.textContent = count;
-                    mobileBadge.classList.remove('hidden');
-                }
-            } else {
-                if (desktopBadge) {
-                    desktopBadge.classList.add('hidden');
-                }
-                if (mobileBadge) {
-                    mobileBadge.classList.add('hidden');
-                }
-            }
-        }
-
-        // Listen for new message notifications if user is authenticated
-        @auth
-        if (window.Echo) {
-            window.Echo.private('user.{{ auth()->id() }}')
-                .listen('NewMessageNotification', (e) => {
-                    // Only increment if not on the current conversation page
-                    const currentPath = window.location.pathname;
-                    const conversationPath = `/chat/${e.conversation_id}`;
-
-                    if (currentPath !== conversationPath) {
-                        unreadCount++;
-                        updateNotificationBadges(unreadCount);
-
-                        // Show browser notification if permission granted
-                        if (Notification.permission === 'granted') {
-                            new Notification(`New message from ${e.sender_name}`, {
-                                body: e.message_content.substring(0, 100) + (e.message_content.length > 100 ?
-                                    '...' : ''),
-                                icon: '/favicon.ico'
-                            });
-                        }
-                    }
-                });
-        }
-
-        // Request notification permission on page load
-        if ('Notification' in window && Notification.permission === 'default') {
-            Notification.requestPermission();
-        }
-
-        // Reset unread count when visiting chat pages
-        if (window.location.pathname.startsWith('/chat')) {
-            unreadCount = 0;
-            updateNotificationBadges(0);
-        }
-        @endauth
-    </script>
     @stack('scripts')
-
 </body>
 
 </html>

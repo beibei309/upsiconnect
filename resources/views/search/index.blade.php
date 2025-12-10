@@ -14,7 +14,7 @@
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8" x-data="{ showFilters: false }">
                 <!-- Search Bar -->
                 <form method="GET" action="{{ route('search.index') }}" class="space-y-4">
-                    <div class="flex flex-col lg:flex-row gap-4">
+                    <div class="flex flex-col lg:flex-row gap-4">g
                         <div class="flex-1">
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

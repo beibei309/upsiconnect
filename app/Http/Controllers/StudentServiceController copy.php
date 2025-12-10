@@ -5,25 +5,20 @@ namespace App\Http\Controllers;
 use App\Models\StudentService;
 use App\Models\User;
 use App\Models\Category;
-use App\Models\ServiceRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class StudentServiceController extends Controller
 {
 
- public function index(Request $request)
+  public function index(Request $request)
 {
     $q = $request->string('q')->toString();
     $category_id = $request->category_id;
     $sort = $request->sort ?? 'newest';
 
     $query = StudentService::with(['student', 'category'])
-        ->where('status', 'available')
-        ->where('approval_status', 'approved') // <--- Added this line
-        ->whereHas('student', function ($q) {
-            $q->where('role', 'helper');
-        });
+        ->where('status', 'available'); 
 
     // Search filter
     if ($q) {
@@ -44,8 +39,7 @@ class StudentServiceController extends Controller
     } elseif ($sort == 'oldest') {
         $query->orderBy('created_at', 'asc');
     } elseif ($sort == 'price_low') {
-        // Note: Ensure 'basic_price' is the column you want to sort by
-        $query->orderBy('basic_price', 'asc'); 
+        $query->orderBy('suggested_price', 'asc');
     } elseif ($sort == 'price_high') {
         $query->orderBy('basic_price', 'desc');
     }
@@ -53,107 +47,34 @@ class StudentServiceController extends Controller
     // Fetch the services
     $services = $query->get();
 
+    // Return to the view (similar to what was done in GuestServicesController)
     return view('services.index', [
         'services' => $services,
-        'categories' => \App\Models\Category::all(), // Ensure Model is imported or fully qualified
+        'categories' => Category::all(),
         'category_id' => $category_id,
         'sort' => $sort,
     ]);
 }
 
-    public function edit(StudentService $service)
+    public function update(Request $request, StudentService $service): JsonResponse
     {
-        $user = auth()->user();
+        $user = $request->user();
         if (!$user || $user->id !== $service->user_id) {
-            abort(403, 'You may only edit your own services.');
+            return response()->json(['error' => 'You may only update your own services.'], 403);
         }
 
-        // Get categories for dropdown
-        $categories = \App\Models\Category::all();
+        $data = $request->validate([
+            'title' => ['sometimes', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'basic_price' => ['nullable', 'numeric', 'min:0'],
+            'category_id' => ['nullable', 'exists:categories,id'],
+            'is_active' => ['nullable', 'boolean'],
+        ]);
 
-        return view('services.edit', compact('service', 'categories'));
+        $service->update($data);
+
+        return response()->json(['service' => $service], 200);
     }
-
-
-   public function update(Request $request, StudentService $service): JsonResponse
-{
-    $user = $request->user();
-    if (!$user || $user->id !== $service->user_id) {
-        return response()->json(['error' => 'You may only update your own services.'], 403);
-    }
-
-    $validated = $request->validate([
-        'title' => 'required|string|max:255',
-        'category_id' => 'required|exists:categories,id',
-        'image' => 'nullable|image|max:2048',
-        'description' => 'nullable|string',
-        'packages' => 'nullable|array',
-        'packages.*.duration' => 'nullable|string',
-        'packages.*.frequency' => 'nullable|string',
-        'packages.*.price' => 'nullable|numeric|min:0',
-        'packages.*.description' => 'nullable|string',
-        'offer_packages' => 'nullable', // checkbox toggle
-        'unavailable_dates' => 'nullable|string',
-    ]);
-
-    // Image
-    if ($request->hasFile('image')) {
-        $service->image_path = $request->file('image')->store('services','public');
-    }
-
-    $service->title = $validated['title'];
-    $service->category_id = $validated['category_id'];
-    $service->description = $validated['description'] ?? '';
-
-    // Packages
-    $packages = $request->input('packages', []);
-
-    // Always save Basic package
-    $service->basic_duration = $packages[0]['duration'] ?? null;
-    $service->basic_frequency = $packages[0]['frequency'] ?? null;
-    $service->basic_price = $packages[0]['price'] ?? null;
-    $service->basic_description = $packages[0]['description'] ?? null;
-
-    // Check if student wants to offer Standard/Premium
-    if ($request->has('offer_packages')) {
-        // Save Standard
-        $service->standard_duration = $packages[1]['duration'] ?? null;
-        $service->standard_frequency = $packages[1]['frequency'] ?? null;
-        $service->standard_price = $packages[1]['price'] ?? null;
-        $service->standard_description = $packages[1]['description'] ?? null;
-
-        // Save Premium
-        $service->premium_duration = $packages[2]['duration'] ?? null;
-        $service->premium_frequency = $packages[2]['frequency'] ?? null;
-        $service->premium_price = $packages[2]['price'] ?? null;
-        $service->premium_description = $packages[2]['description'] ?? null;
-    } else {
-        // Clear Standard & Premium if toggle is off
-        $service->standard_duration = null;
-        $service->standard_frequency = null;
-        $service->standard_price = null;
-        $service->standard_description = null;
-
-        $service->premium_duration = null;
-        $service->premium_frequency = null;
-        $service->premium_price = null;
-        $service->premium_description = null;
-    }
-
-    // Unavailable Dates
-    $dates = $request->input('unavailable_dates', '');
-    $service->unavailable_dates = $dates ? json_encode(array_filter(explode(',', $dates))) : '[]';
-
-    $service->save();
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Service updated successfully!',
-        'service' => $service
-    ]);
-}
-
-
 
     public function destroy(Request $request, StudentService $service): JsonResponse
     {
@@ -206,7 +127,7 @@ class StudentServiceController extends Controller
         return view('services.create', compact('categories'));
     }
 
-public function store(Request $request)
+    public function store(Request $request)
     {
         $user = $request->user();
         if (!$user || $user->role !== 'helper') {
@@ -216,23 +137,16 @@ public function store(Request $request)
         $currentSection = $request->input('current_section');
         $serviceId = $request->input('service_id');
 
-        // Cari perkhidmatan sedia ada atau sediakan objek baru
+        // Find or create service instance
         if ($serviceId) {
             $service = StudentService::findOrFail($serviceId);
             if ($service->user_id !== $user->id) {
                 return response()->json(['error' => 'You may only edit your own services.'], 403);
             }
         } else {
-            // Jika ini rekod baharu, pastikan kita berada di langkah 'overview'
-            if ($currentSection !== 'overview') {
-                return response()->json(['error' => 'New services must start with the overview section.'], 400);
-            }
             $service = new StudentService();
             $service->user_id = $user->id;
             $service->approval_status = 'pending';
-            // Set nilai lalai untuk mengelakkan ralat MySQL jika medan lain tidak boleh null
-            $service->status = 'available'; // Contoh, pastikan status ada nilai
-            $service->is_active = true;     // Contoh
         }
 
         // --- VALIDATION PER SECTION ---
@@ -245,8 +159,7 @@ public function store(Request $request)
                 'template_image' => 'nullable|string',
             ];
         } elseif ($currentSection === 'pricing') {
-            // ... (kod validasi pricing anda kekal sama) ...
-             $rules = [
+            $rules = [
                 'packages.0.duration' => 'required|string',
                 'packages.0.frequency' => 'required|string',
                 'packages.0.price' => 'required|numeric|min:0',
@@ -268,44 +181,33 @@ public function store(Request $request)
             $rules = [
                 'description' => 'required|string',
             ];
-        } elseif ($currentSection === 'availability') {
-            $rules = [
-                'unavailable_dates' => 'nullable|string'
-            ];
         }
-       
+
         $validated = $request->validate($rules);
 
-        // --- HANDLE DATA ASSIGNMENT ---
-
+        // --- HANDLE IMAGE IN OVERVIEW ---
         if ($currentSection === 'overview') {
-            // Ini akan menyelesaikan ralat: title kini diberikan nilai
-            $service->title = $validated['title']; 
-            $service->category_id = $validated['category_id'];
-            
             if ($request->hasFile('image')) {
-                $service->image_path = $request->file('image')->store('services', 'public');
+                $validated['image_path'] = $request->file('image')->store('services', 'public');
             } elseif ($request->filled('template_image')) {
-                $service->image_path = $request->input('template_image');
+                $validated['image_path'] = $request->input('template_image');
             }
+
+            $service->title = $validated['title'];
+            $service->category_id = $validated['category_id'];
+            if (isset($validated['image_path'])) $service->image_path = $validated['image_path'];
         }
 
+        // --- DESCRIPTION ---
         if ($currentSection === 'description') {
             $service->description = $validated['description'];
         }
 
-        if ($currentSection === 'availability') {
-            $dates = $request->input('unavailable_dates', []);
-            if (is_string($dates)) {
-                $dates = array_filter(explode(',', $dates));
-            }
-            $service->unavailable_dates = json_encode(array_values($dates));
-        }
-
+        // --- PRICING ---
         if ($currentSection === 'pricing' && $request->filled('packages')) {
             $packages = $request->input('packages');
-            
-            // ... (logik pricing anda kekal sama) ...
+
+            // Handle pricing logic for basic, standard, and premium packages
             $service->basic_duration = $packages[0]['duration'] ?? null;
             $service->basic_frequency = $packages[0]['frequency'] ?? null;
             $service->basic_price = $packages[0]['price'] ?? null;
@@ -326,8 +228,6 @@ public function store(Request $request)
             }
         }
 
-        // Simpan ke pangkalan data
-        // Pada langkah 'overview', 'title' kini sudah diset, jadi tiada ralat.
         $service->save();
 
         return response()->json([
@@ -372,35 +272,13 @@ public function store(Request $request)
 
     public function details(Request $request, $id)
     {
-        $service = StudentService::with(['user', 'category', 'orders'])->findOrFail($id);
+        $service = StudentService::with(['user', 'category'])->findOrFail($id);
         $viewer = $request->user(); // currently logged-in user (if any)
-
-        // Fetch orders for this service
-        $orders = ServiceRequest::where('student_service_id', $service->id)
-                    ->whereIn('status', ['completed', 'accepted'])
-                    ->get();
-
-        $service->min_price = $orders->min('offered_price') ?? 0;
-        $service->max_price = $orders->max('offered_price') ?? 0;
-
-        // Completed orders count
-    $service->completed_orders = $service->orders()
-        ->whereIn('status', ['completed', 'accepted'])
-        ->count();
-
-    // Average rating from reviews received by the user
-    $service->rating = round($service->user->reviewsReceived()->avg('rating'), 1) ?? 0;
-
-        // Optional: calculate average delivery time in days
-        $service->avg_days = $orders->avg(function($order) {
-            return \Carbon\Carbon::parse($order->selected_dates)->diffInDays(now());
-        }) ?? 0;
 
         return view('services.details', [
             'service' => $service,
             'provider' => $service->user,
             'viewer' => $viewer,
-            
         ]);
     }
 
