@@ -23,7 +23,7 @@
     </style>
 </head>
 
-<!--<body class="bg-gray-50 text-gray-900 antialiased">-->
+<body class="bg-gray-50 text-gray-900 antialiased"
 
     <!-- Navigation (same as welcome page) -->
     @include('layouts.navbar')

@@ -80,6 +80,8 @@ class User extends Authenticatable
         return $this->hasMany(StudentService::class, 'user_id');
     }
 
+
+    
     public function services()
     {
         return $this->hasMany(StudentService::class, 'user_id');

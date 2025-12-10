@@ -79,32 +79,34 @@ class ServiceRequestController extends BaseController
     /**
      * Show service requests for the authenticated user
      */
-    public function index(Request $request)
-    {
-        $user = Auth::user();
-        $status = $request->get('status', 'all');
-        $status = str_replace('-', '_', strtolower($status));
-        $validStatuses = ['all', 'pending', 'accepted', 'rejected', 'in_progress', 'completed', 'cancelled'];
-        if (!in_array($status, $validStatuses, true)) {
-            $status = 'all';
-        }
+   public function index(Request $request)
+{
+    $user = Auth::user();
 
-        $sentQuery = ServiceRequest::where('requester_id', $user->id)
-            ->with(['studentService', 'provider']);
-        $receivedQuery = ServiceRequest::where('provider_id', $user->id)
-            ->with(['studentService', 'requester']);
+    // 1. Jika User adalah HELPER
+    if ($user->role === 'helper') {
+        // Ambil request yang DITERIMA oleh helper ini
+        $receivedRequests = \App\Models\ServiceRequest::where('provider_id', $user->id)
+            ->with(['requester', 'studentService']) // Eager loading
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-        if ($status !== 'all') {
-            $sentQuery->where('status', $status);
-            $receivedQuery->where('status', $status);
-        }
-
-        $sentRequests = $sentQuery->orderBy('created_at', 'desc')->get();
-        $receivedRequests = $receivedQuery->orderBy('created_at', 'desc')->get();
-        
-
-        return view('service-requests.index', compact('sentRequests', 'receivedRequests', 'status'));
+        // Hantar ke fail 'service-requests.helper'
+        return view('service-requests.helper', compact('receivedRequests'));
     }
+
+    // 2. Jika User adalah BIASA (Student/User)
+    else {
+        // Ambil request yang DIHANTAR oleh user ini
+        $sentRequests = \App\Models\ServiceRequest::where('requester_id', $user->id)
+            ->with(['provider', 'studentService']) // Eager loading
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Hantar ke fail 'service-requests.index'
+        return view('service-requests.index', compact('sentRequests'));
+    }
+}
 
     /**
      * Show a specific service request

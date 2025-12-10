@@ -34,7 +34,7 @@ class ChatController extends Controller
 
         // Get pending chat requests for students
         $pendingRequests = collect();
-        if ($user->role === 'student') {
+        if ($user->role === 'helper') {
             $pendingRequests = ChatRequest::where('recipient_id', $user->id)
                 ->where('status', 'pending')
                 ->with('requester')

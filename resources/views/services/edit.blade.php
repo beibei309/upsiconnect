@@ -1,204 +1,396 @@
-<x-app-layout>
+@extends('layouts.helper')
+
+@section('content')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <div class="py-12 bg-gray-50">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="min-h-screen bg-gray-50 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-            <div class="flex items-center justify-between mb-10">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900">Edit Service</h1>
-                    <p class="text-gray-500 mt-1">Update your service details</p>
+                    <br><br><br>
+                    <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Edit Service</h1>
+                    <p class="mt-2 text-sm text-gray-600">Update the details of your service offering.</p>
                 </div>
-                <a href="{{ route('services.manage') }}"
-                   class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2 rounded-lg font-medium flex items-center space-x-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                    </svg>
-                    <span>Back to Manage</span>
-                </a>
+                <div class="mt-4 md:mt-0">
+                    <a href="{{ route('services.manage') }}"
+                        class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200">
+                        <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                        Back to Manage
+                    </a>
+                </div>
             </div>
 
-            <form id="serviceForm" enctype="multipart/form-data" class="space-y-6">
+            <form id="serviceForm" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
 
-                <!-- Title & Category -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                        <input type="text" name="title" value="{{ $service->title }}" required
-                               class="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                        <select name="category_id" required
-                                class="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            @foreach ($categories as $category)
-                                <option value="{{ $category->id }}" {{ $service->category_id == $category->id ? 'selected' : '' }}>
-                                    {{ $category->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
+                    <div class="lg:col-span-2 space-y-8">
 
-                <!-- Image Upload -->
-                @php
-                    $currentImage = $service->image_path
-                        ? (Str::startsWith($service->image_path, 'services/') ? asset('storage/'.$service->image_path) : asset($service->image_path))
-                        : asset('images/default_service.jpg');
-                @endphp
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Image</label>
-                    <div class="mb-3 w-48">
-                        <img id="imagePreview" src="{{ $currentImage }}" class="w-full h-32 object-cover rounded-lg border border-gray-200 shadow-sm mb-2">
-                    </div>
-                    <input type="file" name="image" id="imageInput" class="w-full text-gray-700 px-3 py-2 border rounded-xl cursor-pointer hover:bg-gray-50">
-                </div>
+                        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                            <div class="p-6 border-b border-gray-100 bg-gray-50">
+                                <h3 class="text-lg font-medium leading-6 text-gray-900">Basic Information</h3>
+                                <p class="mt-1 text-sm text-gray-500">General details about your service.</p>
+                            </div>
+                            <div class="p-6 space-y-6">
+                                <div>
+                                    <label for="title" class="block text-sm font-medium text-gray-700">Service Title
+                                        <span class="text-red-500">*</span></label>
+                                    <input type="text" name="title" id="title" value="{{ $service->title }}"
+                                        required
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-4 py-3 border">
+                                </div>
 
-                <!-- Description -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Service Description</label>
-                    <textarea name="description" rows="5"
-                              class="w-full px-4 py-3 border rounded-xl">{{ $service->description }}</textarea>
-                </div>
+                                <div>
+                                    <label for="category_id" class="block text-sm font-medium text-gray-700">Category <span
+                                            class="text-red-500">*</span></label>
+                                    <select name="category_id" id="category_id" required
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-4 py-3 border bg-white">
+                                        @foreach ($categories as $category)
+                                            <option value="{{ $category->id }}"
+                                                {{ $service->category_id == $category->id ? 'selected' : '' }}>
+                                                {{ $category->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
 
-                <!-- Pricing Packages -->
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">Pricing Packages</h3>
-
-                    @php
-                        $packages = [
-                            ['name'=>'Basic','duration'=>$service->basic_duration,'frequency'=>$service->basic_frequency,'price'=>$service->basic_price,'description'=>$service->basic_description],
-                            ['name'=>'Standard','duration'=>$service->standard_duration,'frequency'=>$service->standard_frequency,'price'=>$service->standard_price,'description'=>$service->standard_description],
-                            ['name'=>'Premium','duration'=>$service->premium_duration,'frequency'=>$service->premium_frequency,'price'=>$service->premium_price,'description'=>$service->premium_description],
-                        ];
-                        $offerPackages = $service->standard_price || $service->premium_price;
-                    @endphp
-
-                    <div class="flex items-center mb-4">
-                        <input type="checkbox" id="togglePackages" name="offer_packages" class="mr-2" {{ $offerPackages ? 'checked' : '' }}>
-                        <label for="togglePackages" class="text-gray-700 font-medium cursor-pointer">Offer Standard & Premium Packages?</label>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        @foreach ($packages as $i => $package)
-                            <div class="package-card bg-gray-50 border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition
-                                        {{ $i > 0 ? 'extra-package' : '' }}"
-                                 style="{{ ($i > 0 && !$offerPackages) ? 'display:none;' : '' }}">
-                                <h4 class="text-md font-semibold text-gray-800 mb-2">{{ $package['name'] }} Package</h4>
-                                <div class="space-y-2">
-                                    <input type="text" name="packages[{{ $i }}][duration]" placeholder="Duration"
-                                        value="{{ $package['duration'] }}"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-400">
-                                    <input type="text" name="packages[{{ $i }}][frequency]" placeholder="Frequency"
-                                        value="{{ $package['frequency'] }}"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-400">
-                                    <input type="number" name="packages[{{ $i }}][price]" placeholder="Price"
-                                        value="{{ $package['price'] }}" step="0.01"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-400">
-                                    <input type="text" name="packages[{{ $i }}][description]" placeholder="Description"
-                                        value="{{ $package['description'] }}"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-400">
+                                <div>
+                                    <label for="description" class="block text-sm font-medium text-gray-700">Description
+                                        <span class="text-red-500">*</span></label>
+                                    <div class="mt-1">
+                                        <textarea id="description" name="description" rows="6" required
+                                            class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md px-4 py-3 border">{{ $service->description }}</textarea>
+                                    </div>
+                                    <p class="mt-2 text-sm text-gray-500">Briefly describe what your service entails.</p>
                                 </div>
                             </div>
-                        @endforeach
+                        </div>
+
+                        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                            <div class="p-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+                                <div>
+                                    <h3 class="text-lg font-medium leading-6 text-gray-900">Pricing Packages</h3>
+                                    <p class="mt-1 text-sm text-gray-500">Define your service tiers.</p>
+                                </div>
+                                @php
+                                    $offerPackages = $service->standard_price || $service->premium_price;
+                                @endphp
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="togglePackages" name="offer_packages"
+                                        class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                                        {{ $offerPackages ? 'checked' : '' }}>
+                                    <label for="togglePackages" class="ml-2 block text-sm text-gray-900">Enable
+                                        Tiers</label>
+                                </div>
+                            </div>
+
+                            <div class="p-6">
+                                @php
+                                    $packages = [
+                                        [
+                                            'name' => 'Basic',
+                                            'key' => 'basic',
+                                            'duration' => $service->basic_duration,
+                                            'frequency' => $service->basic_frequency,
+                                            'price' => $service->basic_price,
+                                            'description' => $service->basic_description,
+                                            'color' => 'bg-gray-100 text-gray-800',
+                                        ],
+                                        [
+                                            'name' => 'Standard',
+                                            'key' => 'standard',
+                                            'duration' => $service->standard_duration,
+                                            'frequency' => $service->standard_frequency,
+                                            'price' => $service->standard_price,
+                                            'description' => $service->standard_description,
+                                            'color' => 'bg-blue-50 text-blue-800',
+                                        ],
+                                        [
+                                            'name' => 'Premium',
+                                            'key' => 'premium',
+                                            'duration' => $service->premium_duration,
+                                            'frequency' => $service->premium_frequency,
+                                            'price' => $service->premium_price,
+                                            'description' => $service->premium_description,
+                                            'color' => 'bg-indigo-50 text-indigo-800',
+                                        ],
+                                    ];
+                                @endphp
+
+                                <div class="space-y-8">
+                                    @foreach ($packages as $i => $pkg)
+                                        <div class="package-section {{ $i > 0 ? 'extra-package border-t pt-6 mt-6' : '' }}"
+                                            style="{{ $i > 0 && !$offerPackages ? 'display:none;' : '' }}">
+                                            <div class="flex items-center mb-4">
+                                                <span
+                                                    class="px-2.5 py-0.5 rounded-full text-xs font-medium {{ $pkg['color'] }}">
+                                                    {{ $pkg['name'] }}
+                                                </span>
+                                                <h4 class="ml-2 text-md font-semibold text-gray-900">{{ $pkg['name'] }}
+                                                    Package</h4>
+                                            </div>
+
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div class="col-span-1 md:col-span-2">
+                                                    <label
+                                                        class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Description</label>
+                                                    <input type="text" name="packages[{{ $i }}][description]"
+                                                        value="{{ $pkg['description'] }}"
+                                                        class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+                                                        placeholder="e.g. Include source files">
+                                                </div>
+
+                                                <div>
+                                                    <label
+                                                        class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Price
+                                                        (RM)</label>
+                                                    <div class="relative rounded-md shadow-sm">
+                                                        <div
+                                                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                            <span class="text-gray-500 sm:text-sm">RM</span>
+                                                        </div>
+                                                        <input type="number" name="packages[{{ $i }}][price]"
+                                                            value="{{ $pkg['price'] }}" step="0.01"
+                                                            class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md px-3 py-2 border"
+                                                            placeholder="0.00">
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <label
+                                                        class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Duration
+                                                        (Hours)</label>
+                                                    <select name="packages[{{ $i }}][duration]"
+                                                        class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border bg-white">
+                                                        <option value="">Select Duration</option>
+                                                        @for ($h = 1; $h <= 6; $h++)
+                                                            <option value="{{ $h }}"
+                                                                {{ $pkg['duration'] == $h ? 'selected' : '' }}>
+                                                                {{ $h }} Hour{{ $h > 1 ? 's' : '' }}
+                                                            </option>
+                                                        @endfor
+                                                    </select>
+                                                </div>
+                                                
+                                                <div class="col-span-1 md:col-span-2">
+                                                    <label
+                                                        class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Frequency</label>
+                                                    <select name="packages[{{ $i }}][frequency]"
+                                                        class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border bg-white">
+                                                        <option value="">Select Frequency</option>
+                                                        <option value="Per Session"
+                                                            {{ $pkg['frequency'] == 'Per Session' ? 'selected' : '' }}>Per
+                                                            Session</option>
+                                                        <option value="Weekly"
+                                                            {{ $pkg['frequency'] == 'Weekly' ? 'selected' : '' }}>Weekly
+                                                        </option>
+                                                        <option value="Monthly"
+                                                            {{ $pkg['frequency'] == 'Monthly' ? 'selected' : '' }}>Monthly
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <script>
-                        const toggle = document.getElementById('togglePackages');
-                        const extraPackages = document.querySelectorAll('.extra-package');
+                    <div class="lg:col-span-1 space-y-8">
 
-                        function updatePackageVisibility() {
-                            extraPackages.forEach(pkg => {
-                                const inputs = pkg.querySelectorAll('input');
-                                if (toggle.checked) {
-                                    pkg.style.display = 'block';
-                                    inputs.forEach(input => input.disabled = false);
-                                } else {
-                                    pkg.style.display = 'none';
-                                    inputs.forEach(input => input.disabled = true);
-                                }
-                            });
-                        }
+                        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                            <div class="p-6 border-b border-gray-100 bg-gray-50">
+                                <h3 class="text-lg font-medium leading-6 text-gray-900">Media</h3>
+                            </div>
+                            <div class="p-6">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Service Image</label>
 
-                        toggle.addEventListener('change', updatePackageVisibility);
-                        updatePackageVisibility(); // initialize on page load
-                    </script>
-                </div>
+                                @php
+                                    $currentImage = $service->image_path
+                                        ? (Str::startsWith($service->image_path, 'services/')
+                                            ? asset('storage/' . $service->image_path)
+                                            : asset($service->image_path))
+                                        : asset('images/default_service.jpg');
+                                @endphp
 
-                <!-- Unavailable Dates -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Unavailable Dates</label>
-                    <input type="text" id="unavailableDates" name="unavailable_dates"
-                           value="{{ implode(',', json_decode($service->unavailable_dates ?? '[]', true)) }}"
-                           class="w-full px-4 py-3 border rounded-xl">
-                </div>
+                                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md relative hover:bg-gray-50 transition-colors group cursor-pointer"
+                                    onclick="document.getElementById('imageInput').click()">
+                                    <div class="space-y-1 text-center">
+                                        <div class="relative w-full h-48 mb-4">
+                                            <img id="imagePreview" src="{{ $currentImage }}"
+                                                class="w-full h-full object-cover rounded-lg shadow-sm">
+                                            <div
+                                                class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all rounded-lg flex items-center justify-center">
+                                                <span
+                                                    class="text-white opacity-0 group-hover:opacity-100 font-medium bg-black bg-opacity-50 px-3 py-1 rounded-full text-sm">Change</span>
+                                            </div>
+                                        </div>
+                                        <div class="flex text-sm text-gray-600 justify-center">
+                                            <span
+                                                class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                                                <span>Upload a file</span>
+                                                <input id="imageInput" name="image" type="file" class="sr-only">
+                                            </span>
+                                        </div>
+                                        <p class="text-xs text-gray-500">PNG, JPG, GIF up to 5MB</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                <div class="pt-4 flex justify-end">
-                    <button type="submit" class="bg-indigo-600 text-white font-semibold px-6 py-3 rounded-xl hover:bg-indigo-700">
-                        Save Changes
-                    </button>
+                        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                            <div class="p-6 border-b border-gray-100 bg-gray-50">
+                                <h3 class="text-lg font-medium leading-6 text-gray-900">Availability</h3>
+                            </div>
+                            <div class="p-6">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Unavailable Dates</label>
+                                <div class="relative">
+                                    <input type="text" id="unavailableDates" name="unavailable_dates"
+                                        value="{{ implode(',', json_decode($service->unavailable_dates ?? '[]', true)) }}"
+                                        class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                        placeholder="Select dates...">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                            </path>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <p class="mt-2 text-xs text-gray-500">Select dates when you are not available to provide
+                                    this service.</p>
+                            </div>
+                        </div>
+
+                        <div class="pt-2">
+                            <button type="submit"
+                                class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-custom-teal hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                                Save Changes
+                            </button>
+                        </div>
+
+                    </div>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
-        // Image preview
+        // Image preview logic
         const imageInput = document.getElementById('imageInput');
         const imagePreview = document.getElementById('imagePreview');
-        imageInput.addEventListener('change', function(){
+        const originalImageSrc = "{{ $currentImage }}";
+
+        imageInput.addEventListener('change', function() {
             const file = this.files[0];
-            if(file){
+            if (file) {
                 const reader = new FileReader();
                 reader.onload = e => imagePreview.src = e.target.result;
                 reader.readAsDataURL(file);
             } else {
-                imagePreview.src = "{{ $currentImage }}";
+                imagePreview.src = originalImageSrc;
             }
         });
 
-        // Flatpickr for unavailable dates
+        // Flatpickr initialization
         flatpickr("#unavailableDates", {
             mode: "multiple",
             dateFormat: "Y-m-d",
+            minDate: "today",
+            conjunction: ", "
         });
 
-        // Submit form via AJAX
-        document.getElementById('serviceForm').addEventListener('submit', function(e){
+        // Toggle extra packages visibility
+        const toggle = document.getElementById('togglePackages');
+        const extraPackages = document.querySelectorAll('.extra-package');
+
+        function updatePackageVisibility() {
+            extraPackages.forEach(pkg => {
+                const inputs = pkg.querySelectorAll('input, select'); // Included select in querySelector
+                if (toggle.checked) {
+                    pkg.style.display = 'block';
+                    inputs.forEach(input => input.disabled = false);
+                } else {
+                    pkg.style.display = 'none';
+                    inputs.forEach(input => input.disabled = true);
+                }
+            });
+        }
+
+        if (toggle) {
+            toggle.addEventListener('change', updatePackageVisibility);
+            updatePackageVisibility();
+        }
+
+        // AJAX Form Submission
+        document.getElementById('serviceForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
-            // Enable disabled inputs so they are sent
-            document.querySelectorAll('input:disabled').forEach(i => i.disabled = false);
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerText;
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Saving...';
 
             const formData = new FormData(this);
-            formData.append('_method','PUT');
 
-            fetch("{{ route('services.update',$service->id) }}", {
-                method:'POST',
-                body: formData,
-                headers:{'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content}
-            })
-            .then(async res => {
-                const text = await res.text();
-                try {
-                    const data = JSON.parse(text);
-                    if(data.success){
-                        alert(data.message);
-                        window.location.href="{{ route('services.manage') }}";
-                    } else {
-                        alert('Error: ' + (data.error || 'Unknown'));
+            fetch("{{ route('services.update', $service->id) }}", {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                            'content'),
+                        'Accept': 'application/json'
                     }
-                } catch(e){
-                    console.error('Invalid JSON', text);
-                    alert('Server error. Check console.');
-                }
-            })
-            .catch(err => console.error(err));
+                })
+                .then(async res => {
+                    const data = await res.json().catch(() => ({}));
+
+                    if (res.ok && data.success) {
+                        Swal.fire({
+                            title: 'Success!',
+                            text: data.message || 'Service updated successfully.',
+                            icon: 'success',
+                            confirmButtonText: 'Great!',
+                            confirmButtonColor: '#4f46e5'
+                        }).then(() => {
+                            window.location.href = "{{ route('services.manage') }}";
+                        });
+                    } else {
+                        let errorMessage = data.message || 'An error occurred while saving.';
+                        if (data.errors) {
+                            errorMessage = Object.values(data.errors).flat().join('\n');
+                        }
+                        Swal.fire({
+                            title: 'Error',
+                            text: errorMessage,
+                            icon: 'error',
+                            confirmButtonText: 'Okay'
+                        });
+                    }
+                })
+                .catch(err => {
+                    console.error('Fetch error:', err);
+                    Swal.fire({
+                        title: 'System Error',
+                        text: 'Something went wrong. Please check your connection and try again.',
+                        icon: 'error'
+                    });
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = originalBtnText;
+                });
         });
     </script>
-</x-app-layout>
+@endsection

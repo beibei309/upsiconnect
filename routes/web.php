@@ -20,7 +20,6 @@ use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\Admin\VerificationController as AdminVerificationController;
 use App\Http\Controllers\Admin\ReportAdminController;
 use App\Http\Controllers\Admin\UserAdminController;
-use App\Http\Controllers\Pages\StudentPageController;
 use App\Http\Controllers\Pages\SearchPageController;
 use App\Http\Controllers\Pages\AdminPageController;
 use App\Http\Controllers\Admin\AdminAuthController;
@@ -42,12 +41,27 @@ Route::get('/students/create', [ProfileController::class, 'create'])->name('stud
 // Handle the profile form submission
 Route::get('/students', [StudentsController::class, 'index'])->name('students.index');
 Route::post('/students/create', [StudentsController::class, 'store'])->name('students.store');
-// Route::get('/onboarding/students', fn() => view('onboarding.students_verification'))->name('onboarding.students.verify');
-// routes/web.php
-Route::get('/onboarding/students', [VerificationController::class,'index'])->name('onboarding.students');
-Route::post('/onboarding/students/upload-photo', [VerificationController::class,'uploadPhoto'])->name('students_verification.upload');
+Route::get('/students/edit-profile', [StudentsController::class, 'edit'])->name('students.edit');
+Route::patch('/students/edit-profile', [StudentsController::class, 'update'])->name('students.update');
 
 
+// ... kod route lain ...
+
+Route::middleware(['auth'])->group(function () {
+    
+    // Route untuk paparkan page verification
+    Route::get('/onboarding/students', [VerificationController::class, 'index'])
+        ->name('onboarding.students');
+
+    // Route untuk Upload Profile Photo (INI YANG MISSING DALAM ERROR ANDA)
+    Route::post('/verification/upload-photo', [VerificationController::class, 'uploadPhoto'])
+        ->name('students_verification.upload');
+
+    // Route untuk Upload Live Selfie (Untuk fungsi kamera nanti)
+    Route::post('/verification/upload-selfie', [VerificationController::class, 'uploadSelfie'])
+        ->name('students_verification.upload_selfie');
+
+});
 // services
 Route::get('/services', [StudentServiceController::class, 'index'])->name('services.index');
 Route::get('/services/manage', [StudentServiceController::class, 'manage'])->middleware(['auth'])->name('services.manage');
@@ -132,7 +146,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // UI pages
-Route::get('/students/{user}/profile', [StudentPageController::class, 'profile'])->middleware(['auth'])->name('students.profile');
+Route::get('/students/{user}/profile', [StudentsController::class, 'profile'])->name('students.profile');
 Route::get('/search', [SearchPageController::class, 'index'])->middleware(['auth'])->name('search.index');
 
 
@@ -153,7 +167,7 @@ Route::get('/admin/reports', [AdminPageController::class, 'reports'])->middlewar
 // Authenticated JSON endpoints
 Route::middleware(['auth'])->group(function () {
     Route::post('/availability/toggle', [AvailabilityController::class, 'toggle'])->name('availability.toggle');
-    Route::post('/availability/set-dates', [AvailabilityController::class, 'setDates'])->name('availability.setDates');
+Route::post('/availability/update-settings', [AvailabilityController::class, 'updateSettings'])->name('availability.updateSettings');
 
     Route::post('/chat-requests', [ChatRequestController::class, 'store'])->name('chat-requests.store');
     Route::post('/chat-requests/{chatRequest}/accept', [ChatRequestController::class, 'accept']);

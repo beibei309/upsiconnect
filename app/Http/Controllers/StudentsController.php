@@ -7,8 +7,10 @@ use Carbon\Carbon;
 
 use App\Models\Category;
 use App\Models\ServiceRequest;
+use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage; 
+use Illuminate\Support\Facades\Auth;
 
 class StudentsController extends Controller
 {
@@ -173,6 +175,88 @@ class StudentsController extends Controller
         return redirect()->route('students.create')
                         ->with('status', 'Profile updated successfully!')
                         ->with('ready_to_help', true);
+    }
+
+    public function edit()
+    {
+        $user = Auth::user();
+        return view('students.edit-profile', compact('user'));
+        
+    }
+
+
+    public function update(Request $request)
+    {
+        $user = Auth::user();
+
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'faculty' => 'nullable|string|max:255',
+            'course' => 'nullable|string|max:255',
+            'bio' => 'nullable|string|max:1000',
+            'skills' => 'nullable|string|max:500',
+            'is_available' => 'nullable', 
+            'profile_photo_path' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:4096', 
+        ]);
+
+        $user->name = $validated['name'];
+        $user->faculty = $validated['faculty'] ?? $user->faculty;
+        $user->course = $validated['course'] ?? $user->course;
+        $user->bio = $validated['bio'];
+        $user->skills = $validated['skills'];
+
+
+        $user->is_available = $request->has('is_available') ? true : false;
+
+
+        if ($request->hasFile('profile_photo_path')) {
+            
+            if ($user->profile_photo_path && Storage::disk('public')->exists($user->profile_photo_path)) {
+                 Storage::disk('public')->delete($user->profile_photo_path);
+            }
+
+            $file = $request->file('profile_photo_path');
+            $filename = time() . '_' . $file->getClientOriginalName(); 
+
+            $path = $file->storeAs('uploads/profile', $filename, 'public'); 
+       
+            $user->profile_photo_path = 'uploads/profile/' . $filename;
+        }
+
+        $user->save();
+
+        return redirect()
+            ->route('students.index', $user->id)
+            ->with('success', 'Profile updated successfully!');
+    }
+
+    public function profile(User $user)
+    {
+     
+        $user->load([
+            'reviewsReceived.reviewer', // Supaya boleh tunjuk gambar/nama orang yang review
+            'reviewsReceived.service'   // Supaya boleh tunjuk review tu untuk service apa
+        ]);
+        
+
+       
+        $services = $user->services()
+                         ->where('is_active', true) // Hanya tunjuk yang active
+                         ->latest()
+                         ->get();
+
+        $servicesActiveCount = $services->count();
+
+        $reviews = $user->reviewsReceived()->latest()->get();
+
+
+        return view('students.profile', compact(
+            'user',
+            'services',
+            'servicesActiveCount',
+            'reviews'
+        ));
     }
 
 }

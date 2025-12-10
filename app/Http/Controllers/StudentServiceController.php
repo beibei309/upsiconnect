@@ -12,14 +12,15 @@ use Illuminate\Http\Request;
 class StudentServiceController extends Controller
 {
 
-  public function index(Request $request)
+ public function index(Request $request)
 {
     $q = $request->string('q')->toString();
     $category_id = $request->category_id;
     $sort = $request->sort ?? 'newest';
 
-       $query = StudentService::with(['student', 'category'])
+    $query = StudentService::with(['student', 'category'])
         ->where('status', 'available')
+        ->where('approval_status', 'approved') // <--- Added this line
         ->whereHas('student', function ($q) {
             $q->where('role', 'helper');
         });
@@ -43,7 +44,8 @@ class StudentServiceController extends Controller
     } elseif ($sort == 'oldest') {
         $query->orderBy('created_at', 'asc');
     } elseif ($sort == 'price_low') {
-        $query->orderBy('suggested_price', 'asc');
+        // Note: Ensure 'basic_price' is the column you want to sort by
+        $query->orderBy('basic_price', 'asc'); 
     } elseif ($sort == 'price_high') {
         $query->orderBy('basic_price', 'desc');
     }
@@ -51,10 +53,9 @@ class StudentServiceController extends Controller
     // Fetch the services
     $services = $query->get();
 
-    // Return to the view (similar to what was done in GuestServicesController)
     return view('services.index', [
         'services' => $services,
-        'categories' => Category::all(),
+        'categories' => \App\Models\Category::all(), // Ensure Model is imported or fully qualified
         'category_id' => $category_id,
         'sort' => $sort,
     ]);
@@ -205,7 +206,7 @@ class StudentServiceController extends Controller
         return view('services.create', compact('categories'));
     }
 
-    public function store(Request $request)
+public function store(Request $request)
     {
         $user = $request->user();
         if (!$user || $user->role !== 'helper') {
@@ -215,16 +216,23 @@ class StudentServiceController extends Controller
         $currentSection = $request->input('current_section');
         $serviceId = $request->input('service_id');
 
-        // Find or create service instance
+        // Cari perkhidmatan sedia ada atau sediakan objek baru
         if ($serviceId) {
             $service = StudentService::findOrFail($serviceId);
             if ($service->user_id !== $user->id) {
                 return response()->json(['error' => 'You may only edit your own services.'], 403);
             }
         } else {
+            // Jika ini rekod baharu, pastikan kita berada di langkah 'overview'
+            if ($currentSection !== 'overview') {
+                return response()->json(['error' => 'New services must start with the overview section.'], 400);
+            }
             $service = new StudentService();
             $service->user_id = $user->id;
             $service->approval_status = 'pending';
+            // Set nilai lalai untuk mengelakkan ralat MySQL jika medan lain tidak boleh null
+            $service->status = 'available'; // Contoh, pastikan status ada nilai
+            $service->is_active = true;     // Contoh
         }
 
         // --- VALIDATION PER SECTION ---
@@ -237,7 +245,8 @@ class StudentServiceController extends Controller
                 'template_image' => 'nullable|string',
             ];
         } elseif ($currentSection === 'pricing') {
-            $rules = [
+            // ... (kod validasi pricing anda kekal sama) ...
+             $rules = [
                 'packages.0.duration' => 'required|string',
                 'packages.0.frequency' => 'required|string',
                 'packages.0.price' => 'required|numeric|min:0',
@@ -259,47 +268,44 @@ class StudentServiceController extends Controller
             $rules = [
                 'description' => 'required|string',
             ];
-       } elseif ($currentSection === 'availability') {
+        } elseif ($currentSection === 'availability') {
             $rules = [
                 'unavailable_dates' => 'nullable|string'
             ];
         }
-        
+       
         $validated = $request->validate($rules);
 
-        // --- HANDLE IMAGE IN OVERVIEW ---
+        // --- HANDLE DATA ASSIGNMENT ---
+
         if ($currentSection === 'overview') {
-            if ($request->hasFile('image')) {
-                $validated['image_path'] = $request->file('image')->store('services', 'public');
-            } elseif ($request->filled('template_image')) {
-                $validated['image_path'] = $request->input('template_image');
-            }
-
-            $service->title = $validated['title'];
+            // Ini akan menyelesaikan ralat: title kini diberikan nilai
+            $service->title = $validated['title']; 
             $service->category_id = $validated['category_id'];
-            if (isset($validated['image_path'])) $service->image_path = $validated['image_path'];
+            
+            if ($request->hasFile('image')) {
+                $service->image_path = $request->file('image')->store('services', 'public');
+            } elseif ($request->filled('template_image')) {
+                $service->image_path = $request->input('template_image');
+            }
         }
-       if ($currentSection === 'availability') {
-        $dates = $request->input('unavailable_dates', []);
-        
-        if (is_string($dates)) {
-            $dates = array_filter(explode(',', $dates));
-        }
 
-        $service->unavailable_dates = json_encode(array_values($dates));
-    }
-
-
-        // --- DESCRIPTION ---
         if ($currentSection === 'description') {
             $service->description = $validated['description'];
         }
 
-        // --- PRICING ---
+        if ($currentSection === 'availability') {
+            $dates = $request->input('unavailable_dates', []);
+            if (is_string($dates)) {
+                $dates = array_filter(explode(',', $dates));
+            }
+            $service->unavailable_dates = json_encode(array_values($dates));
+        }
+
         if ($currentSection === 'pricing' && $request->filled('packages')) {
             $packages = $request->input('packages');
-
-            // Handle pricing logic for basic, standard, and premium packages
+            
+            // ... (logik pricing anda kekal sama) ...
             $service->basic_duration = $packages[0]['duration'] ?? null;
             $service->basic_frequency = $packages[0]['frequency'] ?? null;
             $service->basic_price = $packages[0]['price'] ?? null;
@@ -320,6 +326,8 @@ class StudentServiceController extends Controller
             }
         }
 
+        // Simpan ke pangkalan data
+        // Pada langkah 'overview', 'title' kini sudah diset, jadi tiada ralat.
         $service->save();
 
         return response()->json([

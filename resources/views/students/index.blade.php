@@ -4,7 +4,7 @@
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Welcome Header -->
-        <br><br><br><br>
+        <br>
         <div class="mb-8">
             <h1 class="text-3xl font-bold text-gray-900">Welcome back, {{ Auth::user()->name }}!</h1>
             @php
@@ -23,121 +23,157 @@
                 <!-- Availability Status -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                     <div class="flex items-center justify-between">
-                        <div x-data="availabilityComponent()" class="space-y-4">
-                            <div>
-                                <h3 class="text-lg font-semibold text-gray-900">Availability Status</h3>
-                                <p class="text-sm text-gray-600 mt-1">Toggle your availability for new requests</p>
-                            </div>
-
-                            <div>
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" class="sr-only peer" :checked="isAvailable" @change="toggle()">
-                                    <div
-                                        class="w-11 h-6 bg-gray-200 rounded-full peer-checked:bg-indigo-600 relative
-                        after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border 
-                        after:border-gray-300 after:rounded-full after:h-5 after:w-5 after:transition-all
-                        peer-checked:after:translate-x-full">
-                                    </div>
-                                </label>
-                            </div>
-
-                            <!-- Modal -->
-                            <div x-show="showModal"
-                                class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-                                <div class="bg-white rounded-lg p-6 w-96">
-                                    <h2 class="text-lg font-semibold mb-4">Pilih Tarikh Tidak Available</h2>
-                                    <div class="space-y-3">
-                                        <div>
-                                            <label class="block text-sm font-medium">Tarikh Mula:</label>
-                                            <input type="date" x-model="startDate" class="border rounded w-full p-2">
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium">Tarikh Tamat:</label>
-                                            <input type="date" x-model="endDate" class="border rounded w-full p-2">
-                                        </div>
-                                    </div>
-                                    <div class="mt-4 flex justify-end space-x-2">
-                                        <button @click="closeModal()" class="px-4 py-2 border rounded">Batal</button>
-                                        <button @click="saveDates()"
-                                            class="px-4 py-2 bg-indigo-600 text-white rounded">Simpan</button>
-                                    </div>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 h-full flex flex-col justify-between">
+                    <div x-data="availabilityComponent()">
+                        
+                        <div class="mb-4">
+                            <h3 class="text-lg font-bold text-gray-900 mb-4">Availability</h3>
+                            
+                            <div class="flex items-start gap-3 text-sm text-gray-600">
+                                <i class="fa-regular fa-calendar text-lg mt-0.5"></i>
+                                <div>
+                                    <p class="font-medium text-gray-900 mb-1">Scheduled unavailability:</p>
+                                    
+                                    <template x-if="!isAvailable && startDate && endDate">
+                                        <p class="text-gray-700 font-medium">
+                                            From <span x-text="formatDate(startDate)"></span> to <span x-text="formatDate(endDate)"></span>
+                                        </p>
+                                    </template>
+                                    
+                                    <template x-if="isAvailable">
+                                        <p class="text-gray-500 italic">You are currently available for new orders.</p>
+                                    </template>
                                 </div>
                             </div>
                         </div>
 
-                        <script>
-                            function availabilityComponent() {
-                                return {
-                                    isAvailable: {{ Auth::user()->is_available ? 'true' : 'false' }},
-                                    showModal: false,
-                                    startDate: '',
-                                    endDate: '',
+                        <button @click="openModal()" 
+                            class="w-full mt-4 py-2 px-4 bg-white border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors shadow-sm text-center">
+                            Edit
+                        </button>
 
-                                    toggle() {
-                                        fetch('/availability/toggle', {
-                                                method: 'POST',
-                                                headers: {
-                                                    'Content-Type': 'application/json',
-                                                    'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content'),
-                                                    'Accept': 'application/json'
-                                                },
-                                            })
-                                            .then(res => res.json())
-                                            .then(data => {
-                                                this.isAvailable = data.is_available;
-                                                if (!data.is_available) {
-                                                    this.showModal = true; // buka modal pilih tarikh
-                                                }
-                                            })
-                                            .catch(err => console.error(err));
-                                    },
+                        <div x-show="showModal" 
+                             class="fixed inset-0 flex items-center justify-center z-50 px-4" 
+                             style="display: none;">
+                            
+                            <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" @click="closeModal()"></div>
 
-                                    closeModal() {
-                                        this.showModal = false;
-                                        // kalau tak pilih tarikh, revert toggle ke available
-                                        if (!this.isAvailable) {
-                                            this.isAvailable = true;
-                                            fetch('/availability/toggle', {
-                                                method: 'POST',
-                                                headers: {
-                                                    'Content-Type': 'application/json',
-                                                    'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute(
-                                                        'content'),
-                                                    'Accept': 'application/json'
-                                                },
-                                            });
-                                        }
-                                    },
+                            <div class="bg-white rounded-xl shadow-xl w-full max-w-md z-10 overflow-hidden transform transition-all">
+                                
+                                <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                                    <h2 class="text-xl font-bold text-gray-900">Edit your availability</h2>
+                                    <button @click="closeModal()" class="text-gray-400 hover:text-gray-600">
+                                        <i class="fa-solid fa-times text-lg"></i>
+                                    </button>
+                                </div>
 
-                                    saveDates() {
-                                        if (!this.startDate || !this.endDate) {
-                                            alert('Sila pilih kedua-dua tarikh!');
-                                            return;
-                                        }
+                                <div class="p-6 space-y-6">
+                                    <p class="text-gray-600 text-sm">
+                                        While unavailable, your Gigs are hidden and you will not receive new orders.
+                                    </p>
 
-                                        fetch('/availability/set-dates', {
-                                                method: 'POST',
-                                                headers: {
-                                                    'Content-Type': 'application/json',
-                                                    'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content'),
-                                                    'Accept': 'application/json'
-                                                },
-                                                body: JSON.stringify({
-                                                    start_date: this.startDate,
-                                                    end_date: this.endDate
-                                                })
-                                            })
-                                            .then(res => res.json())
-                                            .then(data => {
-                                                alert(data.message);
-                                                this.showModal = false;
-                                                this.isAvailable = false; // confirm unavailable
-                                            })
-                                            .catch(err => console.error(err));
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">First day</label>
+                                            <input type="date" x-model="startDate" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Last day</label>
+                                            <input type="date" x-model="endDate" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                                        <span class="text-sm font-medium text-gray-900">I am currently available</span>
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" class="sr-only peer" x-model="isAvailable">
+                                            <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-indigo-100 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="px-6 py-4 bg-gray-50 flex justify-between items-center">
+                                    <button @click="deleteDates()" x-show="!isAvailable" class="text-red-600 text-sm font-medium hover:underline">
+                                        Delete scheduled dates
+                                    </button>
+                                    <span x-show="isAvailable"></span> <button @click="saveChanges()" class="px-6 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition shadow-sm">
+                                        Save changes
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <script>
+                    function availabilityComponent() {
+                        return {
+                            isAvailable: {{ Auth::user()->is_available ? 'true' : 'false' }},
+                            showModal: false,
+                            // Ambil tarikh dari database jika ada, format YYYY-MM-DD
+                            startDate: '{{ Auth::user()->unavailable_start_date ?? "" }}', 
+                            endDate: '{{ Auth::user()->unavailable_end_date ?? "" }}',
+
+                            openModal() {
+                                this.showModal = true;
+                            },
+
+                            closeModal() {
+                                this.showModal = false;
+                            },
+                            
+                            // Fungsi format tarikh (Contoh: Dec 10, 2025)
+                            formatDate(dateString) {
+                                if(!dateString) return '';
+                                const options = { year: 'numeric', month: 'short', day: 'numeric' };
+                                return new Date(dateString).toLocaleDateString('en-US', options);
+                            },
+
+                            deleteDates() {
+                                this.startDate = '';
+                                this.endDate = '';
+                                this.isAvailable = true;
+                                // Opsional: Terus save atau biar user tekan Save Changes
+                            },
+
+                            saveChanges() {
+                                // Jika user set available = true, kosongkan tarikh
+                                if (this.isAvailable) {
+                                    this.startDate = null;
+                                    this.endDate = null;
+                                } else {
+                                    if (!this.startDate || !this.endDate) {
+                                        alert('Please select both start and end dates.');
+                                        return;
                                     }
                                 }
+
+                                fetch('/availability/update-settings', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content'),
+                                        'Accept': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        is_available: this.isAvailable,
+                                        start_date: this.startDate,
+                                        end_date: this.endDate
+                                    })
+                                })
+                                .then(res => res.json())
+                                .then(data => {
+                                    // alert(data.message);
+                                    this.showModal = false;
+                                    // Reload page atau update UI state sahaja
+                                    // window.location.reload(); 
+                                })
+                                .catch(err => console.error(err));
                             }
-                        </script>
+                        }
+                    }
+                </script>
 
                     </div>
                     <div class="mt-4">
@@ -220,7 +256,7 @@
                             'icon' => 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
                             'bg' => 'bg-yellow-100',
                             'hover' => 'group-hover:bg-yellow-200',
-                            'route' => route('profile.edit'),
+                            'route' => route('students.edit'),
                         ],
                     ];
                 @endphp
