@@ -94,38 +94,43 @@
             </div>
         </section>
 
-        <section class="py-16 bg-white relative">
-            <div class="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
-                <div class="flex justify-between items-end mb-10">
-                    <div>
-                        <h2 class="text-3xl font-bold text-gray-900">Explore Categories</h2>
-                        <p class="text-gray-500 mt-2">Find exactly what you need.</p>
+       <section class="py-16 bg-white relative">
+    <div class="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
+        <div class="flex justify-between items-end mb-10">
+            <div>
+                <h2 class="text-3xl font-bold text-gray-900">Explore Categories</h2>
+                <p class="text-gray-500 mt-2">Find exactly what you need.</p>
+            </div>
+            
+            {{-- Keep the scroll buttons for the horizontal layout --}}
+            <div class="flex gap-2">
+                <button id="scrollLeft" class="p-2 rounded-full border hover:bg-gray-50 transition text-gray-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
+                <button id="scrollRight" class="p-2 rounded-full border hover:bg-gray-50 transition text-gray-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></button>
+            </div>
+        </div>
+
+        {{-- Key Change: Back to flexbox and scrolling classes --}}
+        <div id="scrollContainer" class="flex gap-6 overflow-x-auto hide-scroll-bar pb-4 snap-x snap-mandatory">
+            @foreach ($categories ?? [] as $category)
+                <a href="{{ route('services.index', ['category_id' => $category->id]) }}" 
+                    {{-- Included shrink-0 and w-64 for horizontal scrolling --}}
+                    class="snap-center shrink-0 w-64 p-6 rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center group cursor-pointer"
+                    {{-- Set the background color of the entire card --}}
+                    style="background-color: {{ $category->color }}; border: 1px solid {{ $category->color }};">
+                    
+                    {{-- Icon Container: Set background to white for contrast --}}
+                    <div class="w-16 h-16 rounded-full flex items-center justify-center mb-4 transition-transform group-hover:scale-110 bg-white">
+                        <img src="{{ asset('images/' . $category->image_path) }}" alt="{{ $category->name }}" class="w-8 h-8 object-contain">
                     </div>
                     
-                    <div class="flex gap-2">
-                        <button id="scrollLeft" class="p-2 rounded-full border hover:bg-gray-50 transition text-gray-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
-                        <button id="scrollRight" class="p-2 rounded-full border hover:bg-gray-50 transition text-gray-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></button>
-                    </div>
-                </div>
-
-                <div id="scrollContainer" class="flex gap-6 overflow-x-auto hide-scroll-bar pb-4 snap-x snap-mandatory">
-                    @foreach ($categories ?? [] as $category)
-                        <a href="{{ route('services.index', ['category_id' => $category->id]) }}" 
-                           class="snap-center shrink-0 w-64 p-6 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center group cursor-pointer"
-                           style="border-bottom: 3px solid {{ $category->color }};">
-                            
-                            <div class="w-16 h-16 rounded-full flex items-center justify-center mb-4 transition-transform group-hover:scale-110"
-                                 style="background-color: {{ $category->color }}15;">
-                                <img src="{{ asset('images/' . $category->image_path) }}" alt="{{ $category->name }}" class="w-8 h-8 object-contain">
-                            </div>
-                            
-                            <h3 class="text-lg font-bold text-gray-800 mb-2">{{ $category->name }}</h3>
-                            <p class="text-sm text-gray-500 line-clamp-2">{{ $category->description }}</p>
-                        </a>
-                    @endforeach
-                </div>
-            </div>
-        </section>
+                    {{-- Text Colors: Set to white and light gray for readability on the colorful background --}}
+                    <h3 class="text-lg font-bold text-white mb-2">{{ $category->name }}</h3>
+                    <p class="text-sm text-gray-200 line-clamp-2">{{ $category->description }}</p>
+                </a>
+            @endforeach
+        </div>
+    </div>
+</section>
 
         <section class="py-20 bg-slate-50">
             <div class="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
