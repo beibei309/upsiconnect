@@ -1,11 +1,16 @@
 <?php
 
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\HelpController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\AvailabilityController;
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\HelpController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\SearchController;
+use App\Http\Controllers\MessageController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ChatRequestController;
 use App\Http\Controllers\StudentsController;
 use App\Http\Controllers\MessageController;
@@ -16,19 +21,21 @@ use App\Http\Controllers\StudentServiceController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ServiceRequestController;
-use App\Http\Controllers\FavoriteController;
-use App\Http\Controllers\Admin\VerificationController as AdminVerificationController;
-use App\Http\Controllers\Admin\ReportAdminController;
-use App\Http\Controllers\Admin\UserAdminController;
-use App\Http\Controllers\Pages\SearchPageController;
-use App\Http\Controllers\Pages\AdminPageController;
+use App\Http\Controllers\StudentServiceController;
 use App\Http\Controllers\Admin\AdminAuthController;
-use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\UserAdminController;
+use App\Http\Controllers\Pages\AdminPageController;
+use App\Http\Controllers\Admin\SuperAdminController;
+use App\Http\Controllers\Pages\SearchPageController;
+use App\Http\Controllers\Admin\ReportAdminController;
+use App\Http\Controllers\Pages\StudentPageController;
 use App\Http\Controllers\Admin\AdminStudentController;
+use App\Http\Controllers\ServiceApplicationController;
 use App\Http\Controllers\Admin\AdminServicesController;
 use App\Http\Controllers\Admin\AdminCommunityController;
-use App\Http\Controllers\Admin\SuperAdminController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminStudentStatusController;
+use App\Http\Controllers\Admin\VerificationController as AdminVerificationController;
 
 
 Route::get('/', [HomeController::class, 'home'])->name('home');
@@ -314,6 +321,15 @@ Route::prefix('community')->group(function () {
     Route::delete('/delete/{id}', [AdminCommunityController::class, 'delete'])->name('admin.community.delete');
 });
 //end admin community aprt
+
+Route::prefix('admin/student-status')->name('admin.student_status.')->group(function () {
+    Route::get('/', [AdminStudentStatusController::class, 'index'])->name('index');
+    Route::get('/create', [AdminStudentStatusController::class, 'create'])->name('create');
+    Route::post('/store', [AdminStudentStatusController::class, 'store'])->name('store');
+    Route::get('/edit/{id}', [AdminStudentStatusController::class, 'edit'])->name('edit');
+    Route::put('/update/{id}', [AdminStudentStatusController::class, 'update'])->name('update');
+    Route::delete('/delete/{id}', [AdminStudentStatusController::class, 'destroy'])->name('delete');
+});
 
 Route::post('/admin/logout', [AdminAuthController::class, 'logout'])
     ->name('admin.logout');   
