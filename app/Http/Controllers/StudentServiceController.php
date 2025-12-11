@@ -6,6 +6,7 @@ use App\Models\StudentService;
 use App\Models\User;
 use App\Models\Category;
 use App\Models\ServiceRequest;
+use App\Models\Review;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -388,39 +389,46 @@ public function store(Request $request)
         ]);
     }
 
-    public function details(Request $request, $id)
-    {
-        $service = StudentService::with(['user', 'category', 'orders'])->findOrFail($id);
-        $viewer = $request->user(); // currently logged-in user (if any)
+   public function details(Request $request, $id)
+{
+    $service = StudentService::with(['user', 'category', 'orders'])->findOrFail($id);
+    $viewer = $request->user(); 
 
-        // Fetch orders for this service
-        $orders = ServiceRequest::where('student_service_id', $service->id)
-                    ->whereIn('status', ['completed', 'accepted'])
-                    ->get();
+    // Fetch orders for this service
+    $orders = ServiceRequest::where('student_service_id', $service->id)
+                ->whereIn('status', ['completed', 'accepted'])
+                ->get();
 
-        $service->min_price = $orders->min('offered_price') ?? 0;
-        $service->max_price = $orders->max('offered_price') ?? 0;
+    $service->min_price = $orders->min('offered_price') ?? 0;
+    $service->max_price = $orders->max('offered_price') ?? 0;
 
-        // Completed orders count
+    // Completed orders count
     $service->completed_orders = $service->orders()
         ->whereIn('status', ['completed', 'accepted'])
         ->count();
 
-    // Average rating from reviews received by the user
-    $service->rating = round($service->user->reviewsReceived()->avg('rating'), 1) ?? 0;
+    // 1. FETCH REVIEWS (This part is correct in your code)
+    $reviews = Review::where('student_service_id', $service->id)
+                 ->with('reviewer') 
+                 ->latest()
+                 ->get();
 
-        // Optional: calculate average delivery time in days
-        $service->avg_days = $orders->avg(function($order) {
-            return \Carbon\Carbon::parse($order->selected_dates)->diffInDays(now());
-        }) ?? 0;
+    // 2. FIX: Calculate rating based on THIS service's reviews, not the user's global reviews
+    // Old line: $service->rating = round($service->user->reviewsReceived()->avg('rating'), 1) ?? 0;
+    $service->rating = round($reviews->avg('rating'), 1) ?? 0;
 
-        return view('services.details', [
-            'service' => $service,
-            'provider' => $service->user,
-            'viewer' => $viewer,
-            
-        ]);
-    }
+    // Optional: calculate average delivery time
+    $service->avg_days = $orders->avg(function($order) {
+        return \Carbon\Carbon::parse($order->selected_dates)->diffInDays(now());
+    }) ?? 0;
+
+    return view('services.details', [
+        'service' => $service,
+        'provider' => $service->user,
+        'viewer' => $viewer,
+        'reviews' => $reviews, // 3. FIX: You must add this line to pass the data to your blade file
+    ]);
+}
 
     // ADMIN APPROVE/REJECT SERVICE
     public function approve(StudentService $service)

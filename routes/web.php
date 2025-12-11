@@ -113,14 +113,16 @@ Route::middleware(['auth'])->group(function () {
 });
 Route::get('/services/{id}', [StudentServiceController::class, 'details'])->name('services.details');
 
-
-
 Route::post('/service-requests', [ServiceRequestController::class, 'store'])
     ->name('service-requests.store')
     ->middleware('auth'); // pastikan user logged in
 
+    // routes/web.php
 
-
+Route::post('/switch-mode', [App\Http\Controllers\DashboardController::class, 'switchMode'])
+    ->name('switch.mode')
+    ->middleware('auth');
+    
 
 // When a guest clicks “Request Service”
 Route::get('/guest/request/{id}', function () {

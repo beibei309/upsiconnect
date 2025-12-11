@@ -252,20 +252,43 @@
 
                                         <div class="flex items-center justify-between border-t border-gray-100 pt-4 mt-auto">
                                             
-                                            <a href="{{ route('students.profile', $service->user) }}" class="flex items-center gap-3 group/user">
-                                                <div class="relative">
-                                                    <img src="{{ $service->user->profile_photo_path ? asset('storage/' . $service->user->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode($service->user->name) . '&background=random' }}"
-                                                        class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm group-hover/user:border-indigo-100 transition">
-                                                    @if($service->user->trust_badge)
-                                                        <div class="absolute -bottom-1 -right-1 bg-blue-500 text-white w-4 h-4 rounded-full flex items-center justify-center text-[8px] border border-white" title="Verified Helper">
-                                                            <i class="fas fa-check"></i>
-                                                        </div>
-                                                    @endif
-                                                </div>
-                                                <div class="flex flex-col">
-                                                    <span class="text-sm font-bold text-slate-800 group-hover/user:text-indigo-600 transition">{{ Str::limit($service->user->name, 18) }}</span>
-                                                    <span class="text-xs text-slate-500">Level 2 Helper</span> </div>
-                                            </a>
+                                          {{-- Ganti rute utama agar mengarah ke login jika guest --}}
+<a href="{{ Auth::guest() ? route('login') : route('students.profile', $service->user) }}" 
+   class="flex items-center gap-3 group/user"
+   {{-- Tambahkan title untuk memberi tahu guest harus login --}}
+   title="{{ Auth::guest() ? 'Login to view profile' : '' }}"> 
+    
+    <div class="relative">
+        <img src="{{ $service->user->profile_photo_path ? asset('storage/' . $service->user->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode($service->user->name) . '&background=random' }}"
+             class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm group-hover/user:border-indigo-100 transition 
+             
+             {{-- 👇 PERBAIKAN 1: Tambahkan class blur jika pengguna adalah guest --}}
+             @guest
+                 blur-md 
+             @endguest
+             ">
+        
+        {{-- Optional: Overlay dan Icon Kunci jika guest (memberi tahu gambar dikunci) --}}
+        @guest
+            <div class="absolute inset-0 flex items-center justify-center text-white bg-black/30 rounded-full">
+                <i class="fas fa-lock text-sm"></i>
+            </div>
+        @endguest
+
+        @if($service->user->trust_badge)
+            <div class="absolute -bottom-1 -right-1 bg-blue-500 text-white w-4 h-4 rounded-full flex items-center justify-center text-[8px] border border-white" title="Verified Helper">
+                <i class="fas fa-check"></i>
+            </div>
+        @endif
+    </div>
+    
+    <div class="flex flex-col">
+        <span class="text-sm font-bold text-slate-800 group-hover/user:text-indigo-600 transition">
+            {{ Str::limit($service->user->name, 18) }}
+        </span>
+        <span class="text-xs text-slate-500">Student Helper</span>
+    </div>
+</a>
 
                                             <div class="flex items-center gap-4">
                                                 @if ($service->basic_price)

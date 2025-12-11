@@ -134,7 +134,8 @@
                         <div class="flex items-center gap-1">
                             <i class="fa-solid fa-star text-yellow-400"></i>
                             <span class="font-bold text-slate-900">{{ $service->rating ?? '0.0' }}</span>
-                            <span class="text-slate-500">({{ $service->user->reviewsReceived()->count() }} reviews)</span>
+                            <span class="text-slate-500">({{ $service->user->reviewsReceived()->count() }}
+                                reviews)</span>
                         </div>
 
                         @if ($service->user->trust_badge)
@@ -229,46 +230,48 @@
 
                     <div class="space-y-8">
                         @forelse ($service->user->reviewsReceived as $review)
-                           <div class="border-b border-gray-100 pb-8 last:border-0 last:pb-0">
-    <div class="flex items-start gap-4">
-        <div class="flex-shrink-0">
-            <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
-                @if (optional($review->reviewer)->profile_photo_path)
-                    <img src="{{ asset('storage/' . $review->reviewer->profile_photo_path) }}"
-                        class="w-full h-full object-cover {{ auth()->guest() ? 'blur-sm' : '' }}">
-                @else
-                    <div class="w-full h-full flex items-center justify-center text-gray-400 bg-gray-100 text-xs font-bold {{ auth()->guest() ? 'blur-sm' : '' }}">
-                        {{ substr(optional($review->reviewer)->name ?? 'A', 0, 1) }}
-                    </div>
-                @endif
-            </div>
-        </div>
-        <div class="flex-1">
-            <div class="flex justify-between items-start">
-                <div>
-                    <h4 class="font-bold text-slate-900 text-sm">
-                        @auth
-                            {{ optional($review->reviewer)->name ?? 'Anonymous User' }}
-                        @else
-                            {{ Str::mask(optional($review->reviewer)->name ?? 'Anonymous User', '*', 3) }}
-                        @endauth
-                    </h4>
-                    <div class="flex items-center gap-2 mt-1">
-                        <div class="flex text-yellow-400 text-xs">
-                            @for ($i = 1; $i <= 5; $i++)
-                                <i class="fa-{{ $i <= $review->rating ? 'solid' : 'regular' }} fa-star"></i>
-                            @endfor
-                        </div>
-                        <span class="text-xs text-gray-400">•
-                            {{ $review->created_at->diffForHumans() }}</span>
-                    </div>
-                </div>
-            </div>
-            <p class="text-gray-600 text-sm mt-3 leading-relaxed">{{ $review->comment }}
-            </p>
-        </div>
-    </div>
-</div>
+                            <div class="border-b border-gray-100 pb-8 last:border-0 last:pb-0">
+                                <div class="flex items-start gap-4">
+                                    <div class="flex-shrink-0">
+                                        <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+                                            @if (optional($review->reviewer)->profile_photo_path)
+                                                <img src="{{ asset('storage/' . $review->reviewer->profile_photo_path) }}"
+                                                    class="w-full h-full object-cover {{ auth()->guest() ? 'blur-sm' : '' }}">
+                                            @else
+                                                <div
+                                                    class="w-full h-full flex items-center justify-center text-gray-400 bg-gray-100 text-xs font-bold {{ auth()->guest() ? 'blur-sm' : '' }}">
+                                                    {{ substr(optional($review->reviewer)->name ?? 'A', 0, 1) }}
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <h4 class="font-bold text-slate-900 text-sm">
+                                                    @auth
+                                                        {{ optional($review->reviewer)->name ?? 'Anonymous User' }}
+                                                    @else
+                                                        {{ Str::mask(optional($review->reviewer)->name ?? 'Anonymous User', '*', 3) }}
+                                                    @endauth
+                                                </h4>
+                                                <div class="flex items-center gap-2 mt-1">
+                                                    <div class="flex text-yellow-400 text-xs">
+                                                        @for ($i = 1; $i <= 5; $i++)
+                                                            <i
+                                                                class="fa-{{ $i <= $review->rating ? 'solid' : 'regular' }} fa-star"></i>
+                                                        @endfor
+                                                    </div>
+                                                    <span class="text-xs text-gray-400">•
+                                                        {{ $review->created_at->diffForHumans() }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p class="text-gray-600 text-sm mt-3 leading-relaxed">{{ $review->comment }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
                         @empty
                             <div class="text-center py-8 text-gray-400">
                                 <p>No reviews yet.</p>
@@ -363,13 +366,37 @@
                             </div>
 
                             <div class="mt-6">
+                                @php
+                                    // Cek status ketersediaan umum helper
+                                    $helperIsAvailable = $service->user->is_available ?? false;
+
+                                    // Buat kelas CSS dinamis
+                                    $buttonClasses = 'w-full py-3.5 rounded-xl font-bold transition-all shadow-md';
+
+                                    if ($helperIsAvailable) {
+                                        $buttonClasses .=
+                                            ' bg-slate-900 hover:bg-indigo-600 text-white hover:shadow-lg transform hover:-translate-y-0.5';
+                                        $buttonText =
+                                            'Continue (RM<span id="btn-price">' .
+                                            number_format($service->basic_price ?? 0, 0) .
+                                            '</span>)';
+                                    } else {
+                                        // Jika tidak available, tampilkan sebagai tombol disabled/warning
+                                        $buttonClasses .= ' bg-red-600 text-white opacity-90 cursor-not-allowed';
+                                        $buttonText = 'Currently Busy / Unavailable';
+                                    }
+                                @endphp
+
                                 @auth
+                                    {{-- Tombol utama untuk memicu modal, dinonaktifkan jika helper tidak available --}}
                                     <button type="button" id="request-service-btn"
-                                        class="w-full bg-slate-900 hover:bg-indigo-600 text-white py-3.5 rounded-xl font-bold transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-                                        Continue (RM<span
-                                            id="btn-price">{{ number_format($service->basic_price ?? 0, 0) }}</span>)
+                                        data-is-available="{{ $helperIsAvailable ? 'true' : 'false' }}"
+                                        {{ !$helperIsAvailable ? 'disabled' : '' }} class="{{ $buttonClasses }}">
+
+                                        {!! $buttonText !!}
                                     </button>
                                 @else
+                                    {{-- Link untuk Guest --}}
                                     <a href="{{ route('login') }}"
                                         class="block w-full text-center bg-slate-900 hover:bg-indigo-600 text-white py-3.5 rounded-xl font-bold transition-all shadow-md">
                                         Sign in to Request
@@ -555,7 +582,6 @@
                 }
             });
 
-            // --- 3. Modal & Request Logic ---
             @auth
             const modal = document.getElementById("requestServiceModal");
             const reqBtn = document.getElementById("request-service-btn");
@@ -563,15 +589,45 @@
             const submitBtn = document.getElementById("submit-service-request");
 
             reqBtn.addEventListener("click", () => {
+
+                // Ambil status ketersediaan umum dari atribut data-is-available (yang diset di Blade)
+                const helperIsGenerallyAvailable = reqBtn.getAttribute('data-is-available') === 'true';
+
+                // 🛑 CHECK 1: Ketersediaan Umum Helper (jika tombol tidak didisable oleh browser, tapi statusnya false)
+                if (!helperIsGenerallyAvailable) {
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Currently Busy",
+                        text: "The student has set their overall status to 'Busy' and cannot receive new orders. Please check back later or choose another helper.",
+                        confirmButtonColor: '#4f46e5'
+                    });
+                    return;
+                }
+
+                // 🛑 CHECK 2: Tanggal dipilih
                 if (!selectedDate) {
                     Swal.fire({
                         icon: "warning",
                         title: "Select a date",
-                        text: "Please check availability first.",
+                        text: "Please select a date for your service request.",
                         confirmButtonColor: '#334155'
                     });
                     return;
                 }
+
+                // 🛑 CHECK 3: Tanggal yang dipilih tidak tersedia (berdasarkan Flatpickr/unavailableDates)
+                if (unavailableDates.includes(selectedDate)) {
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Unavailable Date",
+                        text: "The student is scheduled to be unavailable on " + selectedDate +
+                            ". Please choose another date.",
+                        confirmButtonColor: '#d33'
+                    });
+                    return;
+                }
+
+                // Jika semua check lolos, tampilkan modal request
                 document.getElementById("selected-date-display").textContent = selectedDate;
                 document.getElementById("selected-package-display").textContent = currentPackage;
                 modal.classList.remove("hidden");
@@ -579,11 +635,13 @@
 
             closeBtn.addEventListener("click", () => modal.classList.add("hidden"));
 
+            // Logik submitBtn (gunakan error handling yang lebih baik untuk pesan spesifik)
             submitBtn.addEventListener("click", () => {
                 const message = document.getElementById("service-message").value;
                 const offeredPrice = prices[currentPackage];
 
                 fetch("{{ route('service-requests.store') }}", {
+                        // ... (data dan headers)
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -597,9 +655,19 @@
                             offered_price: offeredPrice
                         })
                     })
-                    .then(res => res.json())
+                    .then(res => {
+                        // Jika status code bukan 200-299, throw error untuk ditangkap di catch
+                        if (!res.ok) {
+                            // Coba parse JSON untuk mendapatkan pesan error dari server
+                            return res.json().then(errorData => {
+                                // Gunakan server message jika ada, atau default message
+                                throw new Error(errorData.message ||
+                                    "Failed to process request.");
+                            });
+                        }
+                        return res.json();
+                    })
                     .then(data => {
-                        if (!data.success) throw new Error(data.error || "Error");
                         Swal.fire({
                             icon: "success",
                             title: "Sent!",
@@ -608,16 +676,18 @@
                         });
                         modal.classList.add("hidden");
                     })
-                   .catch(err => {
-    console.error('Order/Action Failure:', err); 
+                    .catch(err => {
+                        console.error('Order Submission Failure:', err);
 
-    Swal.fire({
-        icon: "warning", // Use 'warning' for user status issues rather than 'error'
-        title: "Currently Unavailable",
-        text: "The student is currently unavailable to receive new orders. Please check back later or choose another helper.",
-        confirmButtonColor: '#4F46E5' // Indigo color or similar
-    });
-});
+                        // Tampilkan pesan error spesifik dari server (jika ada) atau pesan default
+                        Swal.fire({
+                            icon: "error",
+                            title: "Request Failed",
+                            text: err.message ||
+                                "Could not submit your request due to a server error.",
+                            confirmButtonColor: '#ef4444'
+                        });
+                    });
             });
         @endauth
         });

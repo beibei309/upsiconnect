@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\ServiceRequest;
 use App\Models\StudentService;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Routing\Controller as BaseController;
 
 class ServiceRequestController extends BaseController
@@ -22,13 +24,18 @@ class ServiceRequestController extends BaseController
 {
     try {
         $user = Auth::user();
-        if (!$user->isCommunity()) {
-            return response()->json(['error' => 'Only community members can request services.'], 403);
-        }
+     $hasActiveRequest = false;
+
+    if ($user) {
+        // Check for any pending, accepted, or in_progress request by the user
+        $hasActiveRequest = ServiceRequest::where('requester_id', $user->id)
+            ->whereIn('status', ['pending', 'accepted', 'in_progress'])
+            ->exists();
+    }
 
         $validated = $request->validate([
             'student_service_id' => 'required|exists:student_services,id',
-            'selected_dates' => 'required|string',
+            'selected_dates' => 'required|date',
             'selected_package' => 'required|string',
             'message' => 'nullable|string|max:1000',
             'offered_price' => 'nullable|numeric|min:0|max:99999.99'
@@ -53,12 +60,14 @@ class ServiceRequestController extends BaseController
             return response()->json(['error' => 'You already have an active request for this service.'], 400);
         }
 
+
         $serviceRequest = ServiceRequest::create([
             'student_service_id' => $studentService->id,
             'requester_id' => $user->id,
             'provider_id' => $studentService->user_id,
+
             'selected_dates' => $validated['selected_dates'],
-            'selected_package' => $validated['selected_package'],
+            'selected_package' => json_encode($validated['selected_package']),
             'message' => $validated['message'],
             'offered_price' => $validated['offered_price'],
             'status' => 'pending'
@@ -67,7 +76,8 @@ class ServiceRequestController extends BaseController
         return response()->json([
             'success' => true,
             'message' => 'Service request sent successfully!',
-            'request_id' => $serviceRequest->id
+            'request_id' => $serviceRequest->id,
+            'hasActiveRequest' => $hasActiveRequest
         ]);
     } catch (\Exception $e) {
         \Log::error('ServiceRequest store error: ' . $e->getMessage());
@@ -75,35 +85,34 @@ class ServiceRequestController extends BaseController
     }
 }
 
-
-    /**
-     * Show service requests for the authenticated user
-     */
-   public function index(Request $request)
+public function index(Request $request)
 {
     $user = Auth::user();
+    
+    // Determine the mode. If not set, default based on role logic or 'buyer'
+    $viewMode = session('view_mode', 'buyer');
 
-    // 1. Jika User adalah HELPER
-    if ($user->role === 'helper') {
-        // Ambil request yang DITERIMA oleh helper ini
+    // 1. HELPER MODE (Seller View)
+    // Only show if user is actually a helper AND is in 'seller' mode
+    if ($user->role === 'helper' && $viewMode === 'seller') {
+        
         $receivedRequests = \App\Models\ServiceRequest::where('provider_id', $user->id)
-            ->with(['requester', 'studentService']) // Eager loading
+            ->with(['requester', 'studentService'])
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Hantar ke fail 'service-requests.helper'
         return view('service-requests.helper', compact('receivedRequests'));
     }
 
-    // 2. Jika User adalah BIASA (Student/User)
+    // 2. BUYER MODE (Student View)
+    // Default for 'student' role OR 'helper' role in 'buyer' mode
     else {
-        // Ambil request yang DIHANTAR oleh user ini
+        
         $sentRequests = \App\Models\ServiceRequest::where('requester_id', $user->id)
-            ->with(['provider', 'studentService']) // Eager loading
+            ->with(['provider', 'studentService'])
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Hantar ke fail 'service-requests.index'
         return view('service-requests.index', compact('sentRequests'));
     }
 }

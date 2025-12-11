@@ -27,7 +27,9 @@ class ServiceRequest extends Model
         'accepted_at' => 'datetime',
         'completed_at' => 'datetime',
         'created_at' => 'datetime',
-        'updated_at' => 'datetime'
+        'updated_at' => 'datetime',
+     'selected_dates' => 'datetime', 
+    'selected_package' => 'string',
     ];
 
     /**
