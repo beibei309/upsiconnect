@@ -43,4 +43,12 @@ class Review extends Model
     {
         return $this->belongsTo(User::class, 'reviewee_id');
     }
+
+    public function service()
+    {
+        return $this->belongsTo(StudentService::class, 'student_service_id');
+        
+    }
+
+    
 }

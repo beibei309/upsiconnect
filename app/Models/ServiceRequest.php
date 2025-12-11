@@ -13,6 +13,8 @@ class ServiceRequest extends Model
         'student_service_id',
         'requester_id',
         'provider_id',
+        'selected_dates',
+        'selected_package',
         'message',
         'offered_price',
         'status',

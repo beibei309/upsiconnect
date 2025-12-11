@@ -21,7 +21,6 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        // extended fields
         'role',
         'phone',
         'student_id',
@@ -38,6 +37,10 @@ class User extends Authenticatable
         'bio',
         'faculty',
         'course',
+        'address',
+        'skills',
+        'work_experience_message',
+        'work_experience_file',   
     ];
 
     /**
@@ -77,6 +80,8 @@ class User extends Authenticatable
         return $this->hasMany(StudentService::class, 'user_id');
     }
 
+
+    
     public function services()
     {
         return $this->hasMany(StudentService::class, 'user_id');
@@ -128,6 +133,17 @@ class User extends Authenticatable
         return $this->belongsToMany(User::class, 'favorites', 'favorited_user_id', 'user_id')
                     ->withTimestamps();
     }
+    
+    public function favoriteServices()
+{
+    return $this->belongsToMany(
+        \App\Models\StudentService::class,
+        'favorites',
+        'user_id',
+        'service_id'
+    )->withTimestamps();
+}
+
 
     // Helpers
     public function isStudent(): bool
@@ -185,4 +201,8 @@ class User extends Authenticatable
     {
         return $this->reviewsReceived()->avg('rating');
     }
+
+    
+
+    
 }

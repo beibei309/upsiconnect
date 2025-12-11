@@ -1,89 +1,86 @@
 <x-guest-layout>
-    <div class="text-center mb-8">
-        <h2 class="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h2>
-        <p class="text-gray-600">Sign in to your UpsiConnect account</p>
-    </div>
-
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
-
-    <form method="POST" action="{{ route('login') }}" class="space-y-6">
-        @csrf
-
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" class="block text-sm font-medium text-gray-700 mb-2" />
-            <x-text-input id="email" 
-                         class="input input-bordered w-full" 
-                         type="email" 
-                         name="email" 
-                         :value="old('email')" 
-                         required 
-                         autofocus 
-                         autocomplete="username" 
-                         placeholder="Enter your email address" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
-
-        <!-- Password -->
-        <div>
-            <x-input-label for="password" :value="__('Password')" class="block text-sm font-medium text-gray-700 mb-2" />
-            <x-text-input id="password" 
-                         class="input input-bordered w-full"
-                         type="password"
-                         name="password"
-                         required 
-                         autocomplete="current-password" 
-                         placeholder="Enter your password" />
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
-
-        <!-- Remember Me -->
-        <div class="flex items-center justify-between">
-            <label for="remember_me" class="flex items-center">
-                <input id="remember_me" 
-                       type="checkbox" 
-                       class="checkbox checkbox-primary" 
-                       name="remember">
-                <span class="ml-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
-            </label>
-
-            @if (Route::has('password.request'))
-                <a class="text-sm text-indigo-600 hover:text-indigo-500 font-medium" href="{{ route('password.request') }}">
-                    {{ __('Forgot password?') }}
-                </a>
-            @endif
-        </div>
-
-        <!-- Submit Button -->
-        <div>
-            <x-primary-button class="btn btn-primary w-full">
-                {{ __('Sign In') }}
-            </x-primary-button>
-        </div>
-
-        <!-- Divider -->
-        <div class="relative">
-            <div class="absolute inset-0 flex items-center">
-                <div class="w-full border-t border-gray-300"></div>
-            </div>
-            <div class="relative flex justify-center text-sm">
-                <span class="px-2 bg-white text-gray-500">Don't have an account?</span>
-            </div>
-        </div>
-
-        <!-- Register Link -->
-        <div class="text-center">
-            <a href="{{ route('register') }}" class="btn btn-outline w-full">
-                Create New Account
+    <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-50">
+        
+        <div class="mb-6">
+            <a href="/" class="flex items-center gap-2">
+                <div class="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">S</div>
+                <span class="text-2xl font-bold text-gray-900 tracking-tight">S2U</span>
             </a>
         </div>
-    </form>
 
-    <!-- Back to Home -->
-    <div class="mt-6 text-center">
-        <a href="{{ url('/') }}" class="text-sm text-gray-500 hover:text-gray-700 transition">
-            ← Back to Home
-        </a>
+        <div class="w-full sm:max-w-md mt-6 px-6 py-8 bg-white shadow-xl rounded-2xl border border-gray-100">
+            
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold text-gray-900 tracking-tight">Welcome back</h2>
+                <p class="mt-2 text-sm text-gray-500">Sign in to your UpsiConnect account to continue.</p>
+            </div>
+
+            <x-auth-session-status class="mb-4" :status="session('status')" />
+
+            <form method="POST" action="{{ route('login') }}" class="space-y-6">
+                @csrf
+
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email address</label>
+                    <div class="relative">
+                        <input id="email" type="email" name="email" :value="old('email')" required autofocus autocomplete="username"
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors placeholder-gray-400 text-gray-900 text-sm"
+                            placeholder="you@student.upsi.edu.my">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-400">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" /></svg>
+                        </div>
+                    </div>
+                    <x-input-error :messages="$errors->get('email')" class="mt-2 text-red-500 text-xs" />
+                </div>
+
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <div class="relative">
+                        <input id="password" type="password" name="password" required autocomplete="current-password"
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors placeholder-gray-400 text-gray-900 text-sm"
+                            placeholder="••••••••">
+                    </div>
+                    <x-input-error :messages="$errors->get('password')" class="mt-2 text-red-500 text-xs" />
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <label for="remember_me" class="flex items-center cursor-pointer">
+                        <input id="remember_me" type="checkbox" name="remember" 
+                            class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer transition">
+                        <span class="ml-2 text-sm text-gray-600">Remember me</span>
+                    </label>
+
+                    @if (Route::has('password.request'))
+                        <a href="{{ route('password.request') }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-500 hover:underline transition-colors">
+                            Forgot password?
+                        </a>
+                    @endif
+                </div>
+
+                <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all transform hover:-translate-y-0.5">
+                    Sign in
+                </button>
+
+                <div class="relative my-6">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-200"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-3 bg-white text-gray-500 font-medium">New to S2U?</span>
+                    </div>
+                </div>
+
+                <a href="{{ route('register') }}" class="w-full flex justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all">
+                    Create an account
+                </a>
+            </form>
+        </div>
+
+        <div class="mt-8 text-center">
+            <a href="{{ url('/') }}" class="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors group">
+                <svg class="w-4 h-4 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                Back to Home
+            </a>
+        </div>
     </div>
 </x-guest-layout>

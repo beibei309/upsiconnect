@@ -13,11 +13,26 @@ class StudentService extends Model
         'user_id',
         'category_id',
         'title',
+        'image_path',
         'description',
-        'suggested_price',
-        'price_range',
         'status',
         'is_active',
+        'availability' => 'array',
+        // Basic package
+        'basic_duration',
+        'basic_frequency',
+        'basic_price',
+        'basic_description',
+        // Standard package
+        'standard_duration',
+        'standard_frequency',
+        'standard_price',
+        'standard_description',
+        // Premium package
+        'premium_duration',
+        'premium_frequency',
+        'premium_price',
+        'premium_description',
     ];
 
     protected $attributes = [
@@ -71,4 +86,26 @@ class StudentService extends Model
     {
         $this->update(['status' => 'available']);
     }
+    
+    public function orders()
+    {
+        return $this->hasMany(\App\Models\ServiceRequest::class, 'student_service_id');
+    }
+
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class, 'service_id');
+    }
+
+    public function getIsFavouritedAttribute()
+    {
+        if (!auth()->check()) return false;
+
+        return auth()->user()
+            ->favoriteServices()
+            ->where('service_id', $this->id)
+            ->exists();
+    }
+
+
 }

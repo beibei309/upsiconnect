@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+
     <title>S2U - Student to Community</title>
 
     <!-- Fonts -->
@@ -17,10 +18,20 @@
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         body {
             font-family: 'Inter', sans-serif;
+            color: #695734;
+        }
+
+        #all-tab,
+        #pending-tab,
+        #approved-tab,
+        #rejected-tab {
+            position: relative;
+            z-index: 10;
         }
 
         .gradient-bg {
@@ -37,13 +48,13 @@
         }
 
         input::placeholder {
-            color: white;
+            color: rgb(81, 33, 33);
             opacity: 1;
         }
 
         select option {
             border-radius: 10px;
-            color: #484745;
+            color: #695734;
             background-color: #F0F0F0;
 
         }

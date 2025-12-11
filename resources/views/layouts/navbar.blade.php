@@ -1,238 +1,201 @@
-  <!-- Navigation -->
-  <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+<script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 
+<style>
+    /* Custom utility for active link indication if needed */
+    .nav-link-active {
+        color: #4f46e5 !important; /* Indigo-600 */
+        background-color: #f3f4f6; /* Gray-100 */
+    }
+</style>
 
-  <nav class="bg-white shadow-sm fixed w-full top-0 z-50">
-      <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div class="flex justify-between items-center h-16">
-              <div class="flex justify-between items-center h-30 px-6"> <!-- h-30 lebih tinggi -->
-                  <div class="flex items-center h-full"> <!-- buat full height untuk logo & menu -->
-                      <h1 class="text-4xl font-bold text-indigo-600">S2U</h1> <!-- logo lebih besar -->
-                  </div>
-              </div>
+<nav x-data="{ mobileMenuOpen: false, userOpen: false }" class="bg-white shadow-sm fixed w-full top-0 z-50 border-b border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16 md:h-20">
 
-              <div class="hidden md:block">
-                  <div class="ml-10 flex items-baseline space-x-4">
-                      @guest
-                          <a href="{{ route('home') }}"
-                              class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">
-                              Home
-                          </a>
-                      @endguest
+            <div class="flex-shrink-0 flex items-center cursor-pointer" onclick="window.location.href='{{ auth()->check() ? route('dashboard') : route('home') }}'">
+                <h1 class="text-3xl font-extrabold tracking-tight text-indigo-600">S2U</h1>
+            </div>
 
-                      @auth
-                          <a href="{{ route('dashboard') }}"
-                              class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">
-                              Home
-                          </a>
-                      @endauth
+            <div class="hidden md:flex items-center space-x-1 lg:space-x-4">
+                <a href="{{ auth()->check() ? route('dashboard') : route('home') }}"
+                   class="px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-indigo-600 hover:bg-gray-50 transition-colors duration-200">
+                   Home
+                </a>
+                <a href="{{ route('services.index') }}"
+                   class="px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-indigo-600 hover:bg-gray-50 transition-colors duration-200">
+                   Find Services
+                </a>
+                <a href="{{ route('about') }}"
+                   class="px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-indigo-600 hover:bg-gray-50 transition-colors duration-200">
+                   About Us
+                </a>
+                <a href="{{ route('help') }}"
+                   class="px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-indigo-600 hover:bg-gray-50 transition-colors duration-200">
+                   Help
+                </a>
+            </div>
 
-                          <a href="{{ route('services.index') }}"
-                              class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">
-                              Find services
-                          </a>
+            <div class="hidden md:flex items-center space-x-3 lg:space-x-4">
+                @auth
+                    <div class="flex items-center space-x-2 border-r border-gray-200 pr-4 mr-2">
+                        <button type="button" class="relative p-2 text-gray-500 hover:text-indigo-600 hover:bg-gray-100 rounded-full transition focus:outline-none">
+                            <span class="sr-only">View notifications</span>
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C8.67 6.165 7 8.388 7 11v3.159c0 .538-.214 1.055-.595 1.436L5 17h10z" />
+                            </svg>
+                            <span class="absolute top-1.5 right-1.5 flex h-2 w-2">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                            </span>
+                        </button>
 
-                      <a href="{{ route('about') }}"
-                          class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">About
-                          Us</a>
-                      <a href="{{ route('help') }}"
-                          class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition">Help</a>
-                  </div>
-              </div>
+                        <a href="{{ route('chat.index') }}" class="relative p-2 text-gray-500 hover:text-indigo-600 hover:bg-gray-100 rounded-full transition">
+                            <span class="sr-only">Messages</span>
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            </svg>
+                        </a>
 
+                        <a href="{{ route('favorites.index') }}" class="relative p-2 text-gray-500 hover:text-red-500 hover:bg-gray-100 rounded-full transition">
+                            <span class="sr-only">Favorites</span>
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
+                        </a>
+                        
+                         <a href="{{ route('service-requests.index') }}" 
+                           class="text-sm font-medium text-gray-600 hover:text-indigo-600 transition px-2">
+                            Orders
+                        </a>
+                    </div>
 
-              <div class="hidden md:flex items-center space-x-4">
+                    @if (auth()->user()->role === 'student')
+                        <a href="{{ route('onboarding.students') }}"
+                           class="hidden lg:inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                            Become a Helper
+                        </a>
+                    @elseif (auth()->user()->role === 'helper')
+                        <a href="{{ route('students.index') }}"
+                           class="hidden lg:inline-flex items-center px-4 py-2 border border-green-600 text-sm font-medium rounded-full text-green-600 bg-white hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                            Switch to Selling
+                        </a>
+                    @endif
 
-                  @auth
-                      {{-- AUTH BLOCK START --}}
+                    <div class="relative ml-3" x-data="{ userOpen: false }">
+                        <button @click="userOpen = !userOpen" type="button" class="bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
+                            <span class="sr-only">Open user menu</span>
+                            <img class="h-9 w-9 rounded-full object-cover border border-gray-200"
+                                 src="{{ auth()->user()->profile_photo_path ? asset('storage/' . auth()->user()->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) . '&background=random' }}"
+                                 alt="{{ Auth::user()->name }}">
+                        </button>
 
-                      <!-- Notification Icon -->
-                      <button type="button" class="relative p-2 rounded-md hover:bg-gray-100 transition">
-                          <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C8.67 6.165 7 8.388 7 11v3.159c0 .538-.214 1.055-.595 1.436L5 17h10z" />
-                          </svg>
-                          <span
-                              class="absolute -top-0.5 -right-0.5 px-1.5 py-0.5 text-xs text-white bg-red-600 rounded-full">3</span>
-                      </button>
+                        <div x-show="userOpen"
+                             @click.away="userOpen = false"
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="transform opacity-0 scale-95"
+                             x-transition:enter-end="transform opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="transform opacity-100 scale-100"
+                             x-transition:leave-end="transform opacity-0 scale-95"
+                             class="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
+                             role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1"
+                             style="display: none;">
+                             
+                            <div class="px-4 py-3 border-b border-gray-100">
+                                <p class="text-sm text-gray-900 font-semibold truncate">{{ Auth::user()->name }}</p>
+                                <p class="text-xs text-gray-500 truncate">{{ Auth::user()->email }}</p>
+                            </div>
 
-                      <!-- Chat Icon -->
-                        <a href="{{ route('chat.index') }}" class="inline-block">
-                      <button type="button" class="relative p-2 rounded-md hover:bg-gray-100 transition">
-                          <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M21 8v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8" />
-                          </svg>
-                      </button>
-                      </a>
+                            <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600" role="menuitem">Your Profile</a>
+                            
+                            <a href="{{ route('service-requests.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600" role="menuitem">My Requests</a>
+                            <a href="{{ route('services.applications.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600" role="menuitem">My Applications</a>
+                            <a href="{{ route('services.apply') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600" role="menuitem">Request Custom Service</a>
 
-                      <!-- Favorites -->
-                      <a href="{{ route('favorites.index') }}" class="inline-block">
-                          <button class="p-2 rounded-md hover:bg-gray-100 transition">
-                              <svg class="w-5 h-5 text-gray-600" fill="red" stroke="red" viewBox="0 0 24 24">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 21.182 4.318 12.682a4.5 4.5 0 010-6.364z" />
-                              </svg>
-                          </button>
-                      </a>
+                            <div class="border-t border-gray-100 mt-1"></div>
+                            
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700" role="menuitem">
+                                    Sign out
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                @else
+                    <div class="flex items-center space-x-4">
+                        <a href="{{ route('login') }}" class="text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors">Log in</a>
+                        <a href="{{ route('register') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                            Sign up
+                        </a>
+                    </div>
+                @endauth
+            </div>
 
-                      <a href="#" class="text-gray-600 hover:text-gray-800 font-medium px-2">Orders</a>
+            <div class="-mr-2 flex md:hidden">
+                <button @click="mobileMenuOpen = !mobileMenuOpen" type="button" class="bg-white inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" aria-controls="mobile-menu" aria-expanded="false">
+                    <span class="sr-only">Open main menu</span>
+                    <svg :class="{'hidden': mobileMenuOpen, 'block': !mobileMenuOpen }" class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                    <svg :class="{'block': mobileMenuOpen, 'hidden': !mobileMenuOpen }" class="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
 
-                      <!-- Avatar Dropdown -->
-                      <div class="relative" x-data="{ userOpen: false }">
-                          <button @click="userOpen = !userOpen" class="flex items-center space-x-2">
-                              <div class="relative">
-                                  <img class="h-10 w-10 rounded-full border-2 border-upsi-gold"
-                                      src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&color=ffffff&background=C41E3A">
-                                  <span
-                                      class="absolute bottom-0 right-0 h-2.5 w-2.5 bg-green-400 rounded-full ring-2 ring-white"></span>
-                              </div>
+    <div x-show="mobileMenuOpen" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" class="md:hidden absolute top-16 inset-x-0 z-50 bg-white border-b border-gray-200 shadow-lg" id="mobile-menu" style="display: none;">
+        <div class="pt-2 pb-3 space-y-1 px-4">
+            <a href="{{ auth()->check() ? route('dashboard') : route('home') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50">Home</a>
+            <a href="{{ route('services.index') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50">Find Services</a>
+            <a href="{{ route('about') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50">About Us</a>
+            <a href="{{ route('help') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50">Help</a>
+        </div>
 
-                              <svg class="w-3 h-3 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
-                                  <path fill-rule="evenodd"
-                                      d="M5.23 7.21a.75.75 0 011.06.02L10 11.293l3.71-4.06a.75.75 0 011.12 1l-4.25 4.66a.75.75 0 01-1.12 0L5.21 8.27a.75.75 0 01.02-1.06z"
-                                      clip-rule="evenodd" />
-                              </svg>
-                          </button>
+        @auth
+            <div class="pt-4 pb-4 border-t border-gray-200">
+                <div class="flex items-center px-5">
+                    <div class="flex-shrink-0">
+                        <img class="h-10 w-10 rounded-full border border-gray-200" src="{{ auth()->user()->profile_photo_path ? asset('storage/' . auth()->user()->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) }}" alt="">
+                    </div>
+                    <div class="ml-3">
+                        <div class="text-base font-medium text-gray-800">{{ Auth::user()->name }}</div>
+                        <div class="text-sm font-medium text-gray-500">{{ Auth::user()->email }}</div>
+                    </div>
+                    <button type="button" class="ml-auto flex-shrink-0 bg-white p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <span class="sr-only">View notifications</span>
+                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C8.67 6.165 7 8.388 7 11v3.159c0 .538-.214 1.055-.595 1.436L5 17h10z" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="mt-3 px-2 space-y-1">
+                    <a href="{{ route('profile.edit') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50">Your Profile</a>
+                    <a href="{{ route('chat.index') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50">Messages</a>
+                    <a href="{{ route('favorites.index') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50">Favorites</a>
+                    <a href="{{ route('service-requests.index') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50">Orders</a>
+                    
+                    @if (auth()->user()->role === 'student')
+                        <a href="{{ route('onboarding.students') }}" class="block px-3 py-2 rounded-md text-base font-medium text-indigo-600 hover:bg-indigo-50">Become a Helper</a>
+                    @elseif (auth()->user()->role === 'helper')
+                        <a href="{{ route('students.index') }}" class="block px-3 py-2 rounded-md text-base font-medium text-green-600 hover:bg-green-50">Switch to Selling</a>
+                    @endif
 
-                          <div x-show="userOpen" @click.away="userOpen = false"
-                              class="absolute right-0 mt-3 w-52 bg-white rounded-xl shadow-lg ring-1 ring-black/5 p-2"
-                              style="display:none; color:black;">
-                              <a href="{{ route('profile.edit') }}"
-                                  class="block px-4 py-2 hover:bg-gray-100 rounded-md">Profile</a>
-
-                              <a href="{{ route('service-requests.index') }}"
-                              class="block px-4 py-2 hover:bg-gray-100 rounded-md">Service Request</a>
-
-                              <form method="POST" action="{{ route('logout') }}" class="mt-2 border-t">
-                                  @csrf
-                                  <button type="submit"
-                                      class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 rounded-md">Sign
-                                      out</button>
-                              </form>
-                          </div>
-                      </div>
-
-                      {{-- AUTH BLOCK END --}}
-                  @else
-                      <a href="{{ route('login') }}"
-                          class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm">
-                          Login
-                      </a>
-                      <a href="{{ route('register') }}"
-                          class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">
-                          Sign Up
-                      </a>
-
-                  @endauth
-
-              </div>
-
-
-              <div class="md:hidden">
-                  <button @click="mobileMenuOpen = !mobileMenuOpen" class="text-gray-600 hover:text-indigo-600">
-                      <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M4 6h16M4 12h16M4 18h16" />
-                      </svg>
-                  </button>
-              </div>
-          </div>
-      </div>
-
-      <!-- Mobile menu -->
-      <div x-show="mobileMenuOpen" class="md:hidden bg-white border-t">
-          <div class="px-4 pt-4 pb-6 space-y-1">
-
-              <!-- Main Nav -->
-              <a href="{{ route('home') }}" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">
-                  Home
-              </a>
-
-              <a href=""
-                  class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">
-                  Find Services
-              </a>
-
-              <a href="{{ route('services.index') }}"
-              class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">
-                  About Us
-              </a>
-
-              <a href="{{ route('help') }}" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">
-                  Help
-              </a>
-
-              @auth
-
-                  <!-- Icons Section (Mobile) -->
-                  <div class="border-t pt-4">
-
-                      <!-- Notification -->
-                      <a href="#" class="flex items-center px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">
-                          <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C8.67 6.165 7 8.388 7 11v3.159c0 .538-.214 1.055-.595 1.436L5 17h10z" />
-                          </svg>
-                          Notifications
-                          <span class="ml-auto bg-red-600 text-white text-xs px-2 py-0.5 rounded-full">3</span>
-                      </a>
-
-                      <!-- Chat -->
-                      <a href="#" class="flex items-center px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">
-                          <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M21 8v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8" />
-                          </svg>
-                          Messages
-                          <span class="ml-auto bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full">2</span>
-                      </a>
-
-                      <!-- Favorites -->
-                      <a href="#" class="flex items-center px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">
-                          <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 21.182 4.318 12.682a4.5 4.5 0 010-6.364z" />
-                          </svg>
-                          Favorites
-                      </a>
-
-                      <!-- Orders -->
-                      <a href="#" class="flex items-center px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">
-                          <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 9h14l-2-9M10 21a1 1 0 11-2 0 1 1 0 012 0zm8 0a1 1 0 11-2 0 1 1 0 012 0z" />
-                          </svg>
-                          Orders
-                      </a>
-                  </div>
-
-                  <!-- User Options -->
-                  <div class="border-t pt-4 space-y-1">
-                      <a href="#" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">Profile</a>
-                      <a href="#" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">Post a project
-                          brief</a>
-
-                      <form method="POST" action="{{ route('logout') }}">
-                          @csrf
-                          <button type="submit"
-                              class="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 rounded-md">
-                              Sign Out
-                          </button>
-                      </form>
-                  </div>
-              @else
-                  <!-- If guest -->
-                  <a href="{{ route('login') }}"
-                      class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">Login</a>
-
-                  <a href="{{ route('register') }}"
-                      class="block px-3 py-2 bg-indigo-600 text-white rounded-md text-center hover:bg-indigo-700">
-                      Sign Up
-                  </a>
-
-              @endauth
-
-          </div>
-      </div>
-  </nav>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-red-50 hover:text-red-700">Sign out</button>
+                    </form>
+                </div>
+            </div>
+        @else
+            <div class="pt-4 pb-4 border-t border-gray-200">
+                <div class="flex items-center justify-around px-5">
+                    <a href="{{ route('login') }}" class="text-base font-medium text-gray-600 hover:text-indigo-600">Log in</a>
+                    <a href="{{ route('register') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">Sign up</a>
+                </div>
+            </div>
+        @endauth
+    </div>
+</nav>

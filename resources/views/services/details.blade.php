@@ -7,459 +7,665 @@
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     <title>{{ $service->title ?? 'Service Page' }} - S2U</title>
 
-    <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-    <!-- Tailwind Play CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Alpine.js -->
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
     <style>
-        html,
         body {
-            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            /* Slate-50 */
         }
 
-        .fiverr-like-shadow {
-            box-shadow: 0 6px 20px rgba(15, 23, 42, 0.08);
+        h1,
+        h2,
+        h3,
+        .font-heading {
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
-        .seller-badge {
-            background: linear-gradient(90deg, #00d28a, #06b6d4);
-            color: white;
-            font-weight: 700;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 12px;
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
         }
 
-        .object-cover-center {
-            object-fit: cover;
-            object-position: center;
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
         }
 
-        .breadcrumb-nav {
-            margin-top: 20px;
-            /* Adding space above the breadcrumb */
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
         }
 
-        /* For the hero image (larger size) */
-        .hero-image {
-            height: 400px;
-            /* Adjust height for the hero image */
-            object-fit: cover;
-            object-position: center;
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
 
-        /* Sidebar and sticky positioning */
+        /* Sticky Sidebar logic */
         @media (min-width: 1024px) {
             .sticky-sidebar {
-                position: -webkit-sticky;
                 position: sticky;
-                top: 30px;
+                top: 100px;
+                /* Adjust based on navbar height */
             }
+        }
+
+        .tab-button {
+            transition: all 0.2s ease-in-out;
         }
     </style>
 </head>
 
-<body class="bg-[#F7F7F7] text-gray-800 antialiased">
+<body class="antialiased text-slate-800">
+
     @include('layouts.navbar')
 
-    <main class="max-w-7xl mx-auto px-6 py-10" x-data="{ tab: 'about' }">
+    <div class="bg-white border-b border-gray-200 pt-24 pb-6">
+        <div class="max-w-7xl mx-auto px-6">
+            <nav class="flex" aria-label="Breadcrumb">
+                <ol class="inline-flex items-center space-x-1 md:space-x-3 text-sm text-gray-500">
+                    <li class="inline-flex items-center">
+                        <a href="{{ route('dashboard') }}"
+                            class="inline-flex items-center hover:text-indigo-600 transition-colors">
+                            <i class="fa-solid fa-house mr-2"></i> Home
+                        </a>
+                    </li>
+                    <li>
+                        <div class="flex items-center">
+                            <i class="fa-solid fa-chevron-right text-gray-400 mx-2 text-xs"></i>
+                            <a href="{{ route('services.index') }}" class="hover:text-indigo-600 transition-colors">Find
+                                Services</a>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="flex items-center">
+                            <i class="fa-solid fa-chevron-right text-gray-400 mx-2 text-xs"></i>
+                            <span
+                                class="font-medium text-gray-800 truncate max-w-[200px] md:max-w-md">{{ $service->title ?? 'Service Details' }}</span>
+                        </div>
+                    </li>
+                </ol>
+            </nav>
+        </div>
+    </div>
 
-        <!-- Breadcrumb -->
-        <nav class="py-8 px-6 rounded-lg shadow-sm mb-6 breadcrumb-nav" aria-label="Breadcrumb">
-            <ol class="inline-flex items-center space-x-1 text-sm text-gray-700">
-                <!-- Home Link -->
-                <li class="inline-flex items-center">
-                    <a href="{{ route('home') }}" class="hover:text-green-600 hover:underline flex items-center gap-1">
-                        <i class="fa-solid fa-house"></i> Home
-                    </a>
-                    <span class="mx-2 text-gray-400">/</span>
-                </li>
+    <main class="max-w-7xl mx-auto px-6 py-10">
 
-                <!-- Find Services Link -->
-                <li class="inline-flex items-center">
-                    <a href="{{ route('services.index') }}"
-                        class="hover:text-green-600 hover:underline flex items-center gap-1">
-                        Find Services
-                    </a>
-                    <span class="mx-2 text-gray-400">/</span>
-                </li>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
 
-                <!-- Service Title -->
-                <li class="inline-flex items-center text-gray-500">
-                    {{ $service->title ?? 'Service Not Found' }}
-                </li>
-            </ol>
-        </nav>
+            <div class="lg:col-span-8 space-y-8">
 
-        <!-- Heading & Seller Information -->
-        <div class="mb-6">
-            <h1 class="text-3xl md:text-4xl font-semibold text-gray-900 leading-tight">
-                {{ $service->title ?? 'I will build your website' }}
-            </h1>
-
-            <div class="flex items-center mt-4 space-x-4">
-                <div class="w-14 h-14 rounded-full overflow-hidden ring-1 ring-gray-200">
-                    <a href="{{ route('students.profile', $service->user) }}" class="group/avatar block">
-                        @if ($service->user->profile_photo_path)
-                            <img src="{{ asset('images/profile/' . $service->user->profile_photo_path) }}"
-                                alt="Profile picture of {{ $service->user->name }}"
-                                class="w-8 h-8 rounded-full object-cover ring-1 ring-gray-200 group-hover/avatar:ring-indigo-300">
-                        @else
-                            <div
-                                class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                                {{ strtoupper(substr($service->user->name, 0, 1)) }}
-                            </div>
-                        @endif
-                    </a>
-                </div>
                 <div>
-                    <p class="font-semibold text-gray-800">{{ $service->user->name ?? 'Student Name' }}</p>
-                    {{-- Trust Badge --}}
-                    @if ($service->user->trust_badge)
-                        <span
-                            class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                            <svg class="w-3 h-3 mr-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                    clip-rule="evenodd" />
-                            </svg>
-                            Verified
-                        </span>
-                    @endif
-                                                 <!-- Availability Status -->
-                                        <span
-                                            class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium {{ $service->user->is_available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                            <div
-                                                class="w-1 h-1 rounded-full {{ $service->user->is_available ? 'bg-green-400' : 'bg-red-400' }} mr-1">
-                                            </div>
-                                            {{ $service->user->is_available ? 'Available' : 'Busy' }}
-                                        </span>
+                    <h1 class="text-3xl md:text-4xl font-bold text-slate-900 leading-tight mb-4">
+                        {{ $service->title ?? 'Service Title' }}
+                    </h1>
 
-                    <div class="text-sm text-gray-500 flex items-center gap-3">
-                        <span class="flex items-center gap-1"><i class="fa-solid fa-star text-yellow-400"></i>
-                            {{ $service->rating ?? '4.9' }}</span>
-                        <span>•</span>
-                        <span>•</span>
-                        <span>{{ $service->completed_orders ?? '1.2k' }} orders</span>
+                    <div class="flex flex-wrap items-center gap-4 text-sm">
+                        <a href="{{ auth()->guest() ? route('login') : route('students.profile', $service->user) }}"
+                            class="flex items-center gap-2 group">
+                            @if ($service->user->profile_photo_path)
+                                <img src="{{ asset('storage/' . $service->user->profile_photo_path) }}"
+                                    class="w-8 h-8 rounded-full object-cover ring-2 ring-white shadow-sm group-hover:ring-indigo-100 transition {{ auth()->guest() ? 'blur-sm' : '' }}">
+                            @else
+                                <div
+                                    class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs ring-2 ring-white shadow-sm {{ auth()->guest() ? 'blur-sm' : '' }}">
+                                    {{ strtoupper(substr($service->user->name, 0, 1)) }}
+                                </div>
+                            @endif
+
+                            <span class="font-semibold text-slate-900 group-hover:text-indigo-600 transition">
+                                {{ $service->user->name }}
+                            </span>
+                        </a>
+
+                        <span class="text-gray-300">|</span>
+
+                        <div class="flex items-center gap-1">
+                            <i class="fa-solid fa-star text-yellow-400"></i>
+                            <span class="font-bold text-slate-900">{{ $service->rating ?? '0.0' }}</span>
+                            <span class="text-slate-500">({{ $service->user->reviewsReceived()->count() }} reviews)</span>
+                        </div>
+
+                        @if ($service->user->trust_badge)
+                            <span
+                                class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-xs font-semibold border border-blue-100 flex items-center gap-1">
+                                <i class="fas fa-check-circle"></i> Verified
+                            </span>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="rounded-2xl overflow-hidden shadow-lg border border-gray-100 bg-white">
+                    <img src="{{ $service->image_path ? asset('storage/' . $service->image_path) : 'https://via.placeholder.com/1200x700' }}"
+                        alt="Service image"
+                        class="w-full h-[400px] object-cover hover:scale-105 transition-transform duration-700">
+                </div>
+
+                <section class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100">
+                    <h2 class="text-xl font-bold text-slate-900 mb-4 border-b border-gray-100 pb-2">About This Service
+                    </h2>
+                    <div class="prose prose-slate max-w-none text-gray-600 leading-relaxed">
+                        {!! $service->description !!}
+                    </div>
+                </section>
+
+                <section
+                    class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100 relative overflow-hidden">
+                    @php $isGuest = !auth()->check(); @endphp
+
+                    @if ($isGuest)
+                        <div
+                            class="absolute inset-0 z-10 bg-white/60 backdrop-blur-[2px] flex items-center justify-center">
+                            <a href="{{ route('login') }}"
+                                class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-full font-semibold shadow-lg transform hover:-translate-y-1 transition-all">
+                                Sign in to view Provider Details
+                            </a>
+                        </div>
+                    @endif
+
+                    <div class="{{ $isGuest ? 'filter blur-sm select-none' : '' }}">
+                        <h2 class="text-xl font-bold text-slate-900 mb-6">About The Helper</h2>
+
+                        <div class="flex flex-col sm:flex-row gap-6">
+                            <div class="flex-shrink-0">
+                                @if ($service->user->profile_photo_path)
+                                    <img src="{{ asset('storage/' . $service->user->profile_photo_path) }}"
+                                        class="w-24 h-24 rounded-full object-cover border-4 border-gray-50 shadow-sm">
+                                @else
+                                    <div
+                                        class="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-3xl text-white font-bold shadow-sm">
+                                        {{ strtoupper(substr($service->user->name, 0, 1)) }}
+                                    </div>
+                                @endif
+                            </div>
+
+                            <div class="flex-1 space-y-4">
+                                <div>
+                                    <h3 class="text-lg font-bold text-slate-900">{{ $service->user->name }}</h3>
+                                    <p class="text-slate-500">{{ $service->user->faculty ?? 'Faculty Student' }}</p>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                        <span class="text-gray-400 block text-xs">From</span>
+                                        <span class="font-medium text-slate-700">Malaysia</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-400 block text-xs">Member since</span>
+                                        <span
+                                            class="font-medium text-slate-700">{{ $service->created_at->format('M Y') }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="pt-2 border-t border-gray-100">
+                                    <p class="text-gray-600 italic">
+                                        "{{ $service->user->bio ?? 'Ready to help you with your tasks!' }}"</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100">
+                    <div class="flex items-center justify-between mb-8">
+                        <h2 class="text-xl font-bold text-slate-900">Reviews</h2>
+                        <div class="flex items-center gap-2 bg-yellow-50 px-3 py-1 rounded-full">
+                            <i class="fa-solid fa-star text-yellow-400"></i>
+                            <span
+                                class="font-bold text-slate-800">{{ round($service->user->reviewsReceived()->avg('rating'), 1) ?? 0 }}</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-8">
+                        @forelse ($service->user->reviewsReceived as $review)
+                           <div class="border-b border-gray-100 pb-8 last:border-0 last:pb-0">
+    <div class="flex items-start gap-4">
+        <div class="flex-shrink-0">
+            <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+                @if (optional($review->reviewer)->profile_photo_path)
+                    <img src="{{ asset('storage/' . $review->reviewer->profile_photo_path) }}"
+                        class="w-full h-full object-cover {{ auth()->guest() ? 'blur-sm' : '' }}">
+                @else
+                    <div class="w-full h-full flex items-center justify-center text-gray-400 bg-gray-100 text-xs font-bold {{ auth()->guest() ? 'blur-sm' : '' }}">
+                        {{ substr(optional($review->reviewer)->name ?? 'A', 0, 1) }}
+                    </div>
+                @endif
+            </div>
+        </div>
+        <div class="flex-1">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h4 class="font-bold text-slate-900 text-sm">
+                        @auth
+                            {{ optional($review->reviewer)->name ?? 'Anonymous User' }}
+                        @else
+                            {{ Str::mask(optional($review->reviewer)->name ?? 'Anonymous User', '*', 3) }}
+                        @endauth
+                    </h4>
+                    <div class="flex items-center gap-2 mt-1">
+                        <div class="flex text-yellow-400 text-xs">
+                            @for ($i = 1; $i <= 5; $i++)
+                                <i class="fa-{{ $i <= $review->rating ? 'solid' : 'regular' }} fa-star"></i>
+                            @endfor
+                        </div>
+                        <span class="text-xs text-gray-400">•
+                            {{ $review->created_at->diffForHumans() }}</span>
                     </div>
                 </div>
             </div>
+            <p class="text-gray-600 text-sm mt-3 leading-relaxed">{{ $review->comment }}
+            </p>
         </div>
-
-        <!-- Content Layout -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
-
-            <!-- LEFT: Content and details -->
-            <div class="lg:col-span-2 space-y-6">
-                <!-- Hero Image -->
-                <div class="rounded-xl overflow-hidden fiverr-like-shadow bg-white mb-6">
-                    <img src="{{ $service->image_path ? asset('images/' . $service->image_path) : 'https://via.placeholder.com/1200x700' }}"
-                        alt="Service image" class="w-full hero-image">
-                </div>
-
-                <!-- About this service -->
-                <section class="bg-white rounded-xl p-6 fiverr-like-shadow">
-                    <h2 class="text-2xl font-semibold mb-3">About This Service</h2>
-                    <p class="text-gray-700 leading-relaxed">
-                        {!! $service->description ??
-                            'I will create a modern, responsive website tailored to your business. Includes design, responsive layout, and one round of revisions.' !!}
-                    </p>
-
-                    <!-- Features row -->
-                    <div class="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-gray-600">
-                        <div class="flex flex-col">
-                            <span class="text-gray-900 font-medium">Delivery</span>
-                            <span>{{ $service->delivery_time ?? '3 days' }}</span>
-                        </div>
-                        <div class="flex flex-col">
-                            <span class="text-gray-900 font-medium">Revisions</span>
-                            <span>{{ $service->revisions ?? '2' }}</span>
-                        </div>
-                        <div class="flex flex-col">
-                            <span class="text-gray-900 font-medium">Platform</span>
-                            <span>{{ $service->platform ?? 'WordPress / Laravel' }}</span>
-                        </div>
+    </div>
+</div>
+                        @empty
+                            <div class="text-center py-8 text-gray-400">
+                                <p>No reviews yet.</p>
+                            </div>
+                        @endforelse
                     </div>
                 </section>
 
-                <!-- Service Provider Details -->
-                <section class="bg-white rounded-xl p-6 fiverr-like-shadow mb-6">
-                    <!-- Profile Header -->
-                    <div class="flex items-center space-x-4">
-                        <div class="w-20 h-20 rounded-full overflow-hidden ring-2 ring-gray-200">
-                            <img src="{{ $service->seller_image ? asset('images/' . $service->seller_image) : 'https://via.placeholder.com/150' }}"
-                                alt="Seller" class="w-full h-full object-cover-center">
+            </div>
+            <div class="lg:col-span-4">
+                <div class="sticky-sidebar space-y-4">
+
+                    <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+                        <div class="grid grid-cols-3 border-b border-gray-200 bg-gray-50">
+                            @if ($service->basic_price)
+                                <button
+                                    class="tab-button py-4 text-sm font-semibold text-gray-500 hover:text-gray-800 focus:outline-none"
+                                    data-tab="basic">Basic</button>
+                            @endif
+                            @if ($service->standard_price)
+                                <button
+                                    class="tab-button py-4 text-sm font-semibold text-gray-500 hover:text-gray-800 focus:outline-none"
+                                    data-tab="standard">Standard</button>
+                            @endif
+                            @if ($service->premium_price)
+                                <button
+                                    class="tab-button py-4 text-sm font-semibold text-gray-500 hover:text-gray-800 focus:outline-none"
+                                    data-tab="premium">Premium</button>
+                            @endif
                         </div>
-                        <div>
-                            <h2 class="text-2xl font-semibold text-gray-800">
-                                {{ $service->seller_name ?? 'Seller Name' }}</h2>
-                            <p class="text-sm text-gray-500">A professional full stack website development master</p>
-                            <div class="flex items-center gap-2 mt-2">
-                                <span class="text-yellow-400">
-                                    <i class="fa-solid fa-star"></i> {{ $service->rating ?? '4.9' }}
+
+                        <div class="p-6">
+                            <div class="flex justify-between items-end mb-6">
+                                <span class="font-bold text-gray-400 text-sm mb-1 uppercase tracking-wider">Total
+                                    Price</span>
+                                <span id="main-price-display"
+                                    class="text-4xl font-extrabold transition-colors duration-300">
+                                    RM{{ number_format($service->basic_price ?? 0, 0) }}
                                 </span>
-                                <span class="text-gray-500">| Level 2</span>
+                            </div>
+
+                            <div id="tab-content" class="min-h-[100px]">
+                                @if ($service->basic_price)
+                                    <div id="basic" class="tab-content hidden animate-fade-in">
+                                        <div class="flex items-center gap-2 mb-3">
+                                            <span class="font-bold text-slate-800">Basic Package</span>
+                                            <span
+                                                class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">{{ $service->basic_duration }}
+                                                hrs per {{ $service->basic_frequency }} </span>
+                                        </div>
+                                        <p class="text-sm text-gray-600 leading-relaxed">
+                                            {{ $service->basic_description }}</p>
+                                    </div>
+                                @endif
+
+                                @if ($service->standard_price)
+                                    <div id="standard" class="tab-content hidden animate-fade-in">
+                                        <div class="flex items-center gap-2 mb-3">
+                                            <span class="font-bold text-slate-800">Standard Package</span>
+                                            <span
+                                                class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">{{ $service->standard_duration }}
+                                                hrs per {{ $service->standard_frequency }} </span>
+                                        </div>
+                                        <p class="text-sm text-gray-600 leading-relaxed">
+                                            {{ $service->standard_description }}</p>
+                                    </div>
+                                @endif
+
+                                @if ($service->premium_price)
+                                    <div id="premium" class="tab-content hidden animate-fade-in">
+                                        <div class="flex items-center gap-2 mb-3">
+                                            <span class="font-bold text-slate-800">Premium Package</span>
+                                            <span
+                                                class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">{{ $service->premium_duration }}
+                                                hrs per {{ $service->premium_frequency }} </span>
+                                        </div>
+                                        <p class="text-sm text-gray-600 leading-relaxed">
+                                            {{ $service->premium_description }}</p>
+                                    </div>
+                                @endif
+                            </div>
+
+                            <div class="mt-8">
+                                <label class="block text-xs font-bold text-gray-700 uppercase mb-2">Select Date</label>
+                                <div class="relative">
+                                    <input type="text" id="calendar"
+                                        class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                        placeholder="Check availability..." />
+                                    <i class="fas fa-calendar absolute left-3 top-3.5 text-gray-400"></i>
+                                </div>
+                                <div id="availability-status" class="mt-2 text-xs font-semibold h-4"></div>
+                            </div>
+
+                            <div class="mt-6">
+                                @auth
+                                    <button type="button" id="request-service-btn"
+                                        class="w-full bg-slate-900 hover:bg-indigo-600 text-white py-3.5 rounded-xl font-bold transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                                        Continue (RM<span
+                                            id="btn-price">{{ number_format($service->basic_price ?? 0, 0) }}</span>)
+                                    </button>
+                                @else
+                                    <a href="{{ route('login') }}"
+                                        class="block w-full text-center bg-slate-900 hover:bg-indigo-600 text-white py-3.5 rounded-xl font-bold transition-all shadow-md">
+                                        Sign in to Request
+                                    </a>
+                                @endauth
                             </div>
                         </div>
                     </div>
 
-                    <!-- Seller Info -->
-                    <div class="mt-6">
-                        <p class="text-sm text-gray-500">From: <span
-                                class="font-medium">{{ $service->seller_location ?? 'Bangladesh' }}</span></p>
-                        <p class="text-sm text-gray-500">Member since: <span
-                                class="font-medium">{{ $service->seller_since ?? 'Jan 2024' }}</span></p>
-                        <p class="text-sm text-gray-500">Avg. response time: <span
-                                class="font-medium">{{ $service->response_time ?? '1 hour' }}</span></p>
-                        <p class="text-sm text-gray-500">Languages: <span
-                                class="font-medium">{{ $service->languages ?? 'Bengali, English, Hindi, Tamil' }}</span>
-                        </p>
-                    </div>
-
-                    <!-- Seller Bio -->
-                    <div class="mt-6 text-gray-700">
-                        <p class="text-sm leading-relaxed">
-                            {{ $service->seller_bio ?? 'Welcome to my Fiverr profile! I am a skilled professional website developer with 5 years of experience building beautiful, responsive websites.' }}
-                        </p>
-                    </div>
-                </section>
-
-                <!-- Reviews Section -->
-                <!-- Reviews Section -->
-                <!-- Reviews Section -->
-                <section class="bg-white rounded-xl p-6 fiverr-like-shadow mt-6">
-                    <!-- Rating Breakdown -->
-                    <div class="flex justify-between items-center mb-6">
-                        <div>
-                            <h3 class="text-xl font-semibold text-gray-800">Reviews</h3>
-                            <p class="text-sm text-gray-500">936 reviews for this Gig</p>
-                        </div>
-                        <div class="flex items-center gap-1">
-                            <span class="text-yellow-400">
-                                <i class="fa-solid fa-star"></i> 4.9
-                            </span>
-                            <span class="text-sm text-gray-500">Rating</span>
-                        </div>
-                    </div>
-
-                    <!-- Review Item -->
-                    <div class="flex items-start space-x-4 mb-6">
-                        <!-- User Info -->
-                        <div class="w-12 h-12 rounded-full overflow-hidden">
-                            <img src="https://via.placeholder.com/150" alt="User Avatar"
-                                class="w-full h-full object-cover-center">
-                        </div>
-                        <div class="flex flex-col">
-                            <div class="flex items-center gap-2">
-                                <span class="font-semibold text-gray-800">jack_labudzki</span>
-                                <span class="text-sm text-gray-500">United States</span>
-                            </div>
-                            <div class="flex items-center gap-1 mt-1">
-                                <span class="text-yellow-400">
-                                    <i class="fa-solid fa-star"></i> 5
-                                </span>
-                                <span class="text-sm text-gray-500">2 weeks ago</span>
-                            </div>
-                            <p class="text-gray-700 mt-2">
-                                His work was amazing. My site looked professional and clean. I was honestly worried
-                                about how I was gonna get a good website going for my business, a website that would
-                                actually stand out versus all the other businesses I’m competing against. Let me tell
-                                you, it was perfect. I accepted the delivery confidently...
-                            </p>
-                        </div>
-                        <div class="flex-shrink-0 ml-4">
-                            <img src="https://via.placeholder.com/150" alt="Portfolio"
-                                class="w-32 h-20 object-cover rounded-lg">
-                        </div>
-                    </div>
-
-                    <!-- Price & Duration -->
-                    <div class="flex justify-between text-sm text-gray-500 mb-4">
-                        <span class="font-medium">$600 - $800</span>
-                        <span class="font-medium">7 days</span>
-                    </div>
-
-                    <!-- Seller's Response -->
-                    <div class="mt-4 p-4 bg-gray-50 rounded-md">
-                        <p class="text-gray-700">
-                            <span class="font-semibold">Seller's Response:</span> Thank you so much for the kind words!
-                            I’m glad to hear the website exceeded your expectations. Looking forward to working with you
-                            again!
-                        </p>
-                    </div>
-
-                    <!-- Helpful Feedback -->
-                    <div class="mt-4 flex items-center space-x-2 text-sm text-gray-500">
-                        <span>Helpful?</span>
-                        <button class="hover:text-blue-500">Yes</button>
-                        <span>|</span>
-                        <button class="hover:text-blue-500">No</button>
-                    </div>
-                </section>
-
-
-            </div> <!-- END LEFT -->
-
-            <!-- RIGHT: Pricing & Availability -->
-            <!-- RIGHT: Pricing & Availability -->
-            <aside class="space-y-6 sticky-sidebar">
-                <div class="bg-white rounded-xl p-6 fiverr-like-shadow border">
-                    <!-- Service Overview -->
-                    <div class="  p-3 flex justify-end items-center">
-                        <p class="text-sm text-gray-500 mr-2">From</p>
-                        <p class="text-4xl font-bold text-gray-800">RM20</p>
-                    </div>
-
-
-                    <!-- Pricing Tab Navigation -->
-                    <div class="mt-6">
-                        <div class="flex border-b">
-                            <!-- Tab Buttons -->
-                            <button
-                                class="tab-button px-4 py-2 text-sm font-semibold w-full text-center focus:outline-none"
-                                data-tab="basic">
-                                Basic
-                            </button>
-                            <button
-                                class="tab-button px-4 py-2 text-sm font-semibold w-full text-center focus:outline-none"
-                                data-tab="standard">
-                                Standard
-                            </button>
-                            <button
-                                class="tab-button px-4 py-2 text-sm font-semibold w-full text-center focus:outline-none"
-                                data-tab="premium">
-                                Premium
-                            </button>
-                        </div>
-
-                        <!-- Tab Content -->
-                        <div id="tab-content" class="mt-4">
-                            <!-- Basic Package Tab Content -->
-                            <div id="basic" class="tab-content hidden">
-                                <p class="font-semibold text-lg">Basic Package</p>
-                                <p class="text-sm text-gray-500">1 hour per session</p>
-                                <p class="text-sm text-gray-500 mt-2">Perfect for quick help with a specific topic or
-                                    assignment. Ideal for last-minute study or revision.</p>
-                                <div class="text-xl font-bold mt-3">RM20</div>
-                            </div>
-
-                            <!-- Standard Package Tab Content -->
-                            <div id="standard" class="tab-content hidden">
-                                <p class="font-semibold text-lg">Standard Package</p>
-                                <p class="text-sm text-gray-500">1 hour per session, weekly</p>
-                                <p class="text-sm text-gray-500 mt-2">Weekly tutoring sessions for ongoing support.
-                                    Ideal for students who need consistent help with their studies.</p>
-                                <div class="text-xl font-bold mt-3">RM70</div>
-                            </div>
-
-                            <!-- Premium Package Tab Content -->
-                            <div id="premium" class="tab-content hidden">
-                                <p class="font-semibold text-lg">Premium Package</p>
-                                <p class="text-sm text-gray-500">2 hours per session, intensive exam preparation</p>
-                                <p class="text-sm text-gray-500 mt-2">Comprehensive exam prep with practice tests and
-                                    study materials. Ideal for students gearing up for exams.</p>
-                                <div class="text-xl font-bold mt-3">RM120</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Availability Section -->
-                    <div class="mt-6">
-                        <p class="text-sm text-gray-500">When do you need us?</p>
-                        <p class="text-sm text-gray-400 mt-2">Available slots: Select a date to check availability</p>
-
-                        <!-- Date Picker with Available Days -->
-                        <div class="mt-3">
-                            <input type="date" id="calendar" class="w-full p-2 border rounded-lg text-sm" />
-                        </div>
-                    </div>
-
-                    <!-- Display Selected Date and Available Slots -->
-                    <div id="availability-status" class="mt-4 text-gray-600">
-                        <!-- Initially empty, will display the selected date's availability -->
-                    </div>
-
-                    <!-- Request Services Button -->
-                    <!-- Request Services Button -->
-                    <button
-                        class="mt-6 w-full bg-gradient-to-r from-[#1DBF73] to-[#17a65a] hover:from-[#17a65a] hover:to-[#1DBF73] text-white font-semibold py-3 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
-                        Request Services
-                    </button>
-
-                    <!-- Chat Button -->
-                    <button
-                        class="mt-4 w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-3 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center gap-2">
-                        <i class="fas fa-comment-alt text-lg"></i> Contact me
-                    </button>
-                    <br>
-                    <hr class="border-t-2 border-gray-300 my-4">
-
-                    <!-- Share and Favorite Icons -->
-                    <div class="mt-4 flex justify-center gap-6">
-                        <!-- Share Icon -->
-                        <button class="text-gray-600 hover:text-gray-800 transition duration-300 ease-in-out">
-                            <i class="fas fa-share-alt text-2xl"></i>
-                            <p class="text-xs mt-1">Share</p>
+                    <div class="flex items-center justify-center gap-4 py-2">
+                        <button onclick="handleShare(this)" data-url="{{ route('services.details', $service->id) }}"
+                            class="flex items-center gap-2 text-sm text-gray-500 hover:text-indigo-600 font-medium transition">
+                            <i class="fas fa-share-alt"></i> Share
                         </button>
-
-                        <!-- Favorite Icon -->
-                        <button class="text-gray-600 hover:text-gray-800 transition duration-300 ease-in-out">
-                            <i class="fas fa-heart text-2xl"></i>
-                            <p class="text-xs mt-1">Favorite</p>
+                        <button
+                            onclick="handleFavourite({{ $service->id }}, {{ auth()->check() ? 'true' : 'false' }})"
+                            class="flex items-center gap-2 text-sm text-gray-500 hover:text-red-500 font-medium transition">
+                            <i id="heart-{{ $service->id }}" class="far fa-heart"></i> Save
                         </button>
                     </div>
 
-
-
                 </div>
-            </aside>
+            </div>
 
-            <script>
-                // JavaScript for Tab Switching
-                const tabs = document.querySelectorAll('.tab-button');
-                const tabContents = document.querySelectorAll('.tab-content');
-
-                tabs.forEach(tab => {
-                    tab.addEventListener('click', () => {
-                        const selectedTab = tab.getAttribute('data-tab');
-
-                        // Hide all tab contents
-                        tabContents.forEach(content => {
-                            content.classList.add('hidden');
-                        });
-
-                        // Show the selected tab content
-                        document.getElementById(selectedTab).classList.remove('hidden');
-
-                        // Change tab styles
-                        tabs.forEach(tab => {
-                            tab.classList.remove('border-b-2', 'border-green-500');
-                            tab.classList.add('text-gray-600');
-                        });
-                        tab.classList.add('border-b-2', 'border-green-500');
-                        tab.classList.remove('text-gray-600');
-                    });
-                });
-
-                // Default to showing the Basic package
-                document.querySelector('[data-tab="basic"]').click();
-            </script>
-
-
-        </div> <!-- grid -->
+        </div>
     </main>
 
     @include('layouts.footer')
 
+    <div id="shareModal"
+        class="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-2xl w-80 p-6 transform scale-95 transition-transform duration-300">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-gray-900">Share Service</h3>
+                <button onclick="closeShareModal()" class="text-gray-400 hover:text-gray-600"><i
+                        class="fas fa-times"></i></button>
+            </div>
+            <div class="flex items-center border rounded-lg overflow-hidden bg-gray-50">
+                <input type="text" id="shareLinkInput"
+                    class="flex-1 px-3 py-2 text-sm bg-transparent outline-none text-gray-600" readonly>
+                <button onclick="copyShareLink()"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 text-sm font-medium">Copy</button>
+            </div>
+            <p id="copyMessage" class="text-xs text-green-600 mt-2 text-center opacity-0 transition-opacity">Copied to
+                clipboard!</p>
+        </div>
+    </div>
+
+    @auth
+        <div id="requestServiceModal"
+            class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+            <div class="bg-white p-6 rounded-2xl w-full max-w-md shadow-2xl animate-fade-in-up">
+                <h2 class="text-xl font-bold mb-1 text-slate-900">Request Details</h2>
+                <p class="text-sm text-gray-500 mb-6">Confirm your request details below.</p>
+
+                <div class="bg-gray-50 p-4 rounded-xl mb-4 border border-gray-100">
+                    <div class="flex justify-between text-sm mb-2">
+                        <span class="text-gray-500">Date:</span>
+                        <span id="selected-date-display" class="font-bold text-slate-900"></span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Package:</span>
+                        <span id="selected-package-display" class="font-bold text-slate-900 capitalize"></span>
+                    </div>
+                </div>
+
+                <textarea id="service-message"
+                    class="w-full p-3 border border-gray-300 rounded-xl mb-4 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                    rows="3" placeholder="Add a note for the helper (optional)..."></textarea>
+
+                <div class="flex gap-3">
+                    <button id="close-modal"
+                        class="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium transition">Cancel</button>
+                    <button id="submit-service-request"
+                        class="flex-1 bg-indigo-600 text-white px-4 py-2.5 rounded-xl hover:bg-indigo-700 font-bold shadow-md transition">Send
+                        Request</button>
+                </div>
+            </div>
+        </div>
+    @endauth
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Data passed from PHP
+            const unavailableDates = @json($service->unavailable_dates ? json_decode($service->unavailable_dates) : []);
+
+            // Prices configuration
+            const prices = {
+                basic: {{ $service->basic_price ?? 0 }},
+                standard: {{ $service->standard_price ?? 0 }},
+                premium: {{ $service->premium_price ?? 0 }}
+            };
+
+            // Colors configuration (Tailwind text colors / Hex)
+            const colors = {
+                basic: '#0d9488', // Teal-600
+                standard: '#ca8a04', // Yellow-600
+                premium: '#dc2626' // Red-600
+            };
+
+            // DOM Elements
+            const tabs = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            const mainPriceDisplay = document.getElementById('main-price-display');
+            const btnPriceDisplay = document.getElementById('btn-price');
+            const statusDiv = document.getElementById("availability-status");
+            let selectedDate = null;
+            let currentPackage = 'basic'; // Default
+
+            // --- 1. Tab Switching & Price Updating Logic ---
+            function switchTab(pkg) {
+                currentPackage = pkg;
+
+                // Hide/Show content logic (Sama macam sebelum ini)
+                tabContents.forEach(content => content.classList.add('hidden'));
+                const contentToShow = document.getElementById(pkg);
+                if (contentToShow) contentToShow.classList.remove('hidden');
+
+                // --- LOGIC WARNA TAB DI SINI ---
+                tabs.forEach(t => {
+                    // Reset semua tab ke warna kelabu (default)
+                    t.classList.remove('border-b-2');
+                    t.style.borderColor = 'transparent';
+                    t.style.color = '#6b7280'; // text-gray-500
+                    t.style.fontWeight = 'normal';
+
+                    // Jika tab ini adalah tab yang dipilih (Active)
+                    if (t.dataset.tab === pkg) {
+                        t.classList.add('border-b-2');
+                        t.style.fontWeight = '700'; // Bold
+
+                        // Guna warna dari object 'colors' di atas
+                        t.style.color = colors[pkg];
+                        t.style.borderColor = colors[pkg];
+                    }
+                });
+
+                // Update warna harga besar (Total Price)
+                mainPriceDisplay.textContent = 'RM' + prices[pkg];
+                mainPriceDisplay.style.color = colors[pkg];
+
+                // Update button text
+                if (btnPriceDisplay) btnPriceDisplay.textContent = prices[pkg];
+            }
+
+            // Initialize Tabs
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+            });
+
+            // Set Initial Tab
+            @if ($service->basic_price)
+                switchTab('basic');
+            @elseif ($service->standard_price) switchTab('standard');
+            @elseif ($service->premium_price) switchTab('premium');
+            @endif
+
+
+            // --- 2. Calendar Logic (Flatpickr) ---
+            flatpickr("#calendar", {
+                dateFormat: "Y-m-d",
+                minDate: "today",
+                disable: unavailableDates,
+                onDayCreate: function(dObj, dStr, fp, dayElem) {
+                    let date = dayElem.dateObj.toISOString().split("T")[0];
+                    if (unavailableDates.includes(date)) {
+                        dayElem.classList.add("bg-red-50", "text-red-400", "cursor-not-allowed");
+                    }
+                },
+                onChange: function(selectedDates, dateStr) {
+                    selectedDate = dateStr;
+                    if (!dateStr) {
+                        statusDiv.textContent = "";
+                        return;
+                    }
+                    if (unavailableDates.includes(dateStr)) {
+                        statusDiv.textContent = "Unavailable";
+                        statusDiv.className = "mt-2 text-xs font-bold text-red-500";
+                    } else {
+                        statusDiv.textContent = "Available";
+                        statusDiv.className = "mt-2 text-xs font-bold text-green-600";
+                    }
+                }
+            });
+
+            // --- 3. Modal & Request Logic ---
+            @auth
+            const modal = document.getElementById("requestServiceModal");
+            const reqBtn = document.getElementById("request-service-btn");
+            const closeBtn = document.getElementById("close-modal");
+            const submitBtn = document.getElementById("submit-service-request");
+
+            reqBtn.addEventListener("click", () => {
+                if (!selectedDate) {
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Select a date",
+                        text: "Please check availability first.",
+                        confirmButtonColor: '#334155'
+                    });
+                    return;
+                }
+                document.getElementById("selected-date-display").textContent = selectedDate;
+                document.getElementById("selected-package-display").textContent = currentPackage;
+                modal.classList.remove("hidden");
+            });
+
+            closeBtn.addEventListener("click", () => modal.classList.add("hidden"));
+
+            submitBtn.addEventListener("click", () => {
+                const message = document.getElementById("service-message").value;
+                const offeredPrice = prices[currentPackage];
+
+                fetch("{{ route('service-requests.store') }}", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                        },
+                        body: JSON.stringify({
+                            student_service_id: {{ $service->id }},
+                            selected_dates: selectedDate,
+                            selected_package: currentPackage,
+                            message: message,
+                            offered_price: offeredPrice
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (!data.success) throw new Error(data.error || "Error");
+                        Swal.fire({
+                            icon: "success",
+                            title: "Sent!",
+                            text: data.message,
+                            confirmButtonColor: '#4f46e5'
+                        });
+                        modal.classList.add("hidden");
+                    })
+                    .catch(err => {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Oops",
+                            text: "Something went wrong.",
+                            confirmButtonColor: '#ef4444'
+                        });
+                    });
+            });
+        @endauth
+        });
+
+        // --- 4. Share Logic ---
+        function handleShare(btn) {
+            const modal = document.getElementById('shareModal');
+            document.getElementById('shareLinkInput').value = btn.dataset.url;
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modal.querySelector('div').classList.remove('scale-95');
+            modal.querySelector('div').classList.add('scale-100');
+        }
+
+        function closeShareModal() {
+            const modal = document.getElementById('shareModal');
+            modal.querySelector('div').classList.remove('scale-100');
+            modal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => modal.classList.add('opacity-0', 'pointer-events-none'), 150);
+        }
+
+        function copyShareLink() {
+            const input = document.getElementById('shareLinkInput');
+            input.select();
+            document.execCommand("copy");
+            const msg = document.getElementById('copyMessage');
+            msg.classList.remove('opacity-0');
+            setTimeout(() => msg.classList.add('opacity-0'), 2000);
+        }
+
+        // --- 5. Favorite Logic ---
+        function handleFavourite(id, loggedIn) {
+            if (!loggedIn) return window.location.href = "{{ route('login') }}";
+            const icon = document.getElementById('heart-' + id);
+            const isSaved = icon.classList.contains('fas'); // Solid
+
+            // Optimistic UI
+            icon.className = isSaved ? 'far fa-heart' : 'fas fa-heart text-red-500';
+
+            fetch('/favourites/toggle/' + id, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    service_id: id
+                })
+            });
+        }
+    </script>
 </body>
 
 </html>
