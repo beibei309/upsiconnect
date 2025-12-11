@@ -8,24 +8,41 @@ use App\Models\Category;
 use App\Models\ServiceRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class StudentServiceController extends Controller
 {
 
  public function index(Request $request)
 {
+    // --- 1. Get and Sanitize Inputs ---
     $q = $request->string('q')->toString();
     $category_id = $request->category_id;
     $sort = $request->sort ?? 'newest';
+    $available_only = $request->available_only; 
 
+    $currentUserId = Auth::id(); // This will be null if the user is not logged in
+
+    // --- 2. Base Query Setup ---
     $query = StudentService::with(['student', 'category'])
         ->where('status', 'available')
-        ->where('approval_status', 'approved') // <--- Added this line
+        ->where('approval_status', 'approved')
         ->whereHas('student', function ($q) {
             $q->where('role', 'helper');
         });
 
-    // Search filter
+    if ($currentUserId) {
+        $query->where('user_id', '!=', $currentUserId);
+    }
+
+    if (in_array($available_only, ['1', '0'])) {
+        $query->whereHas('student', function ($q) use ($available_only) {
+            $q->where('is_available', (int)$available_only); 
+        });
+    }
+
+
+    // --- 4. Search filter ---
     if ($q) {
         $query->where(function ($sub) use ($q) {
             $sub->where('title', 'like', "%$q%")
@@ -33,29 +50,30 @@ class StudentServiceController extends Controller
         });
     }
 
-    // Category filter
+    // --- 5. Category filter ---
     if ($category_id) {
         $query->where('category_id', $category_id);
     }
 
-    // Sorting
+    // --- 6. Sorting ---
     if ($sort == 'newest') {
         $query->orderBy('created_at', 'desc');
     } elseif ($sort == 'oldest') {
         $query->orderBy('created_at', 'asc');
     } elseif ($sort == 'price_low') {
-        // Note: Ensure 'basic_price' is the column you want to sort by
+        // Note: Ensure 'basic_price' exists on StudentService model and is correct
         $query->orderBy('basic_price', 'asc'); 
     } elseif ($sort == 'price_high') {
         $query->orderBy('basic_price', 'desc');
     }
 
-    // Fetch the services
-    $services = $query->get();
+    // --- 7. Fetch and Return ---
+    // Consider using ->paginate(15) instead of ->get() for performance on large lists
+    $services = $query->paginate(15); 
 
     return view('services.index', [
         'services' => $services,
-        'categories' => \App\Models\Category::all(), // Ensure Model is imported or fully qualified
+        'categories' => Category::all(), // Using imported model
         'category_id' => $category_id,
         'sort' => $sort,
     ]);

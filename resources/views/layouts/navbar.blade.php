@@ -109,8 +109,8 @@
                             <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600" role="menuitem">Your Profile</a>
                             
                             <a href="{{ route('service-requests.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600" role="menuitem">My Requests</a>
-                            <a href="{{ route('services.applications.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600" role="menuitem">My Applications</a>
-                            <a href="{{ route('services.apply') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600" role="menuitem">Request Custom Service</a>
+                            {{-- <a href="{{ route('services.applications.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600" role="menuitem">My Applications</a>
+                            <a href="{{ route('services.apply') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600" role="menuitem">Request Custom Service</a> --}}
 
                             <div class="border-t border-gray-100 mt-1"></div>
                             

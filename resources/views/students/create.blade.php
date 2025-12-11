@@ -112,15 +112,6 @@
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
-
-                        <div>
-                            <select id="expertise_level" name="expertise_level[]" 
-                                class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-3 px-4 text-gray-700 bg-white">
-                                <option value="beginner" {{ old('expertise_level.0') == 'beginner' ? 'selected' : '' }}>Beginner</option>
-                                <option value="intermediate" {{ old('expertise_level.0') == 'intermediate' ? 'selected' : '' }}>Intermediate</option>
-                                <option value="expert" {{ old('expertise_level.0') == 'expert' ? 'selected' : '' }}>Expert</option>
-                            </select>
-                        </div>
                     </div>
 
                     <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">

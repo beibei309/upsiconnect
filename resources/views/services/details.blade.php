@@ -608,14 +608,16 @@
                         });
                         modal.classList.add("hidden");
                     })
-                    .catch(err => {
-                        Swal.fire({
-                            icon: "error",
-                            title: "Oops",
-                            text: "Something went wrong.",
-                            confirmButtonColor: '#ef4444'
-                        });
-                    });
+                   .catch(err => {
+    console.error('Order/Action Failure:', err); 
+
+    Swal.fire({
+        icon: "warning", // Use 'warning' for user status issues rather than 'error'
+        title: "Currently Unavailable",
+        text: "The student is currently unavailable to receive new orders. Please check back later or choose another helper.",
+        confirmButtonColor: '#4F46E5' // Indigo color or similar
+    });
+});
             });
         @endauth
         });

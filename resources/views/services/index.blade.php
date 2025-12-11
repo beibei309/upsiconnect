@@ -76,47 +76,60 @@
             </div>
         </div>
 
-        <div class="max-w-7xl mx-auto px-6 py-10">
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div class="max-w-7xl mx-auto px-6 py-10 ">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 ">
 
                 {{-- ======================= --}}
                 {{--       SIDEBAR           --}}
                 {{-- ======================= --}}
                 <aside class="lg:col-span-3 space-y-6">
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sticky top-24">
-                        <h3 class="font-bold text-slate-900 mb-4 px-2">Categories</h3>
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sticky top-24">
+        <h3 class="font-bold text-slate-900 mb-4 px-2">Categories</h3>
+        
+        <div class="space-y-1">
+            {{-- All Categories Link (Stays Indigo) --}}
+            <a href="{{ route('services.index') }}"
+               class="group flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200
+               {{ !$category_id ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-gray-50 hover:text-slate-900' }}">
+                <span class="w-8 h-8 flex items-center justify-center rounded-lg 
+                    {{ !$category_id ? 'bg-white text-indigo-600 shadow-sm' : 'bg-gray-100 text-gray-500 group-hover:bg-white group-hover:shadow-sm' }}">
+                    <i class="fas fa-th-large"></i>
+                </span>
+                All Categories
+            </a>
+
+            @foreach ($categories as $cat)
+                <a href="?category_id={{ $cat->id }}"
+                   class="group flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200
+                   {{ $category_id == $cat->id ? 'bg-indigo-50 text-slate-900' : 'text-slate-600 hover:bg-gray-50 hover:text-slate-900' }}">
+                    
+                    {{-- 👇 PERBAIKAN: Icon Container dengan Warna Kategori --}}
+                    <span class="w-8 h-8 flex items-center justify-center rounded-lg transition-colors"
+                        {{-- Set background color to category color with 15% opacity --}}
+                        style="background-color: {{ $cat->color }}66; 
+                                border: 1px solid {{ $cat->color }}40;"> 
                         
-                        <div class="space-y-1">
-                            <a href="{{ route('services.index') }}"
-                               class="group flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200
-                               {{ !$category_id ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-gray-50 hover:text-slate-900' }}">
-                                <span class="w-8 h-8 flex items-center justify-center rounded-lg {{ !$category_id ? 'bg-white text-indigo-600 shadow-sm' : 'bg-gray-100 text-gray-500 group-hover:bg-white group-hover:shadow-sm' }}">
-                                    <i class="fas fa-th-large"></i>
-                                </span>
-                                All Categories
-                            </a>
-
-                            @foreach ($categories as $cat)
-                                <a href="?category_id={{ $cat->id }}"
-                                   class="group flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200
-                                   {{ $category_id == $cat->id ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-gray-50 hover:text-slate-900' }}">
-                                    
-                                    <span class="w-8 h-8 flex items-center justify-center rounded-lg border transition-colors
-                                        {{ $category_id == $cat->id ? 'bg-white shadow-sm border-transparent' : 'bg-white border-gray-200 group-hover:border-indigo-200' }}">
-                                        @if($cat->image_path)
-                                            <img src="{{ asset('images/' . $cat->image_path) }}" alt="{{ $cat->name }}" class="w-5 h-5 object-contain">
-                                        @else
-                                            <div class="w-3 h-3 rounded-full" style="background-color: {{ $cat->color ?? '#cbd5e1' }}"></div>
-                                        @endif
-                                    </span>
-                                    
-                                    {{ $cat->name }}
-                                </a>
-                            @endforeach
-                        </div>
-                    </div>
-                </aside>
-
+                        @if($cat->image_path)
+                            {{-- Image Path: Icon should use its category color --}}
+                            <img src="{{ asset('images/' . $cat->image_path) }}" alt="{{ $cat->name }}" 
+                                 class="w-5 h-5 object-contain"
+                                 >
+                        @else
+                            {{-- Fallback: Use a colored circle --}}
+                            <div class="w-3 h-3 rounded-full" style="background-color: {{ $cat->color ?? '#cbd5e1' }}"></div>
+                        @endif
+                    </span>
+                    
+                    <span class="transition-colors 
+                        {{ $category_id == $cat->id ? 'font-bold' : 'group-hover:text-slate-900' }}"
+                        style="{{ $category_id == $cat->id ? 'color: ' . $cat->color : '' }}">
+                        {{ $cat->name }}
+                    </span>
+                </a>
+            @endforeach
+        </div>
+    </div>
+</aside>
 
                 {{-- ======================= --}}
                 {{--      MAIN CONTENT       --}}
@@ -177,7 +190,7 @@
                                 <div class="flex flex-col sm:flex-row gap-6">
                                     {{-- IMAGE SECTION --}}
                                     <div class="sm:w-64 h-56 sm:h-auto flex-shrink-0 relative rounded-xl overflow-hidden bg-gray-100">
-                                        <img src="{{ $service->image_path ? asset('storage/' . $service->image_path) : 'https://via.placeholder.com/600x400?text=No+Image' }}"
+                                        <img src="{{ $service->image_path ? asset('storage/' . $service->image_path) : 'https://via.placeholder.com/1200x700' }}"
                                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                                         
                                         @if ($service->category)

@@ -23,157 +23,220 @@
                 <!-- Availability Status -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                     <div class="flex items-center justify-between">
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 h-full flex flex-col justify-between">
-                    <div x-data="availabilityComponent()">
-                        
-                        <div class="mb-4">
-                            <h3 class="text-lg font-bold text-gray-900 mb-4">Availability</h3>
-                            
-                            <div class="flex items-start gap-3 text-sm text-gray-600">
-                                <i class="fa-regular fa-calendar text-lg mt-0.5"></i>
-                                <div>
-                                    <p class="font-medium text-gray-900 mb-1">Scheduled unavailability:</p>
-                                    
-                                    <template x-if="!isAvailable && startDate && endDate">
-                                        <p class="text-gray-700 font-medium">
-                                            From <span x-text="formatDate(startDate)"></span> to <span x-text="formatDate(endDate)"></span>
-                                        </p>
-                                    </template>
-                                    
-                                    <template x-if="isAvailable">
-                                        <p class="text-gray-500 italic">You are currently available for new orders.</p>
-                                    </template>
+                        <div
+                            class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 h-full flex flex-col justify-between">
+                            <div x-data="availabilityComponent()">
+
+                                <div class="mb-4">
+                                    <h3 class="text-lg font-bold text-gray-900 mb-4">Availability</h3>
+
+                                    <div class="flex items-start gap-3 text-sm text-gray-600">
+                                        <i class="fa-regular fa-calendar text-lg mt-0.5"></i>
+                                        <div>
+                                            <p class="font-medium text-gray-900 mb-1">Scheduled unavailability:</p>
+
+                                            <template x-if="!isAvailable && startDate && endDate">
+                                                <p class="text-gray-700 font-medium">
+                                                    From <span x-text="formatDate(startDate)"></span> to <span
+                                                        x-text="formatDate(endDate)"></span>
+                                                </p>
+                                            </template>
+
+                                            <template x-if="isAvailable">
+                                                <p class="text-gray-500 italic">You are currently available for new orders.
+                                                </p>
+                                            </template>
+                                        </div>
+                                    </div>
                                 </div>
+
+                                <button @click="openModal()"
+                                    class="w-full mt-4 py-2 px-4 bg-white border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors shadow-sm text-center">
+                                    Edit
+                                </button>
+
+                                <div x-show="showModal" class="fixed inset-0 flex items-center justify-center z-50 px-4"
+                                    style="display: none;">
+
+                                    <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+                                        @click="closeModal()"></div>
+
+                                    <div
+                                        class="bg-white rounded-xl shadow-xl w-full max-w-md z-10 overflow-hidden transform transition-all">
+
+                                        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                                            <h2 class="text-xl font-bold text-gray-900">Edit your availability</h2>
+                                            <button @click="closeModal()" class="text-gray-400 hover:text-gray-600">
+                                                <i class="fa-solid fa-times text-lg"></i>
+                                            </button>
+                                        </div>
+
+                                        <div class="p-6 space-y-6">
+                                            <p class="text-gray-600 text-sm">
+                                                While unavailable, your Service are hidden and you will not receive new orders.
+                                            </p>
+
+                                            <div class="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">First
+                                                        day</label>
+                                                    <input type="date" x-model="startDate"
+                                                        class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Last
+                                                        day</label>
+                                                    <input type="date" x-model="endDate"
+                                                        class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                                                </div>
+                                            </div>
+
+                                            <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                                                <span class="text-sm font-medium text-gray-900">I am currently
+                                                    available</span>
+
+                                                <label class="relative inline-flex items-center cursor-pointer">
+                                                    <input type="checkbox" class="sr-only peer" x-model="isAvailable">
+                                                    <div
+                                                        class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-indigo-100 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600">
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div class="px-6 py-4 bg-gray-50 flex justify-between items-center">
+                                            <button @click="deleteDates()" x-show="!isAvailable"
+                                                class="text-red-600 text-sm font-medium hover:underline">
+                                                Delete scheduled dates
+                                            </button>
+                                            <span x-show="isAvailable"></span> <button @click="saveChanges()"
+                                                class="px-6 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition shadow-sm">
+                                                Save changes
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
 
-                        <button @click="openModal()" 
-                            class="w-full mt-4 py-2 px-4 bg-white border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors shadow-sm text-center">
-                            Edit
-                        </button>
+                        <script>
+                            function availabilityComponent() {
+                                return {
+                                    isAvailable: {{ Auth::user()->is_available ? 'true' : 'false' }},
+                                    showModal: false,
+                                    // Ambil tarikh dari database jika ada, format YYYY-MM-DD
+                                    startDate: '{{ Auth::user()->unavailable_start_date ?? '' }}',
+                                    endDate: '{{ Auth::user()->unavailable_end_date ?? '' }}',
 
-                        <div x-show="showModal" 
-                             class="fixed inset-0 flex items-center justify-center z-50 px-4" 
-                             style="display: none;">
-                            
-                            <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" @click="closeModal()"></div>
-
-                            <div class="bg-white rounded-xl shadow-xl w-full max-w-md z-10 overflow-hidden transform transition-all">
-                                
-                                <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-                                    <h2 class="text-xl font-bold text-gray-900">Edit your availability</h2>
-                                    <button @click="closeModal()" class="text-gray-400 hover:text-gray-600">
-                                        <i class="fa-solid fa-times text-lg"></i>
-                                    </button>
-                                </div>
-
-                                <div class="p-6 space-y-6">
-                                    <p class="text-gray-600 text-sm">
-                                        While unavailable, your Gigs are hidden and you will not receive new orders.
-                                    </p>
-
-                                    <div class="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">First day</label>
-                                            <input type="date" x-model="startDate" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Last day</label>
-                                            <input type="date" x-model="endDate" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-                                        </div>
-                                    </div>
-
-                                    <div class="flex items-center justify-between pt-4 border-t border-gray-100">
-                                        <span class="text-sm font-medium text-gray-900">I am currently available</span>
-                                        <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" class="sr-only peer" x-model="isAvailable">
-                                            <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-indigo-100 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <div class="px-6 py-4 bg-gray-50 flex justify-between items-center">
-                                    <button @click="deleteDates()" x-show="!isAvailable" class="text-red-600 text-sm font-medium hover:underline">
-                                        Delete scheduled dates
-                                    </button>
-                                    <span x-show="isAvailable"></span> <button @click="saveChanges()" class="px-6 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition shadow-sm">
-                                        Save changes
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
-                <script>
-                    function availabilityComponent() {
-                        return {
-                            isAvailable: {{ Auth::user()->is_available ? 'true' : 'false' }},
-                            showModal: false,
-                            // Ambil tarikh dari database jika ada, format YYYY-MM-DD
-                            startDate: '{{ Auth::user()->unavailable_start_date ?? "" }}', 
-                            endDate: '{{ Auth::user()->unavailable_end_date ?? "" }}',
-
-                            openModal() {
-                                this.showModal = true;
-                            },
-
-                            closeModal() {
-                                this.showModal = false;
-                            },
-                            
-                            // Fungsi format tarikh (Contoh: Dec 10, 2025)
-                            formatDate(dateString) {
-                                if(!dateString) return '';
-                                const options = { year: 'numeric', month: 'short', day: 'numeric' };
-                                return new Date(dateString).toLocaleDateString('en-US', options);
-                            },
-
-                            deleteDates() {
-                                this.startDate = '';
-                                this.endDate = '';
-                                this.isAvailable = true;
-                                // Opsional: Terus save atau biar user tekan Save Changes
-                            },
-
-                            saveChanges() {
-                                // Jika user set available = true, kosongkan tarikh
-                                if (this.isAvailable) {
-                                    this.startDate = null;
-                                    this.endDate = null;
-                                } else {
-                                    if (!this.startDate || !this.endDate) {
-                                        alert('Please select both start and end dates.');
-                                        return;
-                                    }
-                                }
-
-                                fetch('/availability/update-settings', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content'),
-                                        'Accept': 'application/json'
+                                    openModal() {
+                                        this.showModal = true;
                                     },
-                                    body: JSON.stringify({
-                                        is_available: this.isAvailable,
-                                        start_date: this.startDate,
-                                        end_date: this.endDate
-                                    })
-                                })
-                                .then(res => res.json())
-                                .then(data => {
-                                    // alert(data.message);
-                                    this.showModal = false;
-                                    // Reload page atau update UI state sahaja
-                                    // window.location.reload(); 
-                                })
-                                .catch(err => console.error(err));
+
+                                    closeModal() {
+                                        this.showModal = false;
+                                    },
+
+                                    // Fungsi format tarikh (Contoh: Dec 10, 2025)
+                                    formatDate(dateString) {
+                                        if (!dateString) return '';
+                                        const options = {
+                                            year: 'numeric',
+                                            month: 'short',
+                                            day: 'numeric'
+                                        };
+                                        return new Date(dateString).toLocaleDateString('en-US', options);
+                                    },
+
+                                    deleteDates() {
+                                        this.startDate = '';
+                                        this.endDate = '';
+                                        this.isAvailable = true;
+                                        // Opsional: Terus save atau biar user tekan Save Changes
+                                    },
+
+                                   saveChanges() {
+    let finalStartDate = this.startDate;
+    let finalEndDate = this.endDate;
+
+    // --- 1. Client-Side Validation and Data Prep ---
+    
+    if (this.isAvailable) {
+        finalStartDate = null;
+        finalEndDate = null;
+    } else {
+        if (!finalStartDate || !finalEndDate || finalStartDate === '' || finalEndDate === '') {
+            // Use SweetAlert for validation error
+            Swal.fire({
+                icon: 'warning',
+                title: 'Date Required',
+                text: 'Please select both a start date and an end date for your unavailability.',
+                confirmButtonColor: '#3085d6'
+            });
+            return;
+        }
+        if (new Date(finalStartDate) > new Date(finalEndDate)) {
+             Swal.fire({
+                icon: 'error',
+                title: 'Invalid Dates',
+                text: 'Start date cannot be after the end date.',
+                confirmButtonColor: '#d33'
+            });
+            return;
+        }
+    }
+
+    // --- 2. AJAX Fetch Request ---
+    fetch('/availability/update-settings', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content'),
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            is_available: this.isAvailable, 
+            start_date: finalStartDate, 
+            end_date: finalEndDate
+        })
+    })
+    .then(res => {
+        if (!res.ok) {
+            return res.json().then(errorData => { throw new Error(errorData.message || 'Server error.'); });
+        }
+        return res.json();
+    })
+    .then(data => {
+        // Success: Update local Alpine state with confirmed saved data
+        this.isAvailable = data.is_available; 
+        this.startDate = data.start_date || ''; 
+        this.endDate = data.end_date || '';
+        
+        this.closeModal();
+        
+        // Use SweetAlert for success notification
+        Swal.fire({
+            icon: 'success',
+            title: 'Updated!',
+            text: 'Your availability has been set successfully.',
+            showConfirmButton: false,
+            timer: 2000
+        });
+    })
+    .catch(err => {
+        console.error('Save Error:', err);
+        // Use SweetAlert for general error display
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'Failed to save changes: ' + err.message,
+            confirmButtonColor: '#d33'
+        });
+    });
+}
+                                }
                             }
-                        }
-                    }
-                </script>
+                        </script>
 
                     </div>
                     <div class="mt-4">
@@ -182,7 +245,7 @@
                             <div
                                 class="w-2 h-2 rounded-full {{ Auth::user()->is_available ? 'bg-green-400' : 'bg-red-400' }} mr-2">
                             </div>
-                            {{ Auth::user()->is_available ? 'Available' : 'Unavailable' }}
+                            {{ Auth::user()->is_available ? 'Available' : 'Busy' }}
                         </span>
                     </div>
                 </div>
@@ -297,7 +360,8 @@
                         class="border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-custom-teal focus:border-custom-teal">
                         <option value="30days" {{ ($range ?? '30days') === '30days' ? 'selected' : '' }}>Last 30 days
                         </option>
-                        <option value="3months" {{ ($range ?? '') === '3months' ? 'selected' : '' }}>Last 3 months</option>
+                        <option value="3months" {{ ($range ?? '') === '3months' ? 'selected' : '' }}>Last 3 months
+                        </option>
                         <option value="yearly" {{ ($range ?? '') === 'yearly' ? 'selected' : '' }}>Yearly</option>
                     </select>
                 </form>

@@ -9,19 +9,36 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            // Tambah column baru
-            $table->text('work_experience_message')->nullable()->after('work_experience');
-            $table->string('work_experience_file')->nullable()->after('work_experience_message');
+            // Pastikan column work_experience wujud sebelum guna after() atau drop
+            if (Schema::hasColumn('users', 'work_experience')) {
+                $table->text('work_experience_message')->nullable()->after('work_experience');
+            } else {
+                // Jika tak wujud, letak saja kat hujung
+                $table->text('work_experience_message')->nullable();
+            }
 
-            // Optional: kalau nak drop old column
-            $table->dropColumn('work_experience');
+            $table->string('work_experience_file')->nullable();
+
+            // Drop kalau wujud
+            if (Schema::hasColumn('users', 'work_experience')) {
+                $table->dropColumn('work_experience');
+            }
         });
     }
 
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['work_experience_message', 'work_experience_file']);
+            if (Schema::hasColumn('users', 'work_experience_message')) {
+                $table->dropColumn('work_experience_message');
+            }
+
+            if (Schema::hasColumn('users', 'work_experience_file')) {
+                $table->dropColumn('work_experience_file');
+            }
+
+            // Optional: return old column
+            // $table->text('work_experience')->nullable();
         });
     }
 };
