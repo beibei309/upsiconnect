@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Review;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -79,9 +80,13 @@ class User extends Authenticatable
     {
         return $this->hasMany(StudentService::class, 'user_id');
     }
-
-
     
+    public function reviewsReceived()
+    {
+        // reviews adalah table. reviewee_id adalah foreign key yang merujuk user ini.
+        return $this->hasMany(Review::class, 'reviewee_id');
+    }
+
     public function services()
     {
         return $this->hasMany(StudentService::class, 'user_id');
@@ -110,11 +115,6 @@ class User extends Authenticatable
     public function reviewsWritten()
     {
         return $this->hasMany(Review::class, 'reviewer_id');
-    }
-
-    public function reviewsReceived()
-    {
-        return $this->hasMany(Review::class, 'reviewee_id');
     }
 
     public function applicationInterests()

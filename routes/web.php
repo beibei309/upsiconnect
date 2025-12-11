@@ -16,23 +16,17 @@ use App\Http\Controllers\StudentsController;
 use App\Http\Controllers\VerificationController;
 use App\Http\Controllers\StudentServiceController;
 use App\Http\Controllers\ServiceRequestController;
-use App\Http\Controllers\FavoriteController;
-use App\Http\Controllers\Admin\VerificationController as AdminVerificationController;
 use App\Http\Controllers\Admin\ReportAdminController;
 use App\Http\Controllers\Admin\UserAdminController;
 use App\Http\Controllers\Pages\SearchPageController;
 use App\Http\Controllers\Pages\AdminPageController;
 use App\Http\Controllers\Admin\AdminAuthController;
-use App\Http\Controllers\Admin\UserAdminController;
-use App\Http\Controllers\Pages\AdminPageController;
-use App\Http\Controllers\Admin\SuperAdminController;
-use App\Http\Controllers\Pages\SearchPageController;
-use App\Http\Controllers\Admin\ReportAdminController;
 use App\Http\Controllers\Pages\StudentPageController;
 use App\Http\Controllers\Admin\AdminStudentController;
 use App\Http\Controllers\ServiceApplicationController;
 use App\Http\Controllers\Admin\AdminRequestController;
 use App\Http\Controllers\Admin\AdminServicesController;
+use App\Http\Controllers\Admin\AdminFeedbackController;
 use App\Http\Controllers\Admin\AdminCommunityController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminStudentStatusController;
@@ -170,7 +164,7 @@ Route::get('/chat/demo', fn() => view('chat.index'))->name('chat.index.demo');
 Route::get('/chat', [ChatController::class, 'index'])->middleware(['auth'])->name('chat.index');
 Route::get('/chat/{conversation}', [ChatController::class, 'show'])->middleware(['auth'])->name('chat.show');
 Route::get('/admin/verifications', [AdminPageController::class, 'verifications'])->middleware(['auth'])->name('admin.verifications.page');
-Route::get('/admin/reports', [AdminPageController::class, 'reports'])->middleware(['auth'])->name('admin.reports.page');
+
 
 // Authenticated JSON endpoints
 Route::middleware(['auth'])->group(function () {
@@ -219,8 +213,6 @@ Route::post('/services/applications/{application}/interests/confirm', [ServiceAp
     // Admin moderation endpoints
     Route::post('/admin/verifications/{user}/approve', [AdminVerificationController::class, 'approve']);
     Route::post('/admin/verifications/{user}/reject', [AdminVerificationController::class, 'reject']);
-    Route::get('/admin/reports/index', [ReportAdminController::class, 'index']);
-    Route::post('/admin/reports/{report}/resolve', [ReportAdminController::class, 'resolve']);
 
     Route::post('/admin/users/{user}/ban', [UserAdminController::class, 'ban']);
     Route::post('/admin/users/{user}/unban', [UserAdminController::class, 'unban']);
@@ -284,6 +276,11 @@ Route::post('/admin/login', [AdminAuthController::class, 'login'])
     Route::get('/requests', [AdminRequestController::class, 'index'])->name('admin.requests.index');
     Route::delete('/requests/{serviceRequest}', [AdminRequestController::class, 'destroy'])->    
          name('admin.requests.destroy');
+
+    // Route for Reports (Feedback & Complaints)
+    Route::get('/feedback', [AdminFeedbackController::class, 'index'])->name('admin.feedback.index');
+    Route::post('/feedback/{user}/warning', [AdminFeedbackController::class, 'sendWarning'])->name('admin.feedback.warning');
+    Route::post('/feedback/{user}/block', [AdminFeedbackController::class, 'blockUser'])->name('admin.feedback.block');   
 
     // Manage Admin Accounts (superadmin)
     Route::get('/superadmin/admins/create', [SuperAdminController::class, 'create'])

@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use App\Models\Category;
 use App\Models\StudentService;
+use App\Models\Review;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -151,6 +152,48 @@ class DatabaseSeeder extends Seeder
                     'created_at'         => now(),
                ]);
             }
+ 
+        $ahmad = User::where('email', 'ahmad@siswa.upsi.edu.my')->first();
+        $siti = User::where('email', 'siti@siswa.upsi.edu.my')->first();
+        $requester = $communityUser; // User Community sudah didefinisi di atas
+
+        $completedRequest = \App\Models\ServiceRequest::first(); 
+
+
+	if ($ahmad && $siti && $requester && $completedRequest) {
+
+    // 1. Ahmad dapat rating RENDAH (Reviewer: Community User)
+    // Ahmad akan muncul di dashboard dengan Average Rating 1.0 (1+1)/2
+    Review::create([
+        'reviewer_id' => $requester->id,
+        'reviewee_id' => $ahmad->id,
+        'service_request_id' => $completedRequest->id,
+        'conversation_id' => null, // Biarkan null jika conversation_id nullable di DB
+        'rating' => 1, 
+        'comment' => 'Service was extremely poor and slow. Need improvement.',
+    ]);
+
+    // 2. Ahmad dapat rating RENDAH lagi (untuk pastikan Average rendah 1.0)
+    Review::create([
+        'reviewer_id' => $requester->id,
+        'reviewee_id' => $ahmad->id,
+        'service_request_id' => $completedRequest->id,
+        'conversation_id' => null,
+        'rating' => 1, 
+        'comment' => 'Second time using, still disappointing.',
+    ]);
+
+    // 3. Siti dapat rating TINGGI (Reviewer: Community User)
+    // Siti akan muncul di dashboard dengan rating 5.0
+    Review::create([
+        'reviewer_id' => $requester->id,
+        'reviewee_id' => $siti->id,
+        'service_request_id' => $completedRequest->id,
+        'conversation_id' => null,
+        'rating' => 5,
+        'comment' => 'Excellent service, highly recommended!',
+    ]);
+}
 
         //admin 
         $this->call(AdminSeeder::class);

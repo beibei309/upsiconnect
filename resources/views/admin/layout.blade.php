@@ -85,9 +85,10 @@
                 </a>
             </li>
 
-            <li>
-                <a href="#"
-                   class="block px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 font-medium">
+            <li class="nav-item">
+                <a href="{{ route('admin.feedback.index') }}"
+                   class="block px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 font-medium
+              {{ request()->routeIs('admin.feedback.index') ? 'bg-blue-100 text-blue-600' : '' }}">
                     Feedback & Complaints
                 </a>
             </li>
