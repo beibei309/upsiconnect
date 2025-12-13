@@ -47,6 +47,16 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+
+        .rich-text ul {
+            list-style-type: disc;
+            padding-left: 1.25rem;
+        }
+
+        .rich-text ol {
+            list-style-type: decimal;
+            padding-left: 1.25rem;
+        }
     </style>
 </head>
 
@@ -128,13 +138,13 @@
 
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5">
                     @foreach ($categories as $category)
-                        <a href="{{ route('services.index', ['category_id' => $category->id]) }}"
-                            {{-- Key Change: Set background, text color, and remove default border/bg classes --}}
+                        <a href="{{ route('services.index', ['category_id' => $category->id]) }}" {{-- Key Change: Set background, text color, and remove default border/bg classes --}}
                             class="group p-5 rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 text-center flex flex-col items-center justify-center h-full"
                             style="background-color: {{ $category->color }};">
-                            
+
                             {{-- Icon container: Set background to white for contrast --}}
-                            <div class="w-14 h-14 mb-4 rounded-full flex items-center justify-center bg-white shadow-sm transition-transform group-hover:scale-110">
+                            <div
+                                class="w-14 h-14 mb-4 rounded-full flex items-center justify-center bg-white shadow-sm transition-transform group-hover:scale-110">
                                 <img src="{{ asset('images/' . $category->image_path) }}" alt="{{ $category->name }}"
                                     class="w-7 h-7 object-contain">
                             </div>
@@ -219,8 +229,9 @@
                                     </h3>
                                 </a>
 
-                                <p class="text-sm text-slate-500 line-clamp-2 mb-4">{{ $service->description }}</p>
-
+                                <div class="rich-text text-sm text-slate-500 line-clamp-2 mb-4">
+                                    {!! $service->description !!}
+                                </div>
                                 <div class="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
                                     <div>
                                         <span class="text-xs text-slate-400 font-medium uppercase">Starting at</span>
