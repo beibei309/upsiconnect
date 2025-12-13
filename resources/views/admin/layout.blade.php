@@ -70,26 +70,30 @@
                 </a>
             </li>
 
-            <li>
-                <a href="#"
-                   class="block px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 font-medium">
-                    Manage Requests
+          <li>
+                <a href="{{ route('admin.requests.index') }}" 
+                   class="block px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 font-medium
+                   {{ request()->routeIs('admin.requests.index') ? 'bg-blue-100 text-blue-700 font-semibold' : 'text-gray-700' }}">
+                    <i class="fa fa-list"></i> Manage Requests
                 </a>
             </li>
 
-            <li>
+           
+            <li class="nav-item">
+                <a href="{{ route('admin.feedback.index') }}"
+                   class="block px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 font-medium
+              {{ request()->routeIs('admin.feedback.index') ? 'bg-blue-100 text-blue-600' : '' }}">
+                    Feedback & Complaints
+                </a>
+            </li>
+
+             <li>
                 <a href="#"
                    class="block px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 font-medium">
                     Reports & Analytics
                 </a>
             </li>
-
-            <li>
-                <a href="#"
-                   class="block px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 font-medium">
-                    Feedback & Complaints
-                </a>
-            </li>
+            
         </ul>
 
         <!-- SUPERADMIN -->

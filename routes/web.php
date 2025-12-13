@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\UserAdminController;
 use App\Http\Controllers\Pages\AdminPageController;
 use App\Http\Controllers\Admin\SuperAdminController;
+use App\Http\Controllers\Admin\AdminFeedbackController;
 use App\Http\Controllers\Pages\SearchPageController;
 use App\Http\Controllers\Admin\ReportAdminController;
 use App\Http\Controllers\Pages\StudentPageController;
@@ -30,6 +31,8 @@ use App\Http\Controllers\Admin\AdminServicesController;
 use App\Http\Controllers\Admin\AdminCommunityController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminStudentStatusController;
+use App\Http\Controllers\Admin\AdminRequestController;
+
 use App\Http\Controllers\Admin\VerificationController as AdminVerificationController;
 
 
@@ -224,6 +227,15 @@ Route::post('/services/applications/{application}/interests/confirm', [ServiceAp
     Route::post('/admin/users/{user}/unsuspend', [UserAdminController::class, 'unsuspend']);
 });
 
+  // Manage Service Requests (Skrin Monitor User Request)
+    Route::get('/requests', [AdminRequestController::class, 'index'])->name('admin.requests.index');
+    Route::delete('/requests/{serviceRequest}', [AdminRequestController::class, 'destroy'])->    
+         name('admin.requests.destroy');
+
+    // Route for Reports (Feedback & Complaints)
+    Route::get('/feedback', [AdminFeedbackController::class, 'index'])->name('admin.feedback.index');
+    Route::post('/feedback/{user}/warning', [AdminFeedbackController::class, 'sendWarning'])->name('admin.feedback.warning');
+    Route::post('/feedback/{user}/block', [AdminFeedbackController::class, 'blockUser'])->name('admin.feedback.block');   
 
 // Admin service management routes
     Route::get('admin/services', [AdminServicesController::class, 'index'])->name('admin.services.index');
