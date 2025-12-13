@@ -14,12 +14,81 @@ class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // Create categories
+        // 👇 FIX 1: Clean up tables to prevent Unique Constraint Violation Errors on repeated seeding
+        StudentService::query()->delete();
+        User::query()->delete();
+        Category::query()->delete();
+
+        $this->seedCategories();
+        
+        // Create community user
+        User::create([
+            'name' => 'Community User',
+            'email' => 'community@example.com',
+            'password' => Hash::make('password'),
+            'role' => 'community',
+            'phone' => '0123456789',
+            'verification_status' => 'approved',
+            'public_verified_at' => now(),
+        ]);
+
+        $studentsData = $this->getStudentData();
+
+        foreach ($studentsData as $studentData) {
+            $student = User::create([
+                'name' => $studentData['name'],
+                'email' => $studentData['email'],
+                'password' => Hash::make('password'),
+                'role' => 'helper',
+                'phone' => '0123456789',
+                'student_id' => $studentData['student_id'],
+                'staff_email' => $studentData['email'],
+                'verification_status' => 'approved',
+                'staff_verified_at' => now(), 
+                'is_available' => rand(0, 1) == 1,
+            ]);
+
+            foreach ($studentData['services'] as $serviceData) {
+                $category = Category::where('name', $serviceData['category'])->first();
+                
+                StudentService::create([
+                    'user_id' => $student->id,
+                    'category_id' => $category->id,
+                    'title' => $serviceData['title'],
+                    'image_path' => $serviceData['image_path'],
+                    'description' => $serviceData['description'],
+                    
+                    // 👇 FIX 2: Complete Package Details Mapping
+                    'basic_duration' => $serviceData['packages']['basic']['duration'],
+                    'basic_frequency' => $serviceData['packages']['basic']['frequency'],
+                    'basic_price' => $serviceData['packages']['basic']['price'],
+                    'basic_description' => $serviceData['packages']['basic']['description'],
+
+                    'standard_duration' => $serviceData['packages']['standard']['duration'],
+                    'standard_frequency' => $serviceData['packages']['standard']['frequency'],
+                    'standard_price' => $serviceData['packages']['standard']['price'],
+                    'standard_description' => $serviceData['packages']['standard']['description'],
+                    
+                    'premium_duration' => $serviceData['packages']['premium']['duration'],
+                    'premium_frequency' => $serviceData['packages']['premium']['frequency'],
+                    'premium_price' => $serviceData['packages']['premium']['price'],
+                    'premium_description' => $serviceData['packages']['premium']['description'],
+
+                    'status' => 'available',
+                    'is_active' => true,
+                    'approval_status' => 'approved',
+                ]);
+            }
+        }
+
+        // admin 
+        $this->call(AdminSeeder::class);
+    }
+    
+    protected function seedCategories()
+    {
         $categories = [
             ['name' => 'Academic Tutoring','slug' => 'academic-tutoring', 'description' => 'Help with studies and assignments','image_path' => 'tutor.png','color' => '#4F46E5','is_active' => true],
             ['name' => 'Programming & Tech','slug' => 'programming-tech', 'description' => 'Web development, mobile apps, and technical services','image_path' => 'tech.svg','color' => '#10B981','is_active' => true],
@@ -39,36 +108,76 @@ class DatabaseSeeder extends Seeder
                 'is_active' => $categoryData['is_active'],
             ]);
         }
+    }
 
-        // Create community user
-        $communityUser = User::create([
-            'name' => 'Community User',
-            'email' => 'community@example.com',
-            'password' => Hash::make('password'),
-            'role' => 'community',
-            'phone' => '0123456789',
-            'verification_status' => 'approved',
-            'public_verified_at' => now(),
-        ]);
-
-        // Create student users with services
-        $students = [
+    protected function getStudentData()
+    {
+        return [
             [
                 'name' => 'Ahmad Rahman',
                 'email' => 'ahmad@siswa.upsi.edu.my',
                 'student_id' => 'CD21001',
                 'services' => [
-                    ['title' => 'Mathematics Tutoring','image_path' => 'service_tutor.jpg', 'description' => 'Expert help in calculus, algebra, and statistics', 'price' => 25.00, 'category' => 'Academic Tutoring'],
-                    ['title' => 'Physics Problem Solving','image_path' => 'service_tutor.jpg', 'description' => 'Assistance with physics assignments and concepts', 'price' => 30.00, 'category' => 'Academic Tutoring'],
+                    [
+                        'title' => 'Mathematics Tutoring',
+                        'image_path' => 'service_tutor.jpg', 
+                        'description' => 'Expert help in calculus, algebra, and statistics.', 
+                        'category' => 'Academic Tutoring',
+                        'packages' => [
+                            'basic' => [
+                                'duration' => '1',
+                                'frequency' => 'One Session',
+                                'price' => 25.00,
+                                'description' => 'Quick session focusing on 1-2 difficult topics.'
+                            ],
+                            'standard' => [
+                                'duration' => '3',
+                                'frequency' => 'One Session',
+                                'price' => 70.00,
+                                'description' => 'In-depth study session including practice exercises.'
+                            ],
+                            'premium' => [
+                                'duration' => '4',
+                                'frequency' => 'Weekly',
+                                'price' => 250.00,
+                                'description' => 'Intensive guidance for a month leading up to the final exam.'
+                            ],
+                        ],
+                    ],
                 ]
             ],
+            // ... (Other student data remains the same structure, but I've updated the languages to English for consistency)
             [
                 'name' => 'Siti Nurhaliza',
                 'email' => 'siti@siswa.upsi.edu.my',
                 'student_id' => 'CD21002',
                 'services' => [
-                    ['title' => 'Web Development','image_path' => 'service_tutor.jpg','description' => 'Full-stack web development using Laravel and React', 'price' => 50.00, 'category' => 'Programming & Tech'],
-                    ['title' => 'Mobile App Development','image_path' => 'service_tutor.jpg', 'description' => 'Android and iOS app development', 'price' => 80.00, 'category' => 'Programming & Tech'],
+                    [
+                        'title' => 'Web Development (Laravel/React)',
+                        'image_path' => 'service_tech.jpg',
+                        'description' => 'Full-stack web development services using Laravel and React.', 
+                        'category' => 'Programming & Tech',
+                        'packages' => [
+                            'basic' => [
+                                'duration' => '3',
+                                'frequency' => 'Small Project',
+                                'price' => 150.00,
+                                'description' => 'Bug fixing or small feature additions.'
+                            ],
+                            'standard' => [
+                                'duration' => '1',
+                                'frequency' => 'Simple Project',
+                                'price' => 500.00,
+                                'description' => 'Landing page website or full portfolio.'
+                            ],
+                            'premium' => [
+                                'duration' => '3',
+                                'frequency' => 'Complex Project',
+                                'price' => 1500.00,
+                                'description' => 'Complete CRUD system (e.g., simple inventory management system).'
+                            ],
+                        ],
+                    ],
                 ]
             ],
             [
@@ -76,8 +185,32 @@ class DatabaseSeeder extends Seeder
                 'email' => 'lim@siswa.upsi.edu.my',
                 'student_id' => 'CD21003',
                 'services' => [
-                    ['title' => 'Graphic Design', 'image_path' => 'service_tutor.jpg','description' => 'Logo design, posters, and branding materials', 'price' => 35.00, 'category' => 'Design & Creative'],
-                    ['title' => 'Video Editing', 'image_path' => 'service_tutor.jpg','description' => 'Professional video editing for events and promotions', 'price' => 40.00, 'category' => 'Design & Creative'],
+                    [
+                        'title' => 'Logo & Branding Design',
+                        'image_path' => 'service_design.jpg',
+                        'description' => 'Professional logo design, posters, and branding materials.', 
+                        'category' => 'Design & Creative',
+                        'packages' => [
+                            'basic' => [
+                                'duration' => '2',
+                                'frequency' => '1 Concept',
+                                'price' => 35.00,
+                                'description' => 'Simple text logo design with 2x revisions.'
+                            ],
+                            'standard' => [
+                                'duration' => '4',
+                                'frequency' => '3 Concepts',
+                                'price' => 90.00,
+                                'description' => 'Iconic logo with 5x revisions and source files.'
+                            ],
+                            'premium' => [
+                                'duration' => '1',
+                                'frequency' => 'Full Branding',
+                                'price' => 250.00,
+                                'description' => 'Logo, business cards, and brand usage guide.'
+                            ],
+                        ],
+                    ],
                 ]
             ],
             [
@@ -85,8 +218,32 @@ class DatabaseSeeder extends Seeder
                 'email' => 'priya@siswa.upsi.edu.my',
                 'student_id' => 'CD21004',
                 'services' => [
-                    ['title' => 'English Tutoring','image_path' => 'service_tutor.jpg', 'description' => 'Improve your English speaking and writing skills', 'price' => 20.00, 'category' => 'Academic Tutoring'],
-                    ['title' => 'Translation Services','image_path' => 'service_tutor.jpg', 'description' => 'English-Malay-Tamil translation services', 'price' => 15.00, 'category' => 'Academic Tutoring'],
+                    [
+                        'title' => 'Laundry & Ironing Helper',
+                        'image_path' => 'service_housechores.jpg',
+                        'description' => 'Washing and ironing assistance in the campus area.', 
+                        'category' => 'Housechores',
+                        'packages' => [
+                            'basic' => [
+                                'duration' => '2',
+                                'frequency' => 'One Session',
+                                'price' => 30.00,
+                                'description' => 'Washing and folding clothes (max 10kg).'
+                            ],
+                            'standard' => [
+                                'duration' => '3',
+                                'frequency' => 'One Session',
+                                'price' => 45.00,
+                                'description' => 'Washing, folding, and ironing (max 10kg).'
+                            ],
+                            'premium' => [
+                                'duration' => '3',
+                                'frequency' => 'Weekly',
+                                'price' => 160.00,
+                                'description' => 'Weekly ironing and folding service for one month.'
+                            ],
+                        ],
+                    ],
                 ]
             ],
             [
@@ -94,52 +251,34 @@ class DatabaseSeeder extends Seeder
                 'email' => 'raj@siswa.upsi.edu.my',
                 'student_id' => 'CD21005',
                 'services' => [
-                    ['title' => 'Event Photography','image_path' => 'service_tutor.jpg', 'description' => 'Professional photography for events and occasions', 'price' => 60.00, 'category' => 'Event Planning'],
-                    ['title' => 'Portrait Photography','image_path' => 'service_tutor.jpg', 'description' => 'Individual and group portrait sessions', 'price' => 45.00, 'category' => 'Event Planning'],
+                    [
+                        'title' => 'Runner & Parcel Pickup',
+                        'image_path' => 'service_runner.jpg',
+                        'description' => 'Help pick up parcels, buy food/items, or run errands around Tanjong Malim.', 
+                        'category' => 'Runner & Errands',
+                        'packages' => [
+                            'basic' => [
+                                'duration' => '30',
+                                'frequency' => '1 Location',
+                                'price' => 10.00,
+                                'description' => 'Parcel pickup from the nearest Post Office.'
+                            ],
+                            'standard' => [
+                                'duration' => '1',
+                                'frequency' => '2 Locations',
+                                'price' => 25.00,
+                                'description' => 'Buying food/items from 2 different locations.'
+                            ],
+                            'premium' => [
+                                'duration' => '2',
+                                'frequency' => 'Unlimited (Local)',
+                                'price' => 40.00,
+                                'description' => 'All local errands within a 2-hour limit.'
+                            ],
+                        ],
+                    ],
                 ]
             ],
-            [
-                'name' => 'Fatimah Zahra',
-                'email' => 'fatimah@siswa.upsi.edu.my',
-                'student_id' => 'CD21006',
-                'services' => [
-                    ['title' => 'Event Planning','image_path' => 'service_tutor.jpg', 'description' => 'Complete event planning and coordination services', 'price' => 100.00, 'category' => 'Event Planning'],
-                    ['title' => 'Wedding Planning','image_path' => 'service_tutor.jpg', 'description' => 'Specialized wedding planning and coordination', 'price' => 200.00, 'category' => 'Event Planning'],
-                ]
-            ],
-        ];
-
-        foreach ($students as $studentData) {
-            $student = User::create([
-                'name' => $studentData['name'],
-                'email' => $studentData['email'],
-                'password' => Hash::make('password'),
-                'role' => 'student',
-                'phone' => '0123456789',
-                'student_id' => $studentData['student_id'],
-                'staff_email' => $studentData['email'],
-                'verification_status' => 'approved',
-                'staff_verified_at' => now(),
-                'is_available' => rand(0, 1) == 1, // Random availability
-            ]);
-
-            foreach ($studentData['services'] as $serviceData) {
-                $category = Category::where('name', $serviceData['category'])->first();
-                
-                StudentService::create([
-                    'user_id' => $student->id,
-                    'category_id' => $category->id,
-                    'title' => $serviceData['title'],
-                    'image_path' => $serviceData['image_path'],
-                    'description' => $serviceData['description'],
-                    'suggested_price' => $serviceData['price'],
-                    'is_active' => true,
-                ]);
-            }
-        }
-
-        //admin 
-        $this->call(AdminSeeder::class);
-
-    }
+  ];
+}
 }
