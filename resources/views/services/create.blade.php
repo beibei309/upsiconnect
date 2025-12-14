@@ -5,6 +5,15 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
+<style>
+    .ql-toolbar { border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem; border-color: #d1d5db !important; background-color: #f9fafb; }
+    .ql-container { border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem; border-color: #d1d5db !important; font-family: inherit; }
+    .ql-editor { min-height: 100px; } /* Default height */
+</style>
+
 @section('content')
     <div class="py-12 bg-gray-50 min-h-screen">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -80,8 +89,12 @@
                                 
                                 <p class="text-sm font-medium text-gray-700 mt-4 mb-2">Or choose a template:</p>
                                 <div class="flex gap-4">
-                                    <img src="/images/service_tutor.jpg" class="template-image w-24 h-24 object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:border-indigo-500 transition" data-val="/images/service_tutor.jpg">
-                                    <img src="/images/priya.jpg" class="template-image w-24 h-24 object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:border-indigo-500 transition" data-val="/images/priya.jpg">
+                                    <img src="/storage/service_tutor.jpg" class="template-image w-24 h-24 object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:border-indigo-500 transition" data-val="/storage/service_tutor.jpg">
+                                    <img src="/storage/programming_service.jpg" class="template-image w-24 h-24 object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:border-indigo-500 transition" data-val="/storage/priya.jpg">
+                                    <img src="/storage/design_service.jpg" class="template-image w-24 h-24 object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:border-indigo-500 transition" data-val="/storage/design_service.jpg">
+                                    <img src="/storage/laundry_service.jpg" class="template-image w-24 h-24 object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:border-indigo-500 transition" data-val="/storage/laundry_service.jpg">
+                                    <img src="/storage/service_planning.jpg" class="template-image w-24 h-24 object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:border-indigo-500 transition" data-val="/storage/servicep_planning.jpg">
+                                    <img src="/storage/runner_service.jpg" class="template-image w-24 h-24 object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:border-indigo-500 transition" data-val="/storage/runner_service.jpg">
                                 </div>
                                 <input type="hidden" name="template_image" id="template_image">
                             </div>
@@ -124,10 +137,13 @@
                                     <option value="Monthly">Monthly</option>
                                 </select>
                             </div>
-                            <div>
-                                <label class="block text-xs font-medium text-gray-500 uppercase mb-1">Description</label>
-                                <textarea name="packages[0][description]" rows="2" class="w-full border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"></textarea>
-                            </div>
+                           <div class="mb-4">
+    <label class="block text-xs font-medium text-gray-500 uppercase mb-1">Description</label>
+    <div class="bg-white">
+        <div id="editor-basic" class="h-24"></div>
+    </div>
+    <input type="hidden" name="packages[0][description]" id="input-basic">
+</div>
                         </div>
 
                         <div class="flex items-center mb-6">
@@ -156,8 +172,13 @@
                                         <option value="Monthly">Monthly</option>
                                     </select>
                                 </div>
-                                <textarea name="packages[1][description]" rows="2" class="w-full border-blue-200 rounded-md" placeholder="Description"></textarea>
-                            </div>
+<div class="mb-4">
+    <label class="text-xs font-bold text-blue-600">Description</label>
+    <div class="bg-white">
+        <div id="editor-standard" class="h-24"></div>
+    </div>
+    <input type="hidden" name="packages[1][description]" id="input-standard">
+</div>                            </div>
 
                             <div class="border rounded-xl p-5 bg-purple-50 border-purple-100">
                                 <h3 class="text-lg font-bold text-purple-800 mb-4">Premium Package</h3>
@@ -179,8 +200,13 @@
                                         <option value="Monthly">Monthly</option>
                                     </select>
                                 </div>
-                                <textarea name="packages[2][description]" rows="2" class="w-full border-purple-200 rounded-md" placeholder="Description"></textarea>
-                            </div>
+<div class="mb-4">
+    <label class="text-xs font-bold text-purple-600">Description</label>
+    <div class="bg-white">
+        <div id="editor-premium" class="h-24"></div>
+    </div>
+    <input type="hidden" name="packages[2][description]" id="input-premium">
+</div>                            </div>
                         </div>
 
                         <div class="mt-8 flex justify-end">
@@ -192,22 +218,25 @@
                     </div>
 
                     <div id="description" class="tab-section hidden">
-                        <div class="mb-6">
-                            <h2 class="text-xl font-semibold text-gray-900">Service Description</h2>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Detailed Description <span class="text-red-500">*</span></label>
-                            <textarea id="desc_input" name="description" rows="8" required
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-                                placeholder="Describe what makes you qualified..."></textarea>
-                        </div>
-                        <div class="mt-8 flex justify-end">
-                            <button type="button" onclick="processSection('description', 'availability')" 
-                                class="px-6 py-2.5 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition">
-                                Save & Continue →
-                            </button>
-                        </div>
-                    </div>
+    <div class="mb-6">
+        <h2 class="text-xl font-semibold text-gray-900">Service Description</h2>
+    </div>
+    <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Detailed Description <span class="text-red-500">*</span></label>
+        
+        <div class="bg-white">
+            <div id="editor-main" class="h-64"></div>
+        </div>
+        <input type="hidden" name="description" id="input-main">
+    </div>
+
+    <div class="mt-8 flex justify-end">
+        <button type="button" onclick="processSection('description', 'availability')" 
+            class="px-6 py-2.5 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition">
+            Save & Continue →
+        </button>
+    </div>
+</div>
 
                     <div id="availability" class="tab-section hidden">
                         <div class="mb-6">
@@ -350,5 +379,141 @@
                 Swal.fire('System Error', 'Check console for details', 'error');
             }
         }
+
+        // --- 1. QUILL CONFIGURATION ---
+    
+    // Define toolbar options
+    const toolbarOptions = [
+        ['bold', 'italic', 'underline'], 
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        [{ 'header': [1, 2, 3, false] }],
+        [{ 'color': [] }]
+    ];
+
+    // Helper function to initialize editors
+    function setupQuill(editorId, inputId, placeholder) {
+        var quill = new Quill('#' + editorId, {
+            theme: 'snow',
+            modules: { toolbar: toolbarOptions },
+            placeholder: placeholder
+        });
+
+        // Event: Update hidden input immediately when user types
+        quill.on('text-change', function() {
+            document.getElementById(inputId).value = quill.root.innerHTML;
+        });
+        
+        // Optional: Load existing data if editing (Blade)
+        // const existing = document.getElementById(inputId).value;
+        // if(existing) quill.root.innerHTML = existing;
+    }
+
+    // Initialize all 4 editors
+    document.addEventListener('DOMContentLoaded', function() {
+        setupQuill('editor-basic', 'input-basic', 'Describe the basic package...');
+        setupQuill('editor-standard', 'input-standard', 'Describe the standard package...');
+        setupQuill('editor-premium', 'input-premium', 'Describe the premium package...');
+        setupQuill('editor-main', 'input-main', 'Write a detailed description of your service...');
+    });
+
+    // --- EXISTING LOGIC BELOW ---
+
+    // 1. Template Image Logic
+    document.querySelectorAll('.template-image').forEach(img => {
+        img.addEventListener('click', function() {
+            document.querySelectorAll('.template-image').forEach(i => i.classList.remove('ring-4', 'ring-indigo-300'));
+            this.classList.add('ring-4', 'ring-indigo-300');
+            document.getElementById('template_image').value = this.dataset.val;
+            document.getElementById('image').value = ""; 
+        });
+    });
+
+    // 2. Extra Packages Toggle
+    document.getElementById('offer_packages').addEventListener('change', function() {
+        document.getElementById('extraPackages').classList.toggle('hidden', !this.checked);
+    });
+
+    // 3. Flatpickr
+    flatpickr("#unavailable_dates", { mode: "multiple", dateFormat: "Y-m-d", minDate: "today" });
+
+    // 4. Tab Switching Logic
+    function switchTab(targetId) {
+        document.querySelectorAll('.tab-section').forEach(el => el.classList.add('hidden'));
+        document.getElementById(targetId).classList.remove('hidden');
+        
+        document.querySelectorAll('.tab-btn span').forEach(el => {
+            el.classList.remove('border-indigo-500', 'text-indigo-600');
+            el.classList.add('border-transparent', 'text-gray-400');
+        });
+        
+        const btn = document.querySelector(`button[data-target="${targetId}"] span`);
+        if(btn) {
+            btn.classList.remove('border-transparent', 'text-gray-400');
+            btn.classList.add('border-indigo-500', 'text-indigo-600');
+            btn.parentElement.disabled = false;
+            btn.parentElement.classList.remove('disabled');
+        }
+    }
+
+    // 5. MAIN SAVE FUNCTION (AJAX)
+    async function processSection(currentSection, nextSection) {
+        const form = document.getElementById('createServiceForm');
+        
+        // Note: Because we used the 'text-change' event in setupQuill, 
+        // the hidden inputs are ALREADY populated. We don't need to manually grab them here.
+        
+        const formData = new FormData(form);
+        
+        formData.append('current_section', currentSection);
+        const serviceId = document.getElementById('service_id').value;
+        if(serviceId) formData.append('service_id', serviceId);
+
+        // Validation
+        if(currentSection === 'overview') {
+            if(!formData.get('title') || !formData.get('category_id')) {
+                Swal.fire('Missing Info', 'Please fill in Title and Category', 'warning');
+                return;
+            }
+        }
+        
+        // Specific validation for Description tab
+        if(currentSection === 'description') {
+            // Check the hidden input value
+            if(!document.getElementById('input-main').value || document.getElementById('input-main').value === '<p><br></p>') {
+                 Swal.fire('Missing Info', 'Please provide a detailed description', 'warning');
+                 return;
+            }
+        }
+
+        Swal.fire({ title: 'Saving...', didOpen: () => Swal.showLoading() });
+
+        try {
+            const response = await fetch("{{ route('services.store') }}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                },
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                Swal.close();
+                if (data.service && data.service.id) {
+                    document.getElementById('service_id').value = data.service.id;
+                }
+                switchTab(nextSection);
+                const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+                Toast.fire({ icon: 'success', title: 'Saved successfully' });
+            } else {
+                Swal.fire('Error', data.error || 'Something went wrong', 'error');
+            }
+        } catch (error) {
+            console.error(error);
+            Swal.fire('System Error', 'Check console for details', 'error');
+        }
+    }
     </script>
 @endsection

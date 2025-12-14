@@ -64,6 +64,28 @@
         .tab-button {
             transition: all 0.2s ease-in-out;
         }
+
+        .rich-text ul {
+            list-style-type: disc;
+            padding-left: 1.25rem;
+            /* Space for bullet */
+            margin-bottom: 0.5rem;
+        }
+
+        .rich-text ol {
+            list-style-type: decimal;
+            padding-left: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .rich-text p {
+            margin-bottom: 0.5rem;
+        }
+
+        .rich-text strong {
+            font-weight: 600;
+            color: #1e293b;
+        }
     </style>
 </head>
 
@@ -134,7 +156,8 @@
                         <div class="flex items-center gap-1">
                             <i class="fa-solid fa-star text-yellow-400"></i>
                             <span class="font-bold text-slate-900">{{ $service->rating ?? '0.0' }}</span>
-                            <span class="text-slate-500">({{ $service->user->reviewsReceived()->count() }} reviews)</span>
+                            <span class="text-slate-500">({{ $service->user->reviewsReceived()->count() }}
+                                reviews)</span>
                         </div>
 
                         @if ($service->user->trust_badge)
@@ -229,46 +252,48 @@
 
                     <div class="space-y-8">
                         @forelse ($service->user->reviewsReceived as $review)
-                           <div class="border-b border-gray-100 pb-8 last:border-0 last:pb-0">
-    <div class="flex items-start gap-4">
-        <div class="flex-shrink-0">
-            <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
-                @if (optional($review->reviewer)->profile_photo_path)
-                    <img src="{{ asset('storage/' . $review->reviewer->profile_photo_path) }}"
-                        class="w-full h-full object-cover {{ auth()->guest() ? 'blur-sm' : '' }}">
-                @else
-                    <div class="w-full h-full flex items-center justify-center text-gray-400 bg-gray-100 text-xs font-bold {{ auth()->guest() ? 'blur-sm' : '' }}">
-                        {{ substr(optional($review->reviewer)->name ?? 'A', 0, 1) }}
-                    </div>
-                @endif
-            </div>
-        </div>
-        <div class="flex-1">
-            <div class="flex justify-between items-start">
-                <div>
-                    <h4 class="font-bold text-slate-900 text-sm">
-                        @auth
-                            {{ optional($review->reviewer)->name ?? 'Anonymous User' }}
-                        @else
-                            {{ Str::mask(optional($review->reviewer)->name ?? 'Anonymous User', '*', 3) }}
-                        @endauth
-                    </h4>
-                    <div class="flex items-center gap-2 mt-1">
-                        <div class="flex text-yellow-400 text-xs">
-                            @for ($i = 1; $i <= 5; $i++)
-                                <i class="fa-{{ $i <= $review->rating ? 'solid' : 'regular' }} fa-star"></i>
-                            @endfor
-                        </div>
-                        <span class="text-xs text-gray-400">•
-                            {{ $review->created_at->diffForHumans() }}</span>
-                    </div>
-                </div>
-            </div>
-            <p class="text-gray-600 text-sm mt-3 leading-relaxed">{{ $review->comment }}
-            </p>
-        </div>
-    </div>
-</div>
+                            <div class="border-b border-gray-100 pb-8 last:border-0 last:pb-0">
+                                <div class="flex items-start gap-4">
+                                    <div class="flex-shrink-0">
+                                        <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+                                            @if (optional($review->reviewer)->profile_photo_path)
+                                                <img src="{{ asset('storage/' . $review->reviewer->profile_photo_path) }}"
+                                                    class="w-full h-full object-cover {{ auth()->guest() ? 'blur-sm' : '' }}">
+                                            @else
+                                                <div
+                                                    class="w-full h-full flex items-center justify-center text-gray-400 bg-gray-100 text-xs font-bold {{ auth()->guest() ? 'blur-sm' : '' }}">
+                                                    {{ substr(optional($review->reviewer)->name ?? 'A', 0, 1) }}
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <h4 class="font-bold text-slate-900 text-sm">
+                                                    @auth
+                                                        {{ optional($review->reviewer)->name ?? 'Anonymous User' }}
+                                                    @else
+                                                        {{ Str::mask(optional($review->reviewer)->name ?? 'Anonymous User', '*', 3) }}
+                                                    @endauth
+                                                </h4>
+                                                <div class="flex items-center gap-2 mt-1">
+                                                    <div class="flex text-yellow-400 text-xs">
+                                                        @for ($i = 1; $i <= 5; $i++)
+                                                            <i
+                                                                class="fa-{{ $i <= $review->rating ? 'solid' : 'regular' }} fa-star"></i>
+                                                        @endfor
+                                                    </div>
+                                                    <span class="text-xs text-gray-400">•
+                                                        {{ $review->created_at->diffForHumans() }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p class="text-gray-600 text-sm mt-3 leading-relaxed">{{ $review->comment }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
                         @empty
                             <div class="text-center py-8 text-gray-400">
                                 <p>No reviews yet.</p>
@@ -315,12 +340,13 @@
                                     <div id="basic" class="tab-content hidden animate-fade-in">
                                         <div class="flex items-center gap-2 mb-3">
                                             <span class="font-bold text-slate-800">Basic Package</span>
-                                            <span
-                                                class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">{{ $service->basic_duration }}
-                                                hrs per {{ $service->basic_frequency }} </span>
+                                            <span class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">
+                                                {{ $service->basic_duration }} hrs per {{ $service->basic_frequency }}
+                                            </span>
                                         </div>
-                                        <p class="text-sm text-gray-600 leading-relaxed">
-                                            {{ $service->basic_description }}</p>
+                                        <div class="rich-text text-sm text-gray-600 leading-relaxed">
+                                            {!! $service->basic_description !!}
+                                        </div>
                                     </div>
                                 @endif
 
@@ -328,12 +354,14 @@
                                     <div id="standard" class="tab-content hidden animate-fade-in">
                                         <div class="flex items-center gap-2 mb-3">
                                             <span class="font-bold text-slate-800">Standard Package</span>
-                                            <span
-                                                class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">{{ $service->standard_duration }}
-                                                hrs per {{ $service->standard_frequency }} </span>
+                                            <span class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">
+                                                {{ $service->standard_duration }} hrs per
+                                                {{ $service->standard_frequency }}
+                                            </span>
                                         </div>
-                                        <p class="text-sm text-gray-600 leading-relaxed">
-                                            {{ $service->standard_description }}</p>
+                                        <div class="rich-text text-sm text-gray-600 leading-relaxed">
+                                            {!! $service->standard_description !!}
+                                        </div>
                                     </div>
                                 @endif
 
@@ -341,12 +369,14 @@
                                     <div id="premium" class="tab-content hidden animate-fade-in">
                                         <div class="flex items-center gap-2 mb-3">
                                             <span class="font-bold text-slate-800">Premium Package</span>
-                                            <span
-                                                class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">{{ $service->premium_duration }}
-                                                hrs per {{ $service->premium_frequency }} </span>
+                                            <span class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">
+                                                {{ $service->premium_duration }} hrs per
+                                                {{ $service->premium_frequency }}
+                                            </span>
                                         </div>
-                                        <p class="text-sm text-gray-600 leading-relaxed">
-                                            {{ $service->premium_description }}</p>
+                                        <div class="rich-text text-sm text-gray-600 leading-relaxed">
+                                            {!! $service->premium_description !!}
+                                        </div>
                                     </div>
                                 @endif
                             </div>
@@ -362,13 +392,55 @@
                                 <div id="availability-status" class="mt-2 text-xs font-semibold h-4"></div>
                             </div>
 
-                            <div class="mt-6">
+                            <div class="mt-6 space-y-3">
+                                @php
+                                    $helperIsAvailable = $service->user->is_available ?? false;
+
+                                    $mainBtnClasses =
+                                        'w-full py-3.5 rounded-xl font-bold transition-all shadow-md flex items-center justify-center';
+
+                                    if ($helperIsAvailable) {
+                                        $mainBtnClasses .=
+                                            ' bg-slate-900 hover:bg-indigo-600 text-white hover:shadow-lg transform hover:-translate-y-0.5';
+                                        $mainBtnText =
+                                            'Continue (RM<span id="btn-price">' .
+                                            number_format($service->basic_price ?? 0, 0) .
+                                            '</span>)';
+                                    } else {
+                                        $mainBtnClasses .= ' bg-red-600 text-white opacity-90 cursor-not-allowed';
+                                        $mainBtnText = 'Currently Busy / Unavailable';
+                                    }
+
+                                    $rawPhone = $service->user->phone_number ?? ($service->user->phone ?? '');
+
+                                    $cleanPhone = preg_replace('/[^0-9]/', '', $rawPhone);
+
+                                    if (substr($cleanPhone, 0, 1) === '0') {
+                                        $cleanPhone = '60' . substr($cleanPhone, 1);
+                                    }
+
+                                    $whatsappUrl =
+                                        "https://wa.me/{$cleanPhone}?text=Hi, I am interested in your service: " .
+                                        urlencode($service->title);
+                                @endphp
+
                                 @auth
                                     <button type="button" id="request-service-btn"
-                                        class="w-full bg-slate-900 hover:bg-indigo-600 text-white py-3.5 rounded-xl font-bold transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-                                        Continue (RM<span
-                                            id="btn-price">{{ number_format($service->basic_price ?? 0, 0) }}</span>)
+                                        data-is-available="{{ $helperIsAvailable ? 'true' : 'false' }}"
+                                        {{ !$helperIsAvailable ? 'disabled' : '' }} class="{{ $mainBtnClasses }}">
+                                        {!! $mainBtnText !!}
                                     </button>
+
+                                    @if (!empty($cleanPhone))
+                                        <a href="{{ $whatsappUrl }}" target="_blank"
+                                            class="flex w-full items-center justify-center gap-2 rounded-xl bg-green-500 py-3.5 text-sm font-bold text-white shadow-md transition-all hover:bg-green-600 hover:shadow-lg hover:-translate-y-0.5">
+                                            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                                                <path
+                                                    d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" />
+                                            </svg>
+                                            Chat on WhatsApp
+                                        </a>
+                                    @endif
                                 @else
                                     <a href="{{ route('login') }}"
                                         class="block w-full text-center bg-slate-900 hover:bg-indigo-600 text-white py-3.5 rounded-xl font-bold transition-all shadow-md">
@@ -555,7 +627,6 @@
                 }
             });
 
-            // --- 3. Modal & Request Logic ---
             @auth
             const modal = document.getElementById("requestServiceModal");
             const reqBtn = document.getElementById("request-service-btn");
@@ -563,15 +634,45 @@
             const submitBtn = document.getElementById("submit-service-request");
 
             reqBtn.addEventListener("click", () => {
+
+                // Ambil status ketersediaan umum dari atribut data-is-available (yang diset di Blade)
+                const helperIsGenerallyAvailable = reqBtn.getAttribute('data-is-available') === 'true';
+
+                // 🛑 CHECK 1: Ketersediaan Umum Helper (jika tombol tidak didisable oleh browser, tapi statusnya false)
+                if (!helperIsGenerallyAvailable) {
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Currently Busy",
+                        text: "The student has set their overall status to 'Busy' and cannot receive new orders. Please check back later or choose another helper.",
+                        confirmButtonColor: '#4f46e5'
+                    });
+                    return;
+                }
+
+                // 🛑 CHECK 2: Tanggal dipilih
                 if (!selectedDate) {
                     Swal.fire({
                         icon: "warning",
                         title: "Select a date",
-                        text: "Please check availability first.",
+                        text: "Please select a date for your service request.",
                         confirmButtonColor: '#334155'
                     });
                     return;
                 }
+
+                // 🛑 CHECK 3: Tanggal yang dipilih tidak tersedia (berdasarkan Flatpickr/unavailableDates)
+                if (unavailableDates.includes(selectedDate)) {
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Unavailable Date",
+                        text: "The student is scheduled to be unavailable on " + selectedDate +
+                            ". Please choose another date.",
+                        confirmButtonColor: '#d33'
+                    });
+                    return;
+                }
+
+                // Jika semua check lolos, tampilkan modal request
                 document.getElementById("selected-date-display").textContent = selectedDate;
                 document.getElementById("selected-package-display").textContent = currentPackage;
                 modal.classList.remove("hidden");
@@ -579,11 +680,13 @@
 
             closeBtn.addEventListener("click", () => modal.classList.add("hidden"));
 
+            // Logik submitBtn (gunakan error handling yang lebih baik untuk pesan spesifik)
             submitBtn.addEventListener("click", () => {
                 const message = document.getElementById("service-message").value;
                 const offeredPrice = prices[currentPackage];
 
                 fetch("{{ route('service-requests.store') }}", {
+                        // ... (data dan headers)
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -597,9 +700,19 @@
                             offered_price: offeredPrice
                         })
                     })
-                    .then(res => res.json())
+                    .then(res => {
+                        // Jika status code bukan 200-299, throw error untuk ditangkap di catch
+                        if (!res.ok) {
+                            // Coba parse JSON untuk mendapatkan pesan error dari server
+                            return res.json().then(errorData => {
+                                // Gunakan server message jika ada, atau default message
+                                throw new Error(errorData.message ||
+                                    "Failed to process request.");
+                            });
+                        }
+                        return res.json();
+                    })
                     .then(data => {
-                        if (!data.success) throw new Error(data.error || "Error");
                         Swal.fire({
                             icon: "success",
                             title: "Sent!",
@@ -609,10 +722,14 @@
                         modal.classList.add("hidden");
                     })
                     .catch(err => {
+                        console.error('Order Submission Failure:', err);
+
+                        // Tampilkan pesan error spesifik dari server (jika ada) atau pesan default
                         Swal.fire({
                             icon: "error",
-                            title: "Oops",
-                            text: "Something went wrong.",
+                            title: "Request Failed",
+                            text: err.message ||
+                                "Could not submit your request due to a server error.",
                             confirmButtonColor: '#ef4444'
                         });
                     });

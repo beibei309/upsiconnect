@@ -154,7 +154,7 @@ class DatabaseSeeder extends Seeder
                 'services' => [
                     [
                         'title' => 'Web Development (Laravel/React)',
-                        'image_path' => 'service_tech.jpg',
+                        'image_path' => 'programming_service.jpg',
                         'description' => 'Full-stack web development services using Laravel and React.', 
                         'category' => 'Programming & Tech',
                         'packages' => [
@@ -187,7 +187,7 @@ class DatabaseSeeder extends Seeder
                 'services' => [
                     [
                         'title' => 'Logo & Branding Design',
-                        'image_path' => 'service_design.jpg',
+                        'image_path' => 'service_planning.jpg',
                         'description' => 'Professional logo design, posters, and branding materials.', 
                         'category' => 'Design & Creative',
                         'packages' => [
@@ -220,7 +220,7 @@ class DatabaseSeeder extends Seeder
                 'services' => [
                     [
                         'title' => 'Laundry & Ironing Helper',
-                        'image_path' => 'service_housechores.jpg',
+                        'image_path' => 'laundry_service.jpg',
                         'description' => 'Washing and ironing assistance in the campus area.', 
                         'category' => 'Housechores',
                         'packages' => [
@@ -253,7 +253,7 @@ class DatabaseSeeder extends Seeder
                 'services' => [
                     [
                         'title' => 'Runner & Parcel Pickup',
-                        'image_path' => 'service_runner.jpg',
+                        'image_path' => 'runner_service.jpg',
                         'description' => 'Help pick up parcels, buy food/items, or run errands around Tanjong Malim.', 
                         'category' => 'Runner & Errands',
                         'packages' => [

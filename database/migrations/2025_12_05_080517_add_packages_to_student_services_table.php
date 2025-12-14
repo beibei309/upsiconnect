@@ -10,20 +10,20 @@ return new class extends Migration
     {
         Schema::table('student_services', function (Blueprint $table) {
             // Basic package
-            $table->integer('basic_duration')->nullable();
-            $table->string('basic_frequency')->nullable();
+            $table->string('basic_duration', 50)->nullable();
+            $table->string('basic_frequency', 50)->nullable();
             $table->decimal('basic_price', 10, 2)->nullable();
             $table->text('basic_description')->nullable();
 
             // Standard package
-            $table->integer('standard_duration')->nullable();
-            $table->string('standard_frequency')->nullable();
+            $table->string('standard_duration', 50)->nullable();
+            $table->string('standard_frequency', 50)->nullable();
             $table->decimal('standard_price', 10, 2)->nullable();
             $table->text('standard_description')->nullable();
 
             // Premium package
-            $table->integer('premium_duration')->nullable();
-            $table->string('premium_frequency')->nullable();
+            $table->string('premium_duration', 50)->nullable();
+            $table->string('premium_frequency', 50)->nullable();
             $table->decimal('premium_price', 10, 2)->nullable();
             $table->text('premium_description')->nullable();
         });

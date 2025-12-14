@@ -52,41 +52,40 @@ class AvailabilityController extends Controller
         ]);
     }
 
-    public function updateSettings(Request $request): JsonResponse
-    {
-        $user = $request->user();
+   public function updateSettings(Request $request): JsonResponse
+{
+    $user = $request->user();
 
-        // 1. Validate Input
-        $validated = $request->validate([
-            'is_available' => 'required|boolean',
-            // Date is nullable because if is_available = true, dates will be null
-            'start_date'   => 'nullable|date', 
-            'end_date'     => 'nullable|date|after_or_equal:start_date',
-        ]);
+    // 1. Validate Input
+    $validated = $request->validate([
+        'is_available' => 'required|boolean',
+        // Dates are required only if is_available is false
+        'start_date'   => 'nullable|date|required_if:is_available,false', 
+        'end_date'     => 'nullable|date|after_or_equal:start_date|required_if:is_available,false',
+    ]);
+    
+    // 2. Update Availability Boolean
+    $user->is_available = $validated['is_available'];
 
-        // 2. Update Availability Boolean
-        $user->is_available = $validated['is_available'];
-
-        // 3. Handle Dates Logic
-        if ($user->is_available) {
-            // Kalau Available, reset tarikh jadi NULL
-            $user->unavailable_start_date = null;
-            $user->unavailable_end_date = null;
-        } else {
-            // Kalau Unavailable, simpan tarikh yang dihantar
-            // Pastikan frontend hantar tarikh, tapi kita check juga di sini
-            $user->unavailable_start_date = $validated['start_date'];
-            $user->unavailable_end_date = $validated['end_date'];
-        }
-
-        $user->save();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Availability settings updated successfully.',
-            'is_available' => $user->is_available,
-            'start_date' => $user->unavailable_start_date,
-            'end_date' => $user->unavailable_end_date,
-        ]);
+    // 3. Handle Dates Logic
+    if ($user->is_available) {
+        // If Available, reset dates to NULL
+        $user->unavailable_start_date = null;
+        $user->unavailable_end_date = null;
+    } else {
+        // If Busy, save the dates (Guaranteed to be present by validation 'required_if')
+        $user->unavailable_start_date = $validated['start_date'];
+        $user->unavailable_end_date = $validated['end_date'];
     }
+
+    $user->save();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Availability settings updated successfully.',
+        'is_available' => $user->is_available,
+        'start_date' => $user->unavailable_start_date,
+        'end_date' => $user->unavailable_end_date,
+    ]);
+}
 }

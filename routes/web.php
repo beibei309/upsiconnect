@@ -1,34 +1,39 @@
 <?php
 
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\HelpController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\AvailabilityController;
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\HelpController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\SearchController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ChatRequestController;
+use App\Http\Controllers\AvailabilityController;
 use App\Http\Controllers\StudentsController;
 use App\Http\Controllers\MessageController;
-use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\VerificationController;
 use App\Http\Controllers\ServiceApplicationController;
 use App\Http\Controllers\StudentServiceController;
-use App\Http\Controllers\SearchController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ServiceRequestController;
-use App\Http\Controllers\FavoriteController;
-use App\Http\Controllers\Admin\VerificationController as AdminVerificationController;
-use App\Http\Controllers\Admin\ReportAdminController;
-use App\Http\Controllers\Admin\UserAdminController;
-use App\Http\Controllers\Pages\SearchPageController;
-use App\Http\Controllers\Pages\AdminPageController;
 use App\Http\Controllers\Admin\AdminAuthController;
-use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\UserAdminController;
+use App\Http\Controllers\Pages\AdminPageController;
+use App\Http\Controllers\Admin\SuperAdminController;
+use App\Http\Controllers\Admin\AdminFeedbackController;
+use App\Http\Controllers\Pages\SearchPageController;
+use App\Http\Controllers\Admin\ReportAdminController;
+use App\Http\Controllers\Pages\StudentPageController;
 use App\Http\Controllers\Admin\AdminStudentController;
 use App\Http\Controllers\Admin\AdminServicesController;
 use App\Http\Controllers\Admin\AdminCommunityController;
-use App\Http\Controllers\Admin\SuperAdminController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminStudentStatusController;
+use App\Http\Controllers\Admin\AdminRequestController;
+
+use App\Http\Controllers\Admin\VerificationController as AdminVerificationController;
 
 
 Route::get('/', [HomeController::class, 'home'])->name('home');
@@ -111,14 +116,16 @@ Route::middleware(['auth'])->group(function () {
 });
 Route::get('/services/{id}', [StudentServiceController::class, 'details'])->name('services.details');
 
-
-
 Route::post('/service-requests', [ServiceRequestController::class, 'store'])
     ->name('service-requests.store')
     ->middleware('auth'); // pastikan user logged in
 
+    // routes/web.php
 
-
+Route::post('/switch-mode', [App\Http\Controllers\DashboardController::class, 'switchMode'])
+    ->name('switch.mode')
+    ->middleware('auth');
+    
 
 // When a guest clicks “Request Service”
 Route::get('/guest/request/{id}', function () {
@@ -220,6 +227,15 @@ Route::post('/services/applications/{application}/interests/confirm', [ServiceAp
     Route::post('/admin/users/{user}/unsuspend', [UserAdminController::class, 'unsuspend']);
 });
 
+  // Manage Service Requests (Skrin Monitor User Request)
+    Route::get('/requests', [AdminRequestController::class, 'index'])->name('admin.requests.index');
+    Route::delete('/requests/{serviceRequest}', [AdminRequestController::class, 'destroy'])->    
+         name('admin.requests.destroy');
+
+    // Route for Reports (Feedback & Complaints)
+    Route::get('/feedback', [AdminFeedbackController::class, 'index'])->name('admin.feedback.index');
+    Route::post('/feedback/{user}/warning', [AdminFeedbackController::class, 'sendWarning'])->name('admin.feedback.warning');
+    Route::post('/feedback/{user}/block', [AdminFeedbackController::class, 'blockUser'])->name('admin.feedback.block');   
 
 // Admin service management routes
     Route::get('admin/services', [AdminServicesController::class, 'index'])->name('admin.services.index');
@@ -314,6 +330,15 @@ Route::prefix('community')->group(function () {
     Route::delete('/delete/{id}', [AdminCommunityController::class, 'delete'])->name('admin.community.delete');
 });
 //end admin community aprt
+
+Route::prefix('admin/student-status')->name('admin.student_status.')->group(function () {
+    Route::get('/', [AdminStudentStatusController::class, 'index'])->name('index');
+    Route::get('/create', [AdminStudentStatusController::class, 'create'])->name('create');
+    Route::post('/store', [AdminStudentStatusController::class, 'store'])->name('store');
+    Route::get('/edit/{id}', [AdminStudentStatusController::class, 'edit'])->name('edit');
+    Route::put('/update/{id}', [AdminStudentStatusController::class, 'update'])->name('update');
+    Route::delete('/delete/{id}', [AdminStudentStatusController::class, 'destroy'])->name('delete');
+});
 
 Route::post('/admin/logout', [AdminAuthController::class, 'logout'])
     ->name('admin.logout');   

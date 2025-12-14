@@ -47,6 +47,16 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+
+        .rich-text ul {
+            list-style-type: disc;
+            padding-left: 1.25rem;
+        }
+
+        .rich-text ol {
+            list-style-type: decimal;
+            padding-left: 1.25rem;
+        }
     </style>
 </head>
 
@@ -117,6 +127,7 @@
             </div>
         </section>
 
+        {{-- 🎨 REDESIGNED CATEGORY SECTION (COLORFUL BOXES) --}}
         <section class="py-12 bg-white border-b border-gray-100">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between items-end mb-8">
@@ -127,17 +138,19 @@
 
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5">
                     @foreach ($categories as $category)
-                        <a href="{{ route('services.index', ['category_id' => $category->id]) }}"
-                            class="group p-5 rounded-2xl bg-white border hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center flex flex-col items-center justify-center h-full"
-                            style="border-color: {{ $category->color }}40;">
-                            <div class="w-14 h-14 mb-4 rounded-full flex items-center justify-center bg-white shadow-sm transition-transform group-hover:scale-110"
-                                style="border: 2px solid {{ $category->color }}20; background-color: {{ $category->color }}05;">
+                        <a href="{{ route('services.index', ['category_id' => $category->id]) }}" {{-- Key Change: Set background, text color, and remove default border/bg classes --}}
+                            class="group p-5 rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 text-center flex flex-col items-center justify-center h-full"
+                            style="background-color: {{ $category->color }};">
+
+                            {{-- Icon container: Set background to white for contrast --}}
+                            <div
+                                class="w-14 h-14 mb-4 rounded-full flex items-center justify-center bg-white shadow-sm transition-transform group-hover:scale-110">
                                 <img src="{{ asset('images/' . $category->image_path) }}" alt="{{ $category->name }}"
                                     class="w-7 h-7 object-contain">
                             </div>
 
-                            <span class="block text-sm font-bold transition-colors group-hover:opacity-80"
-                                style="color: {{ $category->color }}">
+                            {{-- Text color: Changed to white --}}
+                            <span class="block text-sm font-bold text-white transition-colors group-hover:opacity-90">
                                 {{ $category->name }}
                             </span>
                         </a>
@@ -198,16 +211,15 @@
                                         <span class="text-[10px] text-slate-500">Student helper</span>
                                     </div>
 
-                                   <div class="ml-auto flex items-center gap-1 bg-slate-50 px-2 py-1 rounded text-xs">
-    <i class="fas fa-star text-yellow-400"></i>
-    <span class="font-bold text-slate-700">
-        {{ number_format($service->user->average_rating ?? 0, 1) }}
-    </span>
-    <span class="text-slate-400">
-        {{-- Change $student to $service->user and use the attribute --}}
-        ({{ $service->user->reviews_received_count ?? 0 }} reviews)
-    </span>
-</div>
+                                    <div class="ml-auto flex items-center gap-1 bg-slate-50 px-2 py-1 rounded text-xs">
+                                        <i class="fas fa-star text-yellow-400"></i>
+                                        <span class="font-bold text-slate-700">
+                                            {{ number_format($service->user->average_rating ?? 0, 1) }}
+                                        </span>
+                                        <span class="text-slate-400">
+                                            ({{ $service->user->reviews_received_count ?? 0 }} reviews)
+                                        </span>
+                                    </div>
                                 </div>
 
                                 <a href="{{ route('student-services.show', $service) }}" class="block mb-2">
@@ -217,8 +229,9 @@
                                     </h3>
                                 </a>
 
-                                <p class="text-sm text-slate-500 line-clamp-2 mb-4">{{ $service->description }}</p>
-
+                                <div class="rich-text text-sm text-slate-500 line-clamp-2 mb-4">
+                                    {!! $service->description !!}
+                                </div>
                                 <div class="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
                                     <div>
                                         <span class="text-xs text-slate-400 font-medium uppercase">Starting at</span>
@@ -238,6 +251,7 @@
         </section>
 
 
+        {{-- 🎨 REDESIGNED TOP STUDENTS SECTION (COLORFUL BUTTON) --}}
         <section class="py-16 bg-white overflow-hidden">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="mb-10">
@@ -247,7 +261,7 @@
                                 class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                             <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
                         </span>
-                        <h2 class="text-2xl font-bold text-slate-900">Helpers Online Now</h2>
+                        <h2 class="text-2xl font-bold text-slate-900">Top Helpers Online</h2>
                     </div>
                     <p class="text-slate-500">Available right now to take your requests.</p>
                 </div>
@@ -291,8 +305,9 @@
                                     {{ $student->reviewsReceived()->count() }} reviews
                                 </div>
 
+                                {{-- Key Change: COLORFUL BUTTON --}}
                                 <a href="{{ route('students.profile', $student) }}"
-                                    class="w-full py-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 font-semibold text-sm hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all mt-auto">
+                                    class="w-full py-2.5 rounded-xl bg-indigo-600 border border-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 hover:border-indigo-700 transition-all mt-auto shadow-md hover:shadow-lg">
                                     View Profile
                                 </a>
                             </div>

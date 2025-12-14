@@ -6,26 +6,44 @@ use App\Models\StudentService;
 use App\Models\User;
 use App\Models\Category;
 use App\Models\ServiceRequest;
+use App\Models\Review;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class StudentServiceController extends Controller
 {
 
  public function index(Request $request)
 {
+    // --- 1. Get and Sanitize Inputs ---
     $q = $request->string('q')->toString();
     $category_id = $request->category_id;
     $sort = $request->sort ?? 'newest';
+    $available_only = $request->available_only; 
 
+    $currentUserId = Auth::id(); // This will be null if the user is not logged in
+
+    // --- 2. Base Query Setup ---
     $query = StudentService::with(['student', 'category'])
         ->where('status', 'available')
-        ->where('approval_status', 'approved') // <--- Added this line
+        ->where('approval_status', 'approved')
         ->whereHas('student', function ($q) {
             $q->where('role', 'helper');
         });
 
-    // Search filter
+    if ($currentUserId) {
+        $query->where('user_id', '!=', $currentUserId);
+    }
+
+    if (in_array($available_only, ['1', '0'])) {
+        $query->whereHas('student', function ($q) use ($available_only) {
+            $q->where('is_available', (int)$available_only); 
+        });
+    }
+
+
+    // --- 4. Search filter ---
     if ($q) {
         $query->where(function ($sub) use ($q) {
             $sub->where('title', 'like', "%$q%")
@@ -33,29 +51,30 @@ class StudentServiceController extends Controller
         });
     }
 
-    // Category filter
+    // --- 5. Category filter ---
     if ($category_id) {
         $query->where('category_id', $category_id);
     }
 
-    // Sorting
+    // --- 6. Sorting ---
     if ($sort == 'newest') {
         $query->orderBy('created_at', 'desc');
     } elseif ($sort == 'oldest') {
         $query->orderBy('created_at', 'asc');
     } elseif ($sort == 'price_low') {
-        // Note: Ensure 'basic_price' is the column you want to sort by
+        // Note: Ensure 'basic_price' exists on StudentService model and is correct
         $query->orderBy('basic_price', 'asc'); 
     } elseif ($sort == 'price_high') {
         $query->orderBy('basic_price', 'desc');
     }
 
-    // Fetch the services
-    $services = $query->get();
+    // --- 7. Fetch and Return ---
+    // Consider using ->paginate(15) instead of ->get() for performance on large lists
+    $services = $query->paginate(15); 
 
     return view('services.index', [
         'services' => $services,
-        'categories' => \App\Models\Category::all(), // Ensure Model is imported or fully qualified
+        'categories' => Category::all(), // Using imported model
         'category_id' => $category_id,
         'sort' => $sort,
     ]);
@@ -370,39 +389,46 @@ public function store(Request $request)
         ]);
     }
 
-    public function details(Request $request, $id)
-    {
-        $service = StudentService::with(['user', 'category', 'orders'])->findOrFail($id);
-        $viewer = $request->user(); // currently logged-in user (if any)
+   public function details(Request $request, $id)
+{
+    $service = StudentService::with(['user', 'category', 'orders'])->findOrFail($id);
+    $viewer = $request->user(); 
 
-        // Fetch orders for this service
-        $orders = ServiceRequest::where('student_service_id', $service->id)
-                    ->whereIn('status', ['completed', 'accepted'])
-                    ->get();
+    // Fetch orders for this service
+    $orders = ServiceRequest::where('student_service_id', $service->id)
+                ->whereIn('status', ['completed', 'accepted'])
+                ->get();
 
-        $service->min_price = $orders->min('offered_price') ?? 0;
-        $service->max_price = $orders->max('offered_price') ?? 0;
+    $service->min_price = $orders->min('offered_price') ?? 0;
+    $service->max_price = $orders->max('offered_price') ?? 0;
 
-        // Completed orders count
+    // Completed orders count
     $service->completed_orders = $service->orders()
         ->whereIn('status', ['completed', 'accepted'])
         ->count();
 
-    // Average rating from reviews received by the user
-    $service->rating = round($service->user->reviewsReceived()->avg('rating'), 1) ?? 0;
+    // 1. FETCH REVIEWS (This part is correct in your code)
+    $reviews = Review::where('student_service_id', $service->id)
+                 ->with('reviewer') 
+                 ->latest()
+                 ->get();
 
-        // Optional: calculate average delivery time in days
-        $service->avg_days = $orders->avg(function($order) {
-            return \Carbon\Carbon::parse($order->selected_dates)->diffInDays(now());
-        }) ?? 0;
+    // 2. FIX: Calculate rating based on THIS service's reviews, not the user's global reviews
+    // Old line: $service->rating = round($service->user->reviewsReceived()->avg('rating'), 1) ?? 0;
+    $service->rating = round($reviews->avg('rating'), 1) ?? 0;
 
-        return view('services.details', [
-            'service' => $service,
-            'provider' => $service->user,
-            'viewer' => $viewer,
-            
-        ]);
-    }
+    // Optional: calculate average delivery time
+    $service->avg_days = $orders->avg(function($order) {
+        return \Carbon\Carbon::parse($order->selected_dates)->diffInDays(now());
+    }) ?? 0;
+
+    return view('services.details', [
+        'service' => $service,
+        'provider' => $service->user,
+        'viewer' => $viewer,
+        'reviews' => $reviews, // 3. FIX: You must add this line to pass the data to your blade file
+    ]);
+}
 
     // ADMIN APPROVE/REJECT SERVICE
     public function approve(StudentService $service)

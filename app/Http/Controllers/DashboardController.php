@@ -1,21 +1,27 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Models\User;
 use App\Models\Category;
 use App\Models\StudentService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
+
 public function index(Request $request)
 {
+    // --- 1. Get Inputs ---
     $q = $request->query('q'); 
     $category_id = $request->query('category_id'); 
     $min_rating = $request->query('min_rating');
     $available = $request->query('available');
 
-    // 1. Get Services
-    $services = StudentService::with([
+    $currentUserId = Auth::id(); 
+    
+    // --- 2. Initialize Base Query & Eager Loads ---
+    $query = StudentService::with([
         'category',
         'user' => function ($q) {
             $q->withCount('reviewsReceived')
@@ -23,28 +29,43 @@ public function index(Request $request)
         }
     ])
     ->where('is_active', true)
-    ->where('approval_status', 'approved') // <--- Added: Only show approved services
-    ->latest()
-    ->get();
+    ->where('approval_status', 'approved');
 
-    // 2. Get Categories with Count of APPROVED services
-    $categories = Category::withCount(['services' => function ($q) {
+    // --- 3. Apply Filters to the Query Builder ---
+    
+    // FIX: Exclude the current user's own services
+    if ($currentUserId) {
+        $query->where('user_id', '!=', $currentUserId);
+    }
+    
+    // NOTE: You would add other filters ($q, $category_id, $min_rating, $available) here.
+    
+    // --- 4. Execute the Query ---
+    $services = $query->latest()->get();
+
+    // --- 5. Get Categories with Count of APPROVED services (No changes needed here) ---
+    $categories = Category::withCount(['services' => function ($q) use ($currentUserId) {
         $q->where('is_active', true)
-          ->where('approval_status', 'approved'); // <--- Added: Only count approved
+          ->where('approval_status', 'approved');
+          // Optional: Exclude user's own services from the category count as well
+          if ($currentUserId) {
+              $q->where('user_id', '!=', $currentUserId);
+          }
     }])->get();
 
-    // 3. Get Top Providers (based on active & approved services)
-    $topStudents = \App\Models\User::where('role', 'helper')
+    // --- 6. Get Top Providers (No changes needed here) ---
+    $topStudents = User::where('role', 'helper')
+    // ... (rest of the topStudents query remains the same)
     ->whereHas('services', function ($q) {
         $q->where('is_active', true)
-          ->where('approval_status', 'approved'); // <--- Added
+          ->where('approval_status', 'approved');
     })
     ->withCount([
         'services' => function ($q) {
             $q->where('is_active', true)
-              ->where('approval_status', 'approved'); // <--- Added
+              ->where('approval_status', 'approved');
         },
-        'reviewsReceived' // Ensure review count is loaded
+        'reviewsReceived'
     ])
     ->withAvg('reviewsReceived as average_rating', 'rating')
     ->orderByDesc('services_count')
@@ -115,6 +136,29 @@ public function index(Request $request)
     });
 
     return response()->json(['services' => $result], 200);
+}
+
+public function switchMode(Request $request)
+{
+    $user = Auth::user();
+
+    // Only helpers can switch modes
+    if ($user->role !== 'helper') {
+        return back()->with('error', 'Unauthorized action.');
+    }
+
+    // Get current mode (default to 'seller' for helpers if not set)
+    $currentMode = session('view_mode', 'seller');
+
+    if ($currentMode === 'seller') {
+        // Switch to Buying Mode
+        session(['view_mode' => 'buyer']);
+        return redirect()->route('dashboard'); // Redirect to Browse Services/Home
+    } else {
+        // Switch to Selling Mode
+        session(['view_mode' => 'seller']);
+        return redirect()->route('students.index'); // Redirect to Helper Dashboard
+    }
 }
 
 }
