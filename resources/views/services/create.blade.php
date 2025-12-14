@@ -89,8 +89,9 @@
                                 
                                 <p class="text-sm font-medium text-gray-700 mt-4 mb-2">Or choose a template:</p>
                                 <div class="flex gap-4">
-                                    <img src="/images/service_tutor.jpg" class="template-image w-24 h-24 object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:border-indigo-500 transition" data-val="/images/service_tutor.jpg">
-                                    <img src="/images/priya.jpg" class="template-image w-24 h-24 object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:border-indigo-500 transition" data-val="/images/priya.jpg">
+                                    <img src="/storage/service_tech.jpg" class="template-image w-24 h-24 object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:border-indigo-500 transition" data-val="/images/service_tutor.jpg">
+                                    <img src="/storage/service_tutor.jpg" class="template-image w-24 h-24 object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:border-indigo-500 transition" data-val="/images/service_tutor.jpg">
+                                    <img src="/storage/priya.jpg" class="template-image w-24 h-24 object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:border-indigo-500 transition" data-val="/images/priya.jpg">
                                 </div>
                                 <input type="hidden" name="template_image" id="template_image">
                             </div>
