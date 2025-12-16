@@ -16,7 +16,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         nav {
             background-color: #ffffff !important;
@@ -38,13 +38,72 @@
             color: #0f766e !important;
             background-color: #f0fdfa;
         }
+
+        /* --- Rich Text Formatting --- */
+        .rich-text ul {
+            list-style-type: disc;
+            padding-left: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .rich-text ol {
+            list-style-type: decimal;
+            padding-left: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .rich-text p,
+        .rich-text li {
+            margin-bottom: 0.25rem;
+            line-height: 1.5;
+        }
+
+        .rich-text strong {
+            font-weight: 600;
+            color: #111827;
+        }
+
+        /* Gray-900 */
+        .rich-text em {
+            font-style: italic;
+        }
+
+        .rich-text h1,
+        .rich-text h2,
+        .rich-text h3 {
+            font-weight: 700;
+            margin-top: 0.75rem;
+            margin-bottom: 0.25rem;
+            color: #111827;
+        }
+
+        /* --- Modern Thin Scrollbar --- */
+        .modern-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .modern-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .modern-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #D1D5DB;
+            border-radius: 20px;
+        }
+
+        /* Gray-300 */
+        .rich-text:hover .modern-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #9CA3AF;
+        }
+
+        /* Gray-400 on hover */
     </style>
 </head>
 
 <body class="font-sans antialiased bg-gray-50">
     <div class="min-h-screen">
 
-    @include('layouts.navbar')
+        @include('layouts.navbar')
 
         <main class="pt-20">
             @yield('content')

@@ -58,6 +58,65 @@
             background-color: #F0F0F0;
 
         }
+
+        /* --- Rich Text Formatting --- */
+        .rich-text ul {
+            list-style-type: disc;
+            padding-left: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .rich-text ol {
+            list-style-type: decimal;
+            padding-left: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .rich-text p,
+        .rich-text li {
+            margin-bottom: 0.25rem;
+            line-height: 1.5;
+        }
+
+        .rich-text strong {
+            font-weight: 600;
+            color: #111827;
+        }
+
+        /* Gray-900 */
+        .rich-text em {
+            font-style: italic;
+        }
+
+        .rich-text h1,
+        .rich-text h2,
+        .rich-text h3 {
+            font-weight: 700;
+            margin-top: 0.75rem;
+            margin-bottom: 0.25rem;
+            color: #111827;
+        }
+
+        /* --- Modern Thin Scrollbar --- */
+        .modern-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .modern-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .modern-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #D1D5DB;
+            border-radius: 20px;
+        }
+
+        /* Gray-300 */
+        .rich-text:hover .modern-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #9CA3AF;
+        }
+
+        /* Gray-400 on hover */
     </style>
 </head>
 

@@ -64,6 +64,28 @@
         .tab-button {
             transition: all 0.2s ease-in-out;
         }
+
+        .rich-text ul {
+            list-style-type: disc;
+            padding-left: 1.25rem;
+            /* Space for bullet */
+            margin-bottom: 0.5rem;
+        }
+
+        .rich-text ol {
+            list-style-type: decimal;
+            padding-left: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .rich-text p {
+            margin-bottom: 0.5rem;
+        }
+
+        .rich-text strong {
+            font-weight: 600;
+            color: #1e293b;
+        }
     </style>
 </head>
 
@@ -318,12 +340,13 @@
                                     <div id="basic" class="tab-content hidden animate-fade-in">
                                         <div class="flex items-center gap-2 mb-3">
                                             <span class="font-bold text-slate-800">Basic Package</span>
-                                            <span
-                                                class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">{{ $service->basic_duration }}
-                                                hrs per {{ $service->basic_frequency }} </span>
+                                            <span class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">
+                                                {{ $service->basic_duration }} hrs per {{ $service->basic_frequency }}
+                                            </span>
                                         </div>
-                                        <p class="text-sm text-gray-600 leading-relaxed">
-                                            {{ $service->basic_description }}</p>
+                                        <div class="rich-text text-sm text-gray-600 leading-relaxed">
+                                            {!! $service->basic_description !!}
+                                        </div>
                                     </div>
                                 @endif
 
@@ -331,12 +354,14 @@
                                     <div id="standard" class="tab-content hidden animate-fade-in">
                                         <div class="flex items-center gap-2 mb-3">
                                             <span class="font-bold text-slate-800">Standard Package</span>
-                                            <span
-                                                class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">{{ $service->standard_duration }}
-                                                hrs per {{ $service->standard_frequency }} </span>
+                                            <span class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">
+                                                {{ $service->standard_duration }} hrs per
+                                                {{ $service->standard_frequency }}
+                                            </span>
                                         </div>
-                                        <p class="text-sm text-gray-600 leading-relaxed">
-                                            {{ $service->standard_description }}</p>
+                                        <div class="rich-text text-sm text-gray-600 leading-relaxed">
+                                            {!! $service->standard_description !!}
+                                        </div>
                                     </div>
                                 @endif
 
@@ -344,12 +369,14 @@
                                     <div id="premium" class="tab-content hidden animate-fade-in">
                                         <div class="flex items-center gap-2 mb-3">
                                             <span class="font-bold text-slate-800">Premium Package</span>
-                                            <span
-                                                class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">{{ $service->premium_duration }}
-                                                hrs per {{ $service->premium_frequency }} </span>
+                                            <span class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">
+                                                {{ $service->premium_duration }} hrs per
+                                                {{ $service->premium_frequency }}
+                                            </span>
                                         </div>
-                                        <p class="text-sm text-gray-600 leading-relaxed">
-                                            {{ $service->premium_description }}</p>
+                                        <div class="rich-text text-sm text-gray-600 leading-relaxed">
+                                            {!! $service->premium_description !!}
+                                        </div>
                                     </div>
                                 @endif
                             </div>
