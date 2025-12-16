@@ -202,6 +202,12 @@ class User extends Authenticatable
         return $this->reviewsReceived()->avg('rating');
     }
 
+    public function studentStatus()
+    {
+        // Links User (id) -> StudentStatus (student_id)
+        return $this->hasOne(StudentStatus::class, 'student_id');
+    }
+
     
 
     
