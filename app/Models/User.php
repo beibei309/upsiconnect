@@ -122,27 +122,16 @@ class User extends Authenticatable
         return $this->hasMany(ServiceApplicationInterest::class, 'student_id');
     }
 
-    public function favorites()
-    {
-        return $this->belongsToMany(User::class, 'favorites', 'user_id', 'favorited_user_id')
-                    ->withTimestamps();
-    }
-
-    public function favoritedBy()
-    {
-        return $this->belongsToMany(User::class, 'favorites', 'favorited_user_id', 'user_id')
-                    ->withTimestamps();
-    }
-    
-    public function favoriteServices()
+public function favoriteServices()
 {
     return $this->belongsToMany(
         \App\Models\StudentService::class,
-        'favorites',
-        'user_id',
-        'service_id'
+        'favorites',   // pivot table
+        'user_id',     // user_id on favorites
+        'service_id'   // service_id on favorites (IMPORTANT)
     )->withTimestamps();
 }
+
 
 
     // Helpers

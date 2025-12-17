@@ -127,7 +127,6 @@
             </div>
         </section>
 
-        {{-- 🎨 REDESIGNED CATEGORY SECTION (COLORFUL BOXES) --}}
         <section class="py-12 bg-white border-b border-gray-100">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between items-end mb-8">
@@ -142,14 +141,12 @@
                             class="group p-5 rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 text-center flex flex-col items-center justify-center h-full"
                             style="background-color: {{ $category->color }};">
 
-                            {{-- Icon container: Set background to white for contrast --}}
                             <div
                                 class="w-14 h-14 mb-4 rounded-full flex items-center justify-center bg-white shadow-sm transition-transform group-hover:scale-110">
                                 <img src="{{ asset('images/' . $category->image_path) }}" alt="{{ $category->name }}"
                                     class="w-7 h-7 object-contain">
                             </div>
 
-                            {{-- Text color: Changed to white --}}
                             <span class="block text-sm font-bold text-white transition-colors group-hover:opacity-90">
                                 {{ $category->name }}
                             </span>
@@ -190,11 +187,7 @@
                                     </span>
                                 @endif
 
-                                <button type="button"
-                                    class="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-white shadow-sm transition-all"
-                                    title="Save Service">
-                                    <i class="far fa-heart"></i>
-                                </button>
+                               
                             </a>
 
                             <div class="p-5 flex flex-col flex-1">

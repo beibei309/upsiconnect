@@ -207,18 +207,28 @@ Route::post('/services/applications/{application}/interests/confirm', [ServiceAp
     Route::post('/reports', [ReportController::class, 'store']);
 
     // Favorites routes
-    Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
-    Route::post('/favorites', [FavoriteController::class, 'store'])->name('favorites.store');
-    Route::delete('/favorites/{user}', [FavoriteController::class, 'destroy'])->name('favorites.destroy');
-    Route::post('/favorites/toggle', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
-    Route::get('/favorites/{user}/check', [FavoriteController::class, 'check'])->name('favorites.check');
-    // Service
-    Route::post('/favourites/service/toggle', [FavoriteController::class, 'toggleService'])
-    ->name('favorites.service.toggle')
-    ->middleware('auth');
-    Route::get('/favourites/service/check/{id}', [FavoriteController::class, 'checkService'])
-    ->name('favorites.service.check')
-    ->middleware('auth');
+    // Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
+    // Route::post('/favorites', [FavoriteController::class, 'store'])->name('favorites.store');
+    // Route::delete('/favorites/{user}', [FavoriteController::class, 'destroy'])->name('favorites.destroy');
+    // Route::post('/favorites/toggle', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
+    // Route::get('/favorites/{user}/check', [FavoriteController::class, 'check'])->name('favorites.check');
+    // // Service
+    // Route::post('/favourites/service/toggle', [FavoriteController::class, 'toggleService'])
+    // ->name('favorites.service.toggle')
+    // ->middleware('auth');
+    // Route::get('/favourites/service/check/{id}', [FavoriteController::class, 'checkService'])
+    // ->name('favorites.service.check')
+    // ->middleware('auth');
+
+    Route::middleware('auth')->group(function () {
+Route::post('/favorites/services/toggle', [FavoriteController::class, 'toggleService'])
+    ->name('favorites.services.toggle');
+
+
+    Route::get('/favorites', [FavoriteController::class, 'index'])
+        ->name('favorites.index');
+});
+
 
 
     // Admin moderation endpoints

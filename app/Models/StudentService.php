@@ -102,20 +102,31 @@ class StudentService extends Model
         return $this->hasMany(\App\Models\ServiceRequest::class, 'student_service_id');
     }
 
-    public function favorites()
-    {
-        return $this->hasMany(Favorite::class, 'service_id');
+public function favoritedBy()
+{
+    return $this->belongsToMany(
+        \App\Models\User::class,
+        'favorites',
+        'service_id',
+        'user_id'
+    );
+}
+
+
+public function getIsFavouritedAttribute()
+{
+    if (!auth()->check()) {
+        return false;
     }
 
-    public function getIsFavouritedAttribute()
-    {
-        if (!auth()->check()) return false;
+    return \DB::table('favorites')
+        ->where('user_id', auth()->id())
+        ->where('service_id', $this->id)
+        ->exists();
+}
 
-        return auth()->user()
-            ->favoriteServices()
-            ->where('service_id', $this->id)
-            ->exists();
-    }
+
+
 
 
 }

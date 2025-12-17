@@ -21,6 +21,7 @@
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         body {
@@ -413,11 +414,22 @@
                             class="text-sm text-gray-500 hover:text-indigo-600 font-medium">
                             <i class="fas fa-share-alt"></i> Share
                         </button>
+                        @php
+                            $isFav = auth()->check() && $service->is_favourited;
+                        @endphp
+
                         <button
                             onclick="handleFavourite({{ $service->id }}, {{ auth()->check() ? 'true' : 'false' }})"
-                            class="text-sm text-gray-500 hover:text-red-500 font-medium">
-                            <i id="heart-{{ $service->id }}" class="far fa-heart"></i> Save
+                            class="text-sm font-medium flex items-center gap-1
+        {{ $isFav ? 'text-red-500' : 'text-gray-500' }}">
+
+                            <i id="heart-{{ $service->id }}" class="{{ $isFav ? 'fas' : 'far' }} fa-heart"></i>
+
+                            <span id="text-{{ $service->id }}">
+                                {{ $isFav ? 'Saved' : 'Save' }}
+                            </span>
                         </button>
+
                     </div>
                 </div>
             </div>
@@ -691,7 +703,7 @@
 
                     // --- 1. Prepare Data for Task vs Session ---
                     let displayTime = this.isSessionBased ? this.formatTimeDisplay(this.selectedTime) :
-                    'Anytime (Full Day)';
+                        'Anytime (Full Day)';
                     let displayDuration = this.isSessionBased ? this.selectedDuration + ' Hours' : 'Task Based';
 
                     // Define times to send to backend
@@ -802,21 +814,78 @@
             setTimeout(() => msg.classList.add('opacity-0'), 2000);
         }
 
-        function handleFavourite(id, loggedIn) {
-            if (!loggedIn) return window.location.href = "{{ route('login') }}";
-            const icon = document.getElementById('heart-' + id);
-            const isSaved = icon.classList.contains('fas');
-            icon.className = isSaved ? 'far fa-heart' : 'fas fa-heart text-red-500';
-            fetch('/favourites/toggle/' + id, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    service_id: id
+        function handleFavourite(serviceId, loggedIn) {
+            if (!loggedIn) {
+                window.location.href = "{{ route('login') }}";
+                return;
+            }
+
+            const icon = document.getElementById('heart-' + serviceId);
+            const text = document.getElementById('text-' + serviceId);
+
+            fetch("{{ route('favorites.services.toggle') }}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                    },
+                    body: JSON.stringify({
+                        service_id: serviceId
+                    })
                 })
-            });
+                .then(async res => {
+                    const data = await res.json();
+                    if (!res.ok) throw data;
+                    return data;
+                })
+                .then(data => {
+                    if (!data.success) return;
+
+                    if (data.favorited) {
+                        // ❤️ UI update
+                        icon.className = "fas fa-heart";
+                        icon.parentElement.classList.remove('text-gray-500');
+                        icon.parentElement.classList.add('text-red-500');
+                        text.innerText = "Saved";
+
+                        // ✅ SweetAlert success
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Saved!',
+                            text: 'Service added to your favourites',
+                            timer: 1500,
+                            showConfirmButton: false,
+                            toast: true,
+                            position: 'top-end'
+                        });
+
+                    } else {
+                        // 💔 UI update
+                        icon.className = "far fa-heart";
+                        icon.parentElement.classList.remove('text-red-500');
+                        icon.parentElement.classList.add('text-gray-500');
+                        text.innerText = "Save";
+
+                        // ⚠️ SweetAlert removed
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'Removed',
+                            text: 'Service removed from favourites',
+                            timer: 1500,
+                            showConfirmButton: false,
+                            toast: true,
+                            position: 'top-end'
+                        });
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: err.message || 'Unable to update favourite'
+                    });
+                });
         }
     </script>
 </body>
