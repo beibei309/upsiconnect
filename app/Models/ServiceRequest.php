@@ -28,8 +28,8 @@ class ServiceRequest extends Model
         'completed_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
-     'selected_dates' => 'datetime', 
-    'selected_package' => 'string',
+        'selected_dates' => 'array', 
+        'selected_package' => 'string',
     ];
 
     /**

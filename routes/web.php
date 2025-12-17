@@ -32,6 +32,7 @@ use App\Http\Controllers\Admin\AdminCommunityController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminStudentStatusController;
 use App\Http\Controllers\Admin\AdminRequestController;
+use App\Http\Controllers\NotificationController;
 
 use App\Http\Controllers\Admin\VerificationController as AdminVerificationController;
 
@@ -147,6 +148,11 @@ Route::get('/privacy', function () {
 })->name('privacy');
 
 Route::middleware('auth')->group(function () {
+    // Notifications
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllRead');
+    
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

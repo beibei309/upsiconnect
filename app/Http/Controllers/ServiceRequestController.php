@@ -9,6 +9,8 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Routing\Controller as BaseController;
+use App\Notifications\NewServiceRequest;
+use App\Notifications\ServiceRequestStatusUpdated;
 
 class ServiceRequestController extends BaseController
 {
@@ -66,12 +68,15 @@ class ServiceRequestController extends BaseController
             'requester_id' => $user->id,
             'provider_id' => $studentService->user_id,
 
-            'selected_dates' => $validated['selected_dates'],
+            'selected_dates' => [$validated['selected_dates']],
             'selected_package' => json_encode($validated['selected_package']),
             'message' => $validated['message'],
             'offered_price' => $validated['offered_price'],
             'status' => 'pending'
         ]);
+
+        // Notify Provider
+        $studentService->user->notify(new NewServiceRequest($serviceRequest));
 
         return response()->json([
             'success' => true,
@@ -157,6 +162,9 @@ public function index(Request $request)
 
         $serviceRequest->accept();
 
+        // Notify Requester
+        $serviceRequest->requester->notify(new ServiceRequestStatusUpdated($serviceRequest, 'accepted'));
+
         return response()->json([
             'success' => true,
             'message' => 'Service request accepted successfully!'
@@ -180,6 +188,9 @@ public function index(Request $request)
         }
 
         $serviceRequest->reject();
+
+        // Notify Requester
+        $serviceRequest->requester->notify(new ServiceRequestStatusUpdated($serviceRequest, 'rejected'));
 
         return response()->json([
             'success' => true,
@@ -205,6 +216,9 @@ public function index(Request $request)
 
         $serviceRequest->markInProgress();
 
+        // Notify Requester
+        $serviceRequest->requester->notify(new ServiceRequestStatusUpdated($serviceRequest, 'in_progress'));
+
         return response()->json([
             'success' => true,
             'message' => 'Service marked as in progress!'
@@ -228,6 +242,9 @@ public function index(Request $request)
         }
 
         $serviceRequest->markCompleted();
+
+        // Notify Requester
+        $serviceRequest->requester->notify(new ServiceRequestStatusUpdated($serviceRequest, 'completed'));
 
         return response()->json([
             'success' => true,

@@ -1,13 +1,3 @@
-Here is the corrected code for your **Service Request Details** page.
-
-### 2 Key Changes Made:
-
-1.  **Added `.rich-text` CSS & Class:** I added the style block at the top and replaced the `prose` class with `rich-text` in the "About This Service" section. This ensures your bullet points (`<ul>`, `<li>`) from the database show up correctly.
-2.  **Clickable Service Reference:** I changed the `div` wrapper for the Service Reference card into an `a` (anchor) tag, linking it to `route('services.details', ...)`.
-
-<!-- end list -->
-
-```html
 <x-app-layout>
     <style>
         .rich-text ul { list-style-type: disc; padding-left: 1.25rem; margin-bottom: 1rem; }
@@ -93,15 +83,26 @@ Here is the corrected code for your **Service Request Details** page.
                                         </p>
                                     </div>
 
-                                    @if($serviceRequest->selected_dates)
                                     <div class="sm:col-span-2">
-                                        <label class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Requested Date</label>
-                                        <div class="flex items-center gap-2 mt-1 text-gray-800 font-medium">
-                                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                            {{ \Carbon\Carbon::parse($serviceRequest->selected_dates)->format('l, F j, Y') }}
+                                        <label class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Requested Dates</label>
+                                        <div class="flex flex-col gap-1 mt-1 text-gray-800 font-medium">
+                                            @if(is_array($serviceRequest->selected_dates))
+                                                @foreach($serviceRequest->selected_dates as $date)
+                                                    <div class="flex items-center gap-2">
+                                                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                                        {{ \Carbon\Carbon::parse($date)->format('l, F j, Y') }}
+                                                    </div>
+                                                @endforeach
+                                            @elseif($serviceRequest->selected_dates)
+                                                <div class="flex items-center gap-2">
+                                                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                                    {{ \Carbon\Carbon::parse($serviceRequest->selected_dates)->format('l, F j, Y') }}
+                                                </div>
+                                            @else
+                                                <span class="text-gray-400 italic">No dates selected</span>
+                                            @endif
                                         </div>
                                     </div>
-                                    @endif
 
                                     @if($serviceRequest->message)
                                     <div class="sm:col-span-2">
