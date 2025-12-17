@@ -18,8 +18,12 @@ class StudentService extends Model
         'status',
         'is_active',
         'availability' => 'array',
+        'operating_hours',
+        'session_duration',
+        'blocked_slots',
         // Basic package
         'basic_duration',
+        'session_duration',
         'basic_frequency',
         'basic_price',
         'basic_description',
@@ -33,6 +37,12 @@ class StudentService extends Model
         'premium_frequency',
         'premium_price',
         'premium_description',
+    ];
+
+    protected $casts = [
+        'operating_hours' => 'array', 
+        'unavailable_dates' => 'array',
+        'blocked_slots' => 'array',
     ];
 
     protected $attributes = [
