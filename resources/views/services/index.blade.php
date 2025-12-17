@@ -265,13 +265,7 @@
                                                 </div>
 
                                                 <div class="flex items-center gap-2">
-                                                    <button type="button"
-                                                        onclick="handleFavourite({{ $service->id }}, {{ auth()->check() ? 'true' : 'false' }})"
-                                                        class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition text-gray-400 hover:text-red-500"
-                                                        title="Add to favourites">
-                                                        <i id="heart-{{ $service->id }}"
-                                                            class="{{ auth()->check() && $service->is_favourited ? 'fas text-red-500' : 'far' }} fa-heart text-lg"></i>
-                                                    </button>
+                                                   
                                                     <button type="button" onclick="handleShare(this)"
                                                         data-url="{{ route('services.details', $service->id) }}"
                                                         class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition text-gray-400 hover:text-indigo-600"
@@ -410,45 +404,7 @@ blur-md @endguest
 
         <script>
             // Favourite Logic
-            function handleFavourite(serviceId, isLoggedIn) {
-                if (!isLoggedIn) {
-                    window.location.href = "{{ route('login') }}";
-                    return;
-                }
-
-                const heartIcon = document.getElementById('heart-' + serviceId);
-                const isFavourited = heartIcon.classList.contains('fas'); // Solid icon check
-
-                // Optimistic UI Update
-                if (isFavourited) {
-                    heartIcon.classList.remove('fas', 'text-red-500');
-                    heartIcon.classList.add('far'); // Outline
-                } else {
-                    heartIcon.classList.remove('far');
-                    heartIcon.classList.add('fas', 'text-red-500');
-                }
-
-                fetch("{{ route('favorites.service.toggle') }}", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                    },
-                    body: JSON.stringify({
-                        service_id: serviceId
-                    })
-                }).catch(err => {
-                    console.error(err);
-                    // Revert if error
-                    if (isFavourited) {
-                        heartIcon.classList.add('fas', 'text-red-500');
-                        heartIcon.classList.remove('far');
-                    } else {
-                        heartIcon.classList.add('far');
-                        heartIcon.classList.remove('fas', 'text-red-500');
-                    }
-                });
-            }
+    
 
             // Share Logic
             function handleShare(button) {

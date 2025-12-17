@@ -48,7 +48,7 @@
                         <label for="bio" class="block text-sm font-semibold text-gray-700 mb-2">About Yourself</label>
                         <div class="relative">
                             <textarea id="bio" name="bio" rows="4" 
-                                class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors py-3 px-4 text-gray-700 placeholder-gray-400"
+                                class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors py-3 px-4 text-gray-800 placeholder-gray-400"
                                 placeholder="Hi, I'm a computer science student passionate about web design...">{{ old('bio', auth()->user()->bio) }}</textarea>
                             <div class="absolute bottom-3 right-3 text-xs text-gray-400 pointer-events-none">Tell us your story</div>
                         </div>
@@ -87,8 +87,7 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Course / Program</label>
                                 <input type="text" name="course" 
-                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
-                                    placeholder="e.g. Bachelor of Software Engineering" 
+                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm  text-gray-700"
                                     value="{{ old('course', auth()->user()->course) }}" />
                                 @error('course')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
