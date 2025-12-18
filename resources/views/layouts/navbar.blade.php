@@ -90,12 +90,12 @@
                             @endif
                         </a>
 
-                        <a href="{{ route('chat.index') }}" class="relative p-2 text-gray-500 hover:text-indigo-600 hover:bg-gray-100 rounded-full transition">
+                        {{-- <a href="{{ route('chat.index') }}" class="relative p-2 text-gray-500 hover:text-indigo-600 hover:bg-gray-100 rounded-full transition">
                             <span class="sr-only">Messages</span>
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                             </svg>
-                        </a>
+                        </a> --}}
 
                         {{-- BUYER-ONLY ICONS --}}
                         @if($viewMode === 'buyer')
@@ -118,7 +118,7 @@
                     @if ($user->role === 'student')
                         <a href="{{ route('onboarding.students') }}"
                            class="hidden lg:inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
-                            Become a Helper
+                            Become a Seller
                         </a>
                     @elseif ($isHelper)
                         <form action="{{ route('switch.mode') }}" method="POST" class="hidden lg:inline-flex">
@@ -214,7 +214,7 @@
                 </div>
                 <div class="mt-3 px-2 space-y-1">
                     <a href="{{ route('profile.edit') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50">Your Profile</a>
-                    <a href="{{ route('chat.index') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50">Messages</a>
+                    {{-- <a href="{{ route('chat.index') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50">Messages</a> --}}
                     
                     @if($viewMode === 'buyer')
                         <a href="{{ route('favorites.index') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50">Favorites</a>
@@ -222,7 +222,7 @@
                     @endif
                     
                     @if ($user->role === 'student')
-                        <a href="{{ route('onboarding.students') }}" class="block px-3 py-2 rounded-md text-base font-medium text-indigo-600 hover:bg-indigo-50">Become a Helper</a>
+                        <a href="{{ route('onboarding.students') }}" class="block px-3 py-2 rounded-md text-base font-medium text-indigo-600 hover:bg-indigo-50">Become a Seller</a>
                     @elseif ($isHelper)
                         {{-- MOBILE SWITCH BUTTON --}}
                         <form action="{{ route('switch.mode') }}" method="POST">

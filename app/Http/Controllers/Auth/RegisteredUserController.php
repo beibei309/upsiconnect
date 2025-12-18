@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\StudentStatus;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,7 +32,19 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'max:255',
+                'unique:' . User::class,
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($request->role === 'student' && !str_ends_with($value, '@siswa.upsi.edu.my')) {
+                        $fail('Student must use @siswa.upsi.edu.my email');
+                    }
+                },
+            ],
+                        
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'role' => ['required', 'in:student,community'],
             'phone' => ['required', 'string', 'max:20'],
@@ -63,12 +76,13 @@ class RegisteredUserController extends Controller
         $staffVerifiedAt = null;
         
         if ($request->role === 'student') {
-            // Students are auto-verified if they have valid UPSI student email
-            if ($request->staff_email && str_ends_with($request->staff_email, '@siswa.upsi.edu.my')) {
+            if ($request->role === 'student') {
+                // email already validated
                 $verificationStatus = 'approved';
-                // Mark as publicly verified; do NOT set staff verification for students
                 $publicVerifiedAt = now();
             }
+
+            
         } elseif ($request->role === 'community') {
             // Staff are auto-verified if they have valid UPSI email
             if ($request->community_type === 'staff' && $request->staff_email && preg_match('/@([a-zA-Z]+\.)?upsi\.edu\.my$/', $request->staff_email)) {
@@ -79,7 +93,7 @@ class RegisteredUserController extends Controller
 
         $user = User::create([
             'name' => $request->name,
-            'email' => $request->email,
+            'email' => $request->email,                           
             'password' => Hash::make($request->password),
             'role' => $request->role,
             'phone' => $request->phone,
@@ -90,6 +104,18 @@ class RegisteredUserController extends Controller
             'staff_verified_at' => $staffVerifiedAt,
             'is_available' => $request->role === 'student' ? true : false,
         ]);
+
+        if ($user->role === 'student') {
+             StudentStatus::create([
+            'student_id'      => $user->id,              // FK to users
+            'matric_no'       => $user->student_id,      // SAME value
+            'semester'        => null,
+            'status'          => 'active',            
+            'graduation_date' => null,
+           'effective_date'  => now(),   
+        ]);
+    }
+
 
         event(new Registered($user));
 

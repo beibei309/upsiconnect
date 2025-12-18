@@ -174,7 +174,7 @@
                         <div
                             class="group bg-white rounded-2xl border border-slate-200 hover:border-indigo-100 hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden relative">
 
-                            <a href="{{ route('student-services.show', $service) }}"
+                            <a href="{{ route('services.details', $service) }}"
                                 class="relative h-56 bg-slate-200 overflow-hidden block">
                                 <img src="{{ $service->image_path ? asset('storage/' . $service->image_path) : 'https://via.placeholder.com/800x600?text=No+Image' }}"
                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
@@ -215,7 +215,7 @@
                                     </div>
                                 </div>
 
-                                <a href="{{ route('student-services.show', $service) }}" class="block mb-2">
+                                <a href="{{ route('services.details', $service) }}" class="block mb-2">
                                     <h3
                                         class="text-lg font-bold text-slate-900 group-hover:text-indigo-600 transition-colors line-clamp-2 leading-tight">
                                         {{ $service->title }}
