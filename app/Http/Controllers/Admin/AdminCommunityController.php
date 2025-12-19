@@ -126,4 +126,51 @@ public function unblacklist($id)
                      ->with('success', 'Blacklist removed.');
 }
 
+public function export(Request $request)
+{
+    $query = User::query();
+
+    // Only community users
+    $query->where('role', 'community');
+
+    // Apply filters
+    if ($request->filled('search')) {
+        $query->where(function ($q) use ($request) {
+            $q->where('name', 'like', '%'.$request->search.'%')
+              ->orWhere('email', 'like', '%'.$request->search.'%')
+              ->orWhere('phone', 'like', '%'.$request->search.'%');
+        });
+    }
+
+    if ($request->filled('status')) {
+        if ($request->status == 'active') {
+            $query->where('is_blacklisted', false);
+        } elseif ($request->status == 'blacklisted') {
+            $query->where('is_blacklisted', true);
+        }
+    }
+
+    $users = $query->get();
+
+    // Prepare CSV
+    $csvData = $users->map(function ($user) {
+        return [
+            'Name' => $user->name,
+            'Email' => $user->email,
+            'Phone' => $user->phone,
+            'Status' => $user->is_blacklisted ? 'Blacklisted' : ($user->verification_status == 'approved' ? 'Verified' : 'Not Verified'),
+        ];
+    });
+
+    return response()->streamDownload(function() use ($csvData) {
+        $output = fopen('php://output', 'w');
+        fputcsv($output, array_keys($csvData->first()));
+        foreach ($csvData as $row) {
+            fputcsv($output, $row);
+        }
+        fclose($output);
+    }, 'community_users.csv');
+}
+
+
 }

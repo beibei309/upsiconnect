@@ -117,7 +117,7 @@
                {{ !$category_id ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-gray-50 hover:text-slate-900' }}">
                                 <span
                                     class="w-8 h-8 flex items-center justify-center rounded-lg 
-                    {{ !$category_id ? 'bg-white text-indigo-600 shadow-sm' : 'bg-gray-100 text-gray-500 group-hover:bg-white group-hover:shadow-sm' }}">
+                      {{ !$category_id ? 'bg-white text-indigo-600 shadow-sm' : 'bg-gray-100 text-gray-500 group-hover:bg-white group-hover:shadow-sm' }}">
                                     <i class="fas fa-th-large"></i>
                                 </span>
                                 All Categories
@@ -128,26 +128,21 @@
                                     class="group flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200
                    {{ $category_id == $cat->id ? 'bg-indigo-50 text-slate-900' : 'text-slate-600 hover:bg-gray-50 hover:text-slate-900' }}">
 
-                                    {{-- 👇 PERBAIKAN: Icon Container dengan Warna Kategori --}}
-                                    <span class="w-8 h-8 flex items-center justify-center rounded-lg transition-colors"
-                                        {{-- Set background color to category color with 15% opacity --}}
-                                        style="background-color: {{ $cat->color }}66; 
-                                border: 1px solid {{ $cat->color }}40;">
+                                    {{-- Icon Container with Soft Background Color --}}
+                                    <span
+                                        class="w-8 h-8 flex items-center justify-center rounded-lg transition-colors border"
+                                        style="background-color: {{ $cat->color }}20; border-color: {{ $cat->color }}40;">
 
-                                        @if ($cat->image_path)
-                                            {{-- Image Path: Icon should use its category color --}}
-                                            <img src="{{ asset('images/' . $cat->image_path) }}"
-                                                alt="{{ $cat->name }}" class="w-5 h-5 object-contain">
-                                        @else
-                                            {{-- Fallback: Use a colored circle --}}
-                                            <div class="w-3 h-3 rounded-full"
-                                                style="background-color: {{ $cat->color ?? '#cbd5e1' }}"></div>
-                                        @endif
+                                        {{-- REPLACED IMG WITH ICON --}}
+                                        <i class="{{ $cat->icon ?? 'fa-solid fa-folder' }}"
+                                            style="color: {{ $cat->color }};">
+                                        </i>
+
                                     </span>
 
                                     <span
                                         class="transition-colors 
-                        {{ $category_id == $cat->id ? 'font-bold' : 'group-hover:text-slate-900' }}"
+                          {{ $category_id == $cat->id ? 'font-bold' : 'group-hover:text-slate-900' }}"
                                         style="{{ $category_id == $cat->id ? 'color: ' . $cat->color : '' }}">
                                         {{ $cat->name }}
                                     </span>
@@ -265,7 +260,7 @@
                                                 </div>
 
                                                 <div class="flex items-center gap-2">
-                                                   
+
                                                     <button type="button" onclick="handleShare(this)"
                                                         data-url="{{ route('services.details', $service->id) }}"
                                                         class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition text-gray-400 hover:text-indigo-600"
@@ -404,7 +399,7 @@ blur-md @endguest
 
         <script>
             // Favourite Logic
-    
+
 
             // Share Logic
             function handleShare(button) {

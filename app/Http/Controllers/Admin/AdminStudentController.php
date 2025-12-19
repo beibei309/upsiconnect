@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
+
 
 class AdminStudentController extends Controller
 {
@@ -233,5 +236,65 @@ public function revokeHelper($id)
     
     return redirect()->back()->with('success', 'Helper status revoked successfully. User is now a regular student.');
 }
+
+public function export(Request $request)
+{
+    $format = $request->get('format', 'csv');
+
+    $query = User::whereIn('role', ['student', 'helper']);
+
+    // SEARCH
+    if ($request->filled('search')) {
+        $query->where(function($q) use ($request) {
+            $q->where('name', 'like', '%'.$request->search.'%')
+              ->orWhere('email', 'like', '%'.$request->search.'%')
+              ->orWhere('phone', 'like', '%'.$request->search.'%')
+              ->orWhere('student_id', 'like', '%'.$request->search.'%')
+              ->orWhere('skills', 'like', '%'.$request->search.'%');
+        });
+    }
+
+    // STATUS FILTER
+    if ($request->filled('status')) {
+        if ($request->status == 'active') {
+            $query->where('is_suspended', 0);
+        } elseif ($request->status == 'banned') {
+            $query->where('is_suspended', 1);
+        } elseif ($request->status == 'student') {
+            $query->where('role', 'student')->where('is_suspended', 0);
+        } elseif ($request->status == 'helper') {
+            $query->where('role', 'helper')->where('is_suspended', 0);
+        }
+    }
+
+    $students = $query->get();
+
+    if ($format == 'pdf') {
+        $pdf = Pdf::loadView('admin.students.export_pdf', compact('students'));
+        return $pdf->download('students.pdf');
+    } else {
+        $csvData = $students->map(function ($student) {
+            return [
+                'Name' => $student->name,
+                'Email' => $student->email,
+                'Phone' => $student->phone,
+                'Student ID' => $student->student_id,
+                'Status' => $student->is_suspended ? 'Banned' : ($student->verification_status == 'approved' ? 'Verified' : 'Not Verified'),
+            ];
+        });
+
+        return response()->streamDownload(function() use ($csvData) {
+            $output = fopen('php://output', 'w');
+            if ($csvData->isNotEmpty()) {
+                fputcsv($output, array_keys($csvData->first()));
+                foreach ($csvData as $row) {
+                    fputcsv($output, $row);
+                }
+            }
+            fclose($output);
+        }, 'students.csv');
+    }
+}
+
 
 }

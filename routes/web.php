@@ -28,6 +28,8 @@ use App\Http\Controllers\Admin\ReportAdminController;
 use App\Http\Controllers\Pages\StudentPageController;
 use App\Http\Controllers\Admin\AdminStudentController;
 use App\Http\Controllers\Admin\AdminServicesController;
+use App\Http\Controllers\Admin\AdminCategoryController;
+use App\Http\Controllers\Admin\AdminFaqsController;
 use App\Http\Controllers\Admin\AdminCommunityController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminStudentStatusController;
@@ -39,7 +41,7 @@ use App\Http\Controllers\Admin\VerificationController as AdminVerificationContro
 
 Route::get('/', [HomeController::class, 'home'])->name('home');
 Route::get('/about', function () { return view('about'); })->name('about');
-Route::get('/help', function () {return view('help');})->name('help');
+Route::get('/help', [HelpController::class, 'index'])->name('help');
 
 
 // Display the form to join as a part-timer
@@ -258,17 +260,31 @@ Route::post('/favorites/services/toggle', [FavoriteController::class, 'toggleSer
     Route::patch('admin/services/{service}/approve', [AdminServicesController::class, 'approve'])->name('admin.services.approve');
     Route::patch('admin/services/{service}/reject', [AdminServicesController::class, 'reject'])->name('admin.services.reject');
 
+// Admin page management
+// Help
+Route::get('/faqs', [AdminFaqsController::class, 'index'])->name('admin.faqs.index');
+Route::get('/faqs/create', [AdminFaqsController::class, 'create'])->name('admin.faqs.create');
+Route::post('/faqs', [AdminFaqsController::class, 'store'])->name('admin.faqs.store');
+Route::patch('/faqs/{faq}/toggle', [AdminFaqsController::class, 'toggle'])->name('admin.faqs.toggle');
+Route::get('/faqs/{faq}/edit', [AdminFaqsController::class, 'edit'])->name('admin.faqs.edit');
+Route::put('/faqs/{faq}', [AdminFaqsController::class, 'update'])->name('admin.faqs.update');
+Route::delete('/faqs/{faq}', [AdminFaqsController::class, 'destroy'])->name('admin.faqs.destroy');
 
+// Admin Category
+ Route::get('/categories', [AdminCategoryController::class, 'index'])->name('admin.categories.index');
+    Route::get('/categories/create', [AdminCategoryController::class, 'create'])->name('admin.categories.create');
+    Route::post('/categories', [AdminCategoryController::class, 'store'])->name('admin.categories.store');
+    Route::get('/categories/{category}/edit', [AdminCategoryController::class, 'edit'])->name('admin.categories.edit');
+    Route::put('/categories/{category}', [AdminCategoryController::class, 'update'])->name('admin.categories.update');
+    Route::delete('/categories/{category}', [AdminCategoryController::class, 'destroy'])->name('admin.categories.destroy');
 
 // Public JSON endpoints
 Route::get('/students/{user}', [StudentServiceController::class, 'storefront']);
 Route::get('/search/services', [SearchController::class, 'services']);
 require __DIR__.'/auth.php';
 
-Route::get('/help', function () {
-    return view('help');
-})->name('help');
-
+Route::get('admin/requests/export', [App\Http\Controllers\Admin\AdminRequestController::class, 'export'])
+    ->name('admin.requests.export');
 
 /// Admin Login (public)
 Route::get('/admin/login', [AdminAuthController::class, 'showLogin'])
@@ -334,6 +350,8 @@ Route::middleware(['auth:admin', 'prevent-back-history'])->prefix('admin')->grou
     
     // Unban student (restore access)
     Route::post('/students/{id}/unban', [AdminStudentController::class, 'unban'])->name('admin.students.unban');
+    Route::get('admin/students/export', [AdminStudentController::class, 'export'])->name('admin.students.export');
+
 
     // View helper verification selfie
     Route::get('/students/{id}/selfie', [AdminStudentController::class, 'showSelfie'])->name('admin.students.selfie');
@@ -439,3 +457,52 @@ Route::middleware(['auth:admin', 'prevent-back-history'])->prefix('admin')->grou
     // ========================================
     Route::post('/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
 });   
+    Route::get('/admins/create', [SuperAdminController::class, 'create'])
+    ->name('admin.super.admins.create');
+
+Route::post('/admins/store', [SuperAdminController::class, 'store'])
+    ->name('admin.super.admins.store');
+
+Route::get('/admins/{id}/edit', [SuperAdminController::class, 'edit'])
+    ->name('admin.super.admins.edit');
+
+Route::post('/admins/{id}/update', [SuperAdminController::class, 'update'])
+    ->name('admin.super.admins.update');
+
+Route::delete('/admins/{id}', [SuperAdminController::class, 'destroy'])
+    ->name('admin.super.admins.delete');
+
+}); //end admin manage admin part
+
+//admin-community part
+Route::get('/community', [AdminCommunityController::class, 'index'])->name('admin.community.index');
+
+Route::prefix('community')->group(function () {
+
+    Route::get('/', [AdminCommunityController::class, 'index'])->name('admin.community.index');
+    Route::get('/view/{id}', [AdminCommunityController::class, 'view'])->name('admin.community.view');
+    Route::get('/edit/{id}', [AdminCommunityController::class, 'edit'])->name('admin.community.edit');
+    Route::put('/update/{id}', [AdminCommunityController::class, 'update'])->name('admin.community.update');
+
+    // Blacklist routes
+    Route::post('/admin/community/blacklist/{id}', [AdminCommunityController::class, 'blacklist'])->name('admin.community.blacklist');
+    Route::post('/admin/community/unblacklist/{id}', [AdminCommunityController::class, 'unblacklist'])->name('admin.community.unblacklist');
+    // Delete
+    Route::delete('/delete/{id}', [AdminCommunityController::class, 'delete'])->name('admin.community.delete');
+    Route::get('admin/community/export', [App\Http\Controllers\Admin\AdminCommunityController::class, 'export'])
+    ->name('admin.community.export');
+
+});
+//end admin community aprt
+
+Route::prefix('admin/student-status')->name('admin.student_status.')->group(function () {
+    Route::get('/', [AdminStudentStatusController::class, 'index'])->name('index');
+    Route::get('/create', [AdminStudentStatusController::class, 'create'])->name('create');
+    Route::post('/store', [AdminStudentStatusController::class, 'store'])->name('store');
+    Route::get('/edit/{id}', [AdminStudentStatusController::class, 'edit'])->name('edit');
+    Route::put('/update/{id}', [AdminStudentStatusController::class, 'update'])->name('update');
+    Route::delete('/delete/{id}', [AdminStudentStatusController::class, 'destroy'])->name('delete');
+});
+
+Route::post('/admin/logout', [AdminAuthController::class, 'logout'])
+    ->name('admin.logout');   

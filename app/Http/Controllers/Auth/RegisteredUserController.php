@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\StudentStatus;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -37,6 +38,27 @@ class RegisteredUserController extends Controller
                 'email', 
                 'max:255', 
                 'unique:'.User::class,
+                'required',
+                'string',
+                'email',
+                'max:255',
+                'unique:' . User::class,
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($request->role === 'student' && !str_ends_with($value, '@siswa.upsi.edu.my')) {
+                        $fail('Student must use @siswa.upsi.edu.my email');
+                    }
+                },
+            ],
+                        
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'role' => ['required', 'in:student,community'],
+            'phone' => ['required', 'string', 'max:20'],
+            'student_id' => ['required_if:role,student', 'nullable', 'string', 'max:20'],
+            // Optional: used for instant verification; name retained for compatibility
+            'community_type' => ['nullable', 'in:public,staff'],
+            'staff_email' => [
+                'nullable', 
+                'email',
                 function ($attribute, $value, $fail) use ($request) {
                     if ($request->role === 'student') {
                         if (!str_ends_with($value, '@siswa.upsi.edu.my')) {
@@ -60,9 +82,30 @@ class RegisteredUserController extends Controller
             // staff_email removed - use main email
         ]);
 
+        // Set verification status based on role
+        $verificationStatus = 'pending';
+        $publicVerifiedAt = null;
+        $staffVerifiedAt = null;
+        
+        if ($request->role === 'student') {
+            if ($request->role === 'student') {
+                // email already validated
+                $verificationStatus = 'approved';
+                $publicVerifiedAt = now();
+            }
+
+            
+        } elseif ($request->role === 'community') {
+            // Staff are auto-verified if they have valid UPSI email
+            if ($request->community_type === 'staff' && $request->staff_email && preg_match('/@([a-zA-Z]+\.)?upsi\.edu\.my$/', $request->staff_email)) {
+                $verificationStatus = 'approved';
+                $staffVerifiedAt = now();
+            }
+        }
+
         $user = User::create([
             'name' => $request->name,
-            'email' => $request->email,
+            'email' => $request->email,                           
             'password' => Hash::make($request->password),
             'role' => $request->role,
             'phone' => $request->phone,
@@ -71,6 +114,18 @@ class RegisteredUserController extends Controller
             'verification_status' => 'pending', // Always pending until email verified
             'is_available' => $request->role === 'student' ? true : false,
         ]);
+
+        if ($user->role === 'student') {
+             StudentStatus::create([
+            'student_id'      => $user->id,              // FK to users
+            'matric_no'       => $user->student_id,      // SAME value
+            'semester'        => null,
+            'status'          => 'active',            
+            'graduation_date' => null,
+           'effective_date'  => now(),   
+        ]);
+    }
+
 
         event(new Registered($user));
 
