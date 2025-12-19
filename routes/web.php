@@ -409,6 +409,8 @@ Route::middleware(['auth:admin', 'prevent-back-history'])->prefix('admin')->grou
     // ========================================
     // Manage student enrollment status (active, graduated, etc.)
     Route::prefix('student-status')->name('admin.student_status.')->group(function () {
+
+        
         // List all student statuses
         Route::get('/', [AdminStudentStatusController::class, 'index'])->name('index');
         
@@ -472,7 +474,10 @@ Route::post('/admins/{id}/update', [SuperAdminController::class, 'update'])
 Route::delete('/admins/{id}', [SuperAdminController::class, 'destroy'])
     ->name('admin.super.admins.delete');
 
-}); //end admin manage admin part
+ //end admin manage admin part
+Route::post('/admin/users/{user}/warning', 
+    [AdminUserController::class, 'sendWarning']
+)->name('admin.users.warning');
 
 //admin-community part
 Route::get('/community', [AdminCommunityController::class, 'index'])->name('admin.community.index');

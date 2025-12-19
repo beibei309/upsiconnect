@@ -7,8 +7,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <style>
         /* Smooth transition for sidebar width and transforms */
         .sidebar-transition {
@@ -21,131 +19,8 @@
 
     <div class="flex h-screen overflow-hidden">
 
-    <!-- MENU -->
-    <nav class="flex-1 overflow-y-auto mt-4">
-
-        <ul class="space-y-1">
-
-            <li>
-                <a href="{{ route('admin.dashboard') }}"
-                   class="block px-6 py-3 hover:bg-blue-50 hover:text-blue-600 font-medium
-                   {{ request()->routeIs('admin.dashboard') ? 'bg-blue-100 text-blue-700 font-semibold' : 'text-gray-700' }}">
-                    Dashboard
-                </a>
-            </li>
-
-            <li class="flex items-center justify-between">
-
-    {{-- MAIN LINK --}}
-    <a href="{{ route('admin.students.index') }}"
-       class="flex-1 block px-6 py-3 font-medium
-       {{ request()->routeIs('admin.students.index')
-            ? 'bg-blue-100 text-blue-700 font-semibold'
-            : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600' }}">
-        Manage Students
-    </a>
-
-    {{-- TOGGLE BUTTON --}}
-    <button type="button"
-        onclick="toggleStudentMenu()"
-        class="px-3 text-gray-500 hover:text-blue-600">
-        <svg id="studentMenuArrow"
-             class="w-4 h-4 transition-transform
-             {{ request()->routeIs('admin.student_status.*') ? 'rotate-90' : '' }}"
-             fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M9 5l7 7-7 7" />
-        </svg>
-    </button>
-</li>
-
-
-            <ul id="studentSubMenu"
-    class="ml-6 mt-1
-    {{ request()->routeIs('admin.student_status.*') ? '' : 'hidden' }}">
-
-    <li>
-        <a href="{{ route('admin.student_status.index') }}"
-           class="block px-6 py-2 text-sm rounded
-           {{ request()->routeIs('admin.student_status.*')
-                ? 'bg-blue-100 text-blue-700 font-semibold'
-                : 'text-gray-600 hover:bg-blue-50 hover:text-blue-600' }}">
-            Student Status
-        </a>
-    </li>
-</ul>
-
-
-            <li class="flex items-center justify-between">
-                <!-- MAIN LINK -->
-                <a href="{{ route('admin.community.index') }}"
-                   class="flex-1 block px-6 py-3 font-medium
-                   {{ request()->routeIs('admin.community.index') || request()->routeIs('admin.community.view') || request()->routeIs('admin.community.edit')
-                        ? 'bg-blue-100 text-blue-700 font-semibold'
-                        : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600' }}">
-                    Manage Community
-                </a>
-
-                <!-- TOGGLE BUTTON -->
-                <button type="button"
-                    onclick="toggleCommunityMenu()"
-                    class="px-3 text-gray-500 hover:text-blue-600">
-                    <svg id="communityMenuArrow"
-                         class="w-4 h-4 transition-transform
-                         {{ request()->routeIs('admin.verifications.*') ? 'rotate-90' : '' }}"
-                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M9 5l7 7-7 7" />
-                    </svg>
-                </button>
-            </li>
-
-            <!-- SUBMENU -->
-            <ul id="communitySubMenu"
-                class="ml-6 mt-1
-                {{ request()->routeIs('admin.verifications.*') ? '' : 'hidden' }}">
-                <li>
-                    <a href="{{ route('admin.verifications.page') }}"
-                       class="block px-6 py-2 text-sm rounded
-                       {{ request()->routeIs('admin.verifications.*')
-                            ? 'bg-blue-100 text-blue-700 font-semibold'
-                            : 'text-gray-600 hover:bg-blue-50 hover:text-blue-600' }}">
-                        Pending Verifications
-                    </a>
-                </li>
-            </ul>
-
-            <li>
-                <a href="{{ route('admin.services.index') }}"
-                   class="block px-6 py-3 hover:bg-blue-50 hover:text-blue-600 font-medium
-                   {{ request()->routeIs('admin.services.*') ? 'bg-blue-100 text-blue-700 font-semibold' : 'text-gray-700' }}">
-                    Manage Services
-                </a>
-            </li>
-
-          <li>
-                <a href="{{ route('admin.requests.index') }}" 
-                   class="block px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 font-medium
-                   {{ request()->routeIs('admin.requests.index') ? 'bg-blue-100 text-blue-700 font-semibold' : 'text-gray-700' }}">
-                    <i class="fa fa-list"></i> Manage Requests
-                </a>
-            </li>
-
-           
-            <li class="nav-item">
-                <a href="{{ route('admin.feedback.index') }}"
-                   class="block px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 font-medium
-              {{ request()->routeIs('admin.feedback.index') ? 'bg-blue-100 text-blue-600' : '' }}">
-                    Feedback & Complaints
-                </a>
-            </li>
-
-             <li>
-                <a href="#"
-                   class="block px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 font-medium">
-                    Reports & Analytics
-                </a>
-            </li>
+        <aside id="sidebar" 
+               class="sidebar-transition fixed inset-y-0 left-0 z-30 w-64 bg-white shadow-xl transform -translate-x-full lg:translate-x-0 lg:static lg:inset-0 flex flex-col border-r border-gray-200">
             
             <div class="flex items-center justify-between p-6 h-16 border-b border-gray-200 bg-white">
                 <div>
@@ -212,14 +87,28 @@
                             </li>
                         </ul>
                     </li>
-                     <li>
-                        <a href="{{ route('admin.categories.index') }}"
-                           class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
-                           {{ request()->routeIs('admin.categories.index') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-gray-600 hover:bg-gray-100 hover:text-blue-600' }}">
-                           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                           Categories
-                        </a>
-                    </li>
+                  <li>
+    <button onclick="toggleSubMenu('serviceMenu', 'serviceArrow')"
+            class="w-full flex items-center justify-between px-4 py-3 rounded-lg transition-colors
+            {{ request()->routeIs('admin.faqs.*') || request()->routeIs('admin.services.*') ? 'text-blue-700 font-semibold bg-blue-50' : 'text-gray-600 hover:bg-gray-100 hover:text-blue-600' }}">
+        <div class="flex items-center gap-3">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+            </svg>
+            <span>Manage Services</span>
+        </div>
+        <svg id="serviceArrow" class="w-4 h-4 transition-transform {{ request()->routeIs('admin.faqs.*') || request()->routeIs('admin.services.*') ? 'rotate-90' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+    </button>
+    
+    <ul id="serviceMenu" class="pl-11 mt-1 space-y-1 {{ request()->routeIs('admin.faqs.*') || request()->routeIs('admin.services.*') ? '' : 'hidden' }}">
+        <li>
+            <a href="{{ route('admin.faqs.index') }}" class="block px-4 py-2 text-sm rounded-lg hover:bg-blue-50 hover:text-blue-600 {{ request()->routeIs('admin.faqs.*') ? 'text-blue-600 font-semibold' : 'text-gray-600' }}">Categories</a>
+        </li>
+        <li>
+            <a href="{{ route('admin.services.index') }}" class="block px-4 py-2 text-sm rounded-lg hover:bg-blue-50 hover:text-blue-600 {{ request()->routeIs('admin.services.*') ? 'text-blue-600 font-semibold' : 'text-gray-600' }}">All Services</a>
+        </li>
+    </ul>
+</li>
 
                     <li>
                         <a href="{{ route('admin.community.index') }}"
@@ -305,46 +194,50 @@
             </main>
         </div>
 
-<!-- Auto-display SweetAlert for Laravel flash messages -->
-<script>
-@if(session('success'))
-    Swal.fire({
-        icon: 'success',
-        title: 'Success!',
-        text: '{{ session('success') }}',
-        timer: 3000,
-        showConfirmButton: false,
-        toast: true,
-        position: 'top-end'
-    });
-@endif
-
-@if(session('error'))
-    Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: '{{ session('error') }}',
-        showConfirmButton: true
-    });
-@endif
-</script>
-
-</body>
-</html>
+        <div id="mobileOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-20 hidden lg:hidden transition-opacity"></div>
 
     </div>
 
-    menu.classList.toggle('hidden');
-    arrow.classList.toggle('rotate-90');
-}
+    @yield('scripts')
 
-function toggleCommunityMenu() {
-    const menu = document.getElementById('communitySubMenu');
-    const arrow = document.getElementById('communityMenuArrow');
+   <script>
+    // Submenu Toggle (for Student/Page menus)
+    function toggleSubMenu(menuId, arrowId) {
+        const menu = document.getElementById(menuId);
+        const arrow = document.getElementById(arrowId);
+        
+        if (menu.classList.contains('hidden')) {
+            menu.classList.remove('hidden');
+            arrow.classList.add('rotate-90');
+        } else {
+            menu.classList.add('hidden');
+            arrow.classList.remove('rotate-90');
+        }
+    }
 
-    menu.classList.toggle('hidden');
-    arrow.classList.toggle('rotate-90');
-}
+    // Main Sidebar Toggle Logic
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('mobileOverlay');
+        const isDesktop = window.innerWidth >= 1024; // Tailwind 'lg' breakpoint is 1024px
+
+        if (isDesktop) {
+            // DESKTOP LOGIC: Toggle the 'hidden' class to collapse the layout
+            // We use 'hidden' to make the sidebar disappear and let main content expand
+            sidebar.classList.toggle('hidden');
+        } else {
+            // MOBILE LOGIC: Toggle the translate transform to slide in/out
+            if (sidebar.classList.contains('-translate-x-full')) {
+                // Open Sidebar
+                sidebar.classList.remove('-translate-x-full');
+                if(overlay) overlay.classList.remove('hidden');
+            } else {
+                // Close Sidebar
+                sidebar.classList.add('-translate-x-full');
+                if(overlay) overlay.classList.add('hidden');
+            }
+        }
+    }
 </script>
 </body>
 </html>
