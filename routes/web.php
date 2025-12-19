@@ -28,6 +28,7 @@ use App\Http\Controllers\Admin\ReportAdminController;
 use App\Http\Controllers\Pages\StudentPageController;
 use App\Http\Controllers\Admin\AdminStudentController;
 use App\Http\Controllers\Admin\AdminServicesController;
+use App\Http\Controllers\Admin\AdminFaqsController;
 use App\Http\Controllers\Admin\AdminCommunityController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminStudentStatusController;
@@ -39,7 +40,7 @@ use App\Http\Controllers\Admin\VerificationController as AdminVerificationContro
 
 Route::get('/', [HomeController::class, 'home'])->name('home');
 Route::get('/about', function () { return view('about'); })->name('about');
-Route::get('/help', function () {return view('help');})->name('help');
+Route::get('/help', [HelpController::class, 'index'])->name('help');
 
 
 // Display the form to join as a part-timer
@@ -258,16 +259,23 @@ Route::post('/favorites/services/toggle', [FavoriteController::class, 'toggleSer
     Route::patch('admin/services/{service}/approve', [AdminServicesController::class, 'approve'])->name('admin.services.approve');
     Route::patch('admin/services/{service}/reject', [AdminServicesController::class, 'reject'])->name('admin.services.reject');
 
+// Admin page management
+// Help
+Route::get('/faqs', [AdminFaqsController::class, 'index'])->name('admin.faqs.index');
+Route::get('/faqs/create', [AdminFaqsController::class, 'create'])->name('admin.faqs.create');
+Route::post('/faqs', [AdminFaqsController::class, 'store'])->name('admin.faqs.store');
+Route::patch('/faqs/{faq}/toggle', [AdminFaqsController::class, 'toggle'])->name('admin.faqs.toggle');
+Route::get('/faqs/{faq}/edit', [AdminFaqsController::class, 'edit'])->name('admin.faqs.edit');
+Route::put('/faqs/{faq}', [AdminFaqsController::class, 'update'])->name('admin.faqs.update');
+Route::delete('/faqs/{faq}', [AdminFaqsController::class, 'destroy'])->name('admin.faqs.destroy');
+
+
 
 
 // Public JSON endpoints
 Route::get('/students/{user}', [StudentServiceController::class, 'storefront']);
 Route::get('/search/services', [SearchController::class, 'services']);
 require __DIR__.'/auth.php';
-
-Route::get('/help', function () {
-    return view('help');
-})->name('help');
 
 
 /// Admin Login (public)
