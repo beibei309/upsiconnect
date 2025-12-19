@@ -8,12 +8,17 @@ use Symfony\Component\HttpFoundation\Response;
 
 class PreventBackHistory
 {
-    public function handle(Request $request, Closure $next): Response
-    {
-        $response = $next($request);
+   public function handle(Request $request, Closure $next)
+{
+    $response = $next($request);
 
-        return $response->header('Cache-Control','no-cache, no-store, max-age=0, must-revalidate')
-                        ->header('Pragma','no-cache')
-                        ->header('Expires','Sat, 01 Jan 1990 00:00:00 GMT');
+    // Only apply headers if $response supports header() (normal Response)
+    if (method_exists($response, 'header')) {
+        $response->header('Cache-Control','no-cache, no-store, max-age=0, must-revalidate')
+                 ->header('Pragma','no-cache')
+                 ->header('Expires','Sat, 01 Jan 1990 00:00:00 GMT');
     }
+
+    return $response;
+}
 }

@@ -283,6 +283,8 @@ Route::get('/students/{user}', [StudentServiceController::class, 'storefront']);
 Route::get('/search/services', [SearchController::class, 'services']);
 require __DIR__.'/auth.php';
 
+Route::get('admin/requests/export', [App\Http\Controllers\Admin\AdminRequestController::class, 'export'])
+    ->name('admin.requests.export');
 
 /// Admin Login (public)
 Route::get('/admin/login', [AdminAuthController::class, 'showLogin'])
@@ -308,15 +310,14 @@ Route::post('/admin/login', [AdminAuthController::class, 'login'])
     // Edit Student
     Route::get('/students/{id}/edit', [AdminStudentController::class, 'edit'])->name('admin.students.edit');
     Route::put('/students/{id}/update', [AdminStudentController::class, 'update'])->name('admin.students.update');
-
     // NEW: Delete Student
     Route::delete('/students/{id}', [AdminStudentController::class, 'destroy'])->name('admin.students.delete');
-
     // NEW: Ban Student
     Route::post('/students/{id}/ban', [AdminStudentController::class, 'ban'])->name('admin.students.ban');
-
     // NEW: Unban Student
     Route::post('/students/{id}/unban', [AdminStudentController::class, 'unban'])->name('admin.students.unban');
+    Route::get('admin/students/export', [AdminStudentController::class, 'export'])->name('admin.students.export');
+
 
     // Manage Admin Accounts (superadmin)
     Route::get('/superadmin/admins/create', [SuperAdminController::class, 'create'])
@@ -355,9 +356,11 @@ Route::prefix('community')->group(function () {
     // Blacklist routes
     Route::post('/admin/community/blacklist/{id}', [AdminCommunityController::class, 'blacklist'])->name('admin.community.blacklist');
     Route::post('/admin/community/unblacklist/{id}', [AdminCommunityController::class, 'unblacklist'])->name('admin.community.unblacklist');
-
     // Delete
     Route::delete('/delete/{id}', [AdminCommunityController::class, 'delete'])->name('admin.community.delete');
+    Route::get('admin/community/export', [App\Http\Controllers\Admin\AdminCommunityController::class, 'export'])
+    ->name('admin.community.export');
+
 });
 //end admin community aprt
 

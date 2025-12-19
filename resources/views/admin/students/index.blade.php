@@ -37,6 +37,12 @@
                 Banned
             </a>
         </div>
+        <div class="flex items-center justify-end gap-2 mb-4">
+            <a href="{{ route('admin.students.export', ['format' => 'csv'] + request()->all()) }}" 
+            class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                Export CSV
+            </a>
+        </div>
 
 
         <div class="bg-white shadow rounded-lg p-6">
