@@ -143,6 +143,9 @@
     </div>
     @stack('scripts')
 
+    {{-- VERIFICATION REMINDER MODAL --}}
+    <x-verification-modal />
+
 </body>
 
 </html>

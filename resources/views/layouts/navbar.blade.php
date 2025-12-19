@@ -135,11 +135,18 @@
                     @endif
 
                     <div class="relative ml-3" x-data="{ userOpen: false }">
-                        <button @click="userOpen = !userOpen" type="button" class="bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" id="user-menu-button">
+                        <button @click="userOpen = !userOpen" type="button" class="bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 relative" id="user-menu-button">
                             <span class="sr-only">Open user menu</span>
                             <img class="h-9 w-9 rounded-full object-cover border border-gray-200"
                                  src="{{ $user->profile_photo_path ? asset('storage/' . $user->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=random' }}"
                                  alt="{{ $user->name }}">
+                            @if($user->verification_status === 'approved')
+                                <span class="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-blue-500 ring-2 ring-white" title="Verified">
+                                    <svg class="h-2.5 w-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                    </svg>
+                                </span>
+                            @endif
                         </button>
 
                         <div x-show="userOpen" @click.away="userOpen = false" class="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50" style="display: none;">
@@ -204,8 +211,15 @@
         @auth
             <div class="pt-4 pb-4 border-t border-gray-200">
                 <div class="flex items-center px-5">
-                    <div class="flex-shrink-0">
+                    <div class="flex-shrink-0 relative">
                         <img class="h-10 w-10 rounded-full border border-gray-200" src="{{ $user->profile_photo_path ? asset('storage/' . $user->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) }}" alt="">
+                        @if($user->verification_status === 'approved')
+                            <span class="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-blue-500 ring-2 ring-white" title="Verified">
+                                <svg class="h-2.5 w-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                </svg>
+                            </span>
+                        @endif
                     </div>
                     <div class="ml-3">
                         <div class="text-base font-medium text-gray-800">{{ $user->name }}</div>

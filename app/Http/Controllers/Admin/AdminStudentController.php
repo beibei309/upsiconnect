@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class AdminStudentController extends Controller
 {
@@ -38,7 +39,7 @@ class AdminStudentController extends Controller
                   ->where('is_suspended', 0);
         })
 
-        ->when($status === 'helper', function ($query) {
+        ->when($status === 'helper' || $status === 'helpers', function ($query) {
             $query->where('role', 'helper')
                   ->where('is_suspended', 0);
         })
@@ -202,6 +203,35 @@ class AdminStudentController extends Controller
     return redirect()
         ->route('admin.students.index')
         ->with('success', 'User has been unbanned successfully.');
+}
+
+// Show helper verification selfie
+public function showSelfie($id)
+{
+    $student = User::findOrFail($id);
+    
+    if (!$student->selfie_media_path || !Storage::disk('local')->exists($student->selfie_media_path)) {
+        abort(404, 'Selfie not found.');
+    }
+    
+    return Storage::disk('local')->response($student->selfie_media_path);
+}
+
+// Revoke helper status
+public function revokeHelper($id)
+{
+    $student = User::findOrFail($id);
+    
+    if ($student->role !== 'helper') {
+        return redirect()->back()->with('error', 'User is not a helper.');
+    }
+    
+    $student->update([
+        'role' => 'student',
+        'helper_verified_at' => null
+    ]);
+    
+    return redirect()->back()->with('success', 'Helper status revoked successfully. User is now a regular student.');
 }
 
 }

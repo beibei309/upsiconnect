@@ -6,6 +6,7 @@
     <title>Admin Panel | S2U</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         body {
@@ -80,13 +81,44 @@
 </ul>
 
 
-            <li>
+            <li class="flex items-center justify-between">
+                <!-- MAIN LINK -->
                 <a href="{{ route('admin.community.index') }}"
-                   class="block px-6 py-3 hover:bg-blue-50 hover:text-blue-600 font-medium
-                   {{ request()->routeIs('admin.community.*') ? 'bg-blue-100 text-blue-700 font-semibold' : 'text-gray-700' }}">
+                   class="flex-1 block px-6 py-3 font-medium
+                   {{ request()->routeIs('admin.community.index') || request()->routeIs('admin.community.view') || request()->routeIs('admin.community.edit')
+                        ? 'bg-blue-100 text-blue-700 font-semibold'
+                        : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600' }}">
                     Manage Community
                 </a>
+
+                <!-- TOGGLE BUTTON -->
+                <button type="button"
+                    onclick="toggleCommunityMenu()"
+                    class="px-3 text-gray-500 hover:text-blue-600">
+                    <svg id="communityMenuArrow"
+                         class="w-4 h-4 transition-transform
+                         {{ request()->routeIs('admin.verifications.*') ? 'rotate-90' : '' }}"
+                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
             </li>
+
+            <!-- SUBMENU -->
+            <ul id="communitySubMenu"
+                class="ml-6 mt-1
+                {{ request()->routeIs('admin.verifications.*') ? '' : 'hidden' }}">
+                <li>
+                    <a href="{{ route('admin.verifications.page') }}"
+                       class="block px-6 py-2 text-sm rounded
+                       {{ request()->routeIs('admin.verifications.*')
+                            ? 'bg-blue-100 text-blue-700 font-semibold'
+                            : 'text-gray-600 hover:bg-blue-50 hover:text-blue-600' }}">
+                        Pending Verifications
+                    </a>
+                </li>
+            </ul>
 
             <li>
                 <a href="{{ route('admin.services.index') }}"
@@ -178,6 +210,30 @@
 
 @yield('scripts')
 
+<!-- Auto-display SweetAlert for Laravel flash messages -->
+<script>
+@if(session('success'))
+    Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: '{{ session('success') }}',
+        timer: 3000,
+        showConfirmButton: false,
+        toast: true,
+        position: 'top-end'
+    });
+@endif
+
+@if(session('error'))
+    Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: '{{ session('error') }}',
+        showConfirmButton: true
+    });
+@endif
+</script>
+
 </body>
 </html>
 
@@ -185,6 +241,14 @@
 function toggleStudentMenu() {
     const menu = document.getElementById('studentSubMenu');
     const arrow = document.getElementById('studentMenuArrow');
+
+    menu.classList.toggle('hidden');
+    arrow.classList.toggle('rotate-90');
+}
+
+function toggleCommunityMenu() {
+    const menu = document.getElementById('communitySubMenu');
+    const arrow = document.getElementById('communityMenuArrow');
 
     menu.classList.toggle('hidden');
     arrow.classList.toggle('rotate-90');
