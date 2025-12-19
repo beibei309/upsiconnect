@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel | S2U</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -85,6 +86,14 @@
                                 <a href="{{ route('admin.student_status.index') }}" class="block px-4 py-2 text-sm rounded-lg hover:bg-blue-50 hover:text-blue-600 {{ request()->routeIs('admin.student_status.index') ? 'text-blue-600 font-semibold' : 'text-gray-600' }}">Student Status</a>
                             </li>
                         </ul>
+                    </li>
+                     <li>
+                        <a href="{{ route('admin.categories.index') }}"
+                           class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
+                           {{ request()->routeIs('admin.categories.index') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-gray-600 hover:bg-gray-100 hover:text-blue-600' }}">
+                           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                           Categories
+                        </a>
                     </li>
 
                     <li>

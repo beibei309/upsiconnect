@@ -28,6 +28,7 @@ use App\Http\Controllers\Admin\ReportAdminController;
 use App\Http\Controllers\Pages\StudentPageController;
 use App\Http\Controllers\Admin\AdminStudentController;
 use App\Http\Controllers\Admin\AdminServicesController;
+use App\Http\Controllers\Admin\AdminCategoryController;
 use App\Http\Controllers\Admin\AdminFaqsController;
 use App\Http\Controllers\Admin\AdminCommunityController;
 use App\Http\Controllers\Admin\AdminDashboardController;
@@ -269,8 +270,13 @@ Route::get('/faqs/{faq}/edit', [AdminFaqsController::class, 'edit'])->name('admi
 Route::put('/faqs/{faq}', [AdminFaqsController::class, 'update'])->name('admin.faqs.update');
 Route::delete('/faqs/{faq}', [AdminFaqsController::class, 'destroy'])->name('admin.faqs.destroy');
 
-
-
+// Admin Category
+ Route::get('/categories', [AdminCategoryController::class, 'index'])->name('admin.categories.index');
+    Route::get('/categories/create', [AdminCategoryController::class, 'create'])->name('admin.categories.create');
+    Route::post('/categories', [AdminCategoryController::class, 'store'])->name('admin.categories.store');
+    Route::get('/categories/{category}/edit', [AdminCategoryController::class, 'edit'])->name('admin.categories.edit');
+    Route::put('/categories/{category}', [AdminCategoryController::class, 'update'])->name('admin.categories.update');
+    Route::delete('/categories/{category}', [AdminCategoryController::class, 'destroy'])->name('admin.categories.destroy');
 
 // Public JSON endpoints
 Route::get('/students/{user}', [StudentServiceController::class, 'storefront']);
