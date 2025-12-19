@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use App\Models\User;
 
 class AdminCommunityController extends Controller
@@ -69,10 +70,15 @@ public function update(Request $request, $id)
 
     // Upload new profile photo
     if ($request->hasFile('profile_photo')) {
-        $file = $request->file('profile_photo');
-        $path = 'uploads/profile/' . time() . '_' . $file->getClientOriginalName();
-        $file->move(public_path('uploads/profile'), $path);
+        // Delete old photo if exists
+        if ($user->profile_photo_path && Storage::disk('public')->exists($user->profile_photo_path)) {
+            Storage::disk('public')->delete($user->profile_photo_path);
+        }
 
+        $file = $request->file('profile_photo');
+        $filename = time() . '_' . $file->getClientOriginalName();
+        $path = $file->storeAs('uploads/profile', $filename, 'public');
+        
         $user->profile_photo_path = $path;
     }
 

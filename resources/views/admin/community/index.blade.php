@@ -85,7 +85,7 @@
 
                     <!-- USER -->
                     <td class="py-3 px-4 flex items-center gap-3">
-                        <img src="{{ asset($user->profile_photo_path ?? 'uploads/profile/default.png') }}"
+                        <img src="{{ $user->profile_photo_path ? asset('storage/' . $user->profile_photo_path) : asset('uploads/profile/default.png') }}"
                              class="w-12 h-12 rounded-full object-cover border">
 
                         <div>

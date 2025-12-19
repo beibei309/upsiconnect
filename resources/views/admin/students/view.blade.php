@@ -115,6 +115,91 @@
         </div>
     </div>
 
+    {{-- HELPER VERIFICATION INFO --}}
+    @if($student->role === 'helper')
+    <div class="bg-gradient-to-r from-green-50 to-emerald-50 shadow-sm rounded-lg p-6 mt-6 border-2 border-green-200">
+        <div class="flex items-center gap-2 mb-4">
+            <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+            <h2 class="text-xl font-bold text-green-800">Helper Verification Information</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Verification Date -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Verified Since</p>
+                @if($student->helper_verified_at)
+                    <p class="text-lg font-bold text-gray-900">
+                        {{ $student->helper_verified_at->format('F d, Y') }}
+                    </p>
+                    <p class="text-xs text-gray-500 mt-1">
+                        {{ $student->helper_verified_at->format('h:i A') }}
+                    </p>
+                @else
+                    <p class="text-gray-400 italic">Not recorded</p>
+                @endif
+            </div>
+
+            <!-- GPS Location -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">📍 Location</p>
+                @if($student->latitude && $student->longitude)
+                    <p class="text-sm font-mono text-gray-900">
+                        {{ number_format($student->latitude, 6) }}, {{ number_format($student->longitude, 6) }}
+                    </p>
+                    @if($student->address)
+                        <p class="text-xs text-gray-600 mt-1">
+                            {{ $student->address }}
+                        </p>
+                    @endif
+                    @if($student->location_verified_at)
+                        <p class="text-xs text-gray-400 mt-1">
+                            Verified: {{ $student->location_verified_at->format('M d, Y') }}
+                        </p>
+                    @endif
+                @else
+                    <p class="text-gray-400 italic">No location data</p>
+                @endif
+            </div>
+
+            <!-- Verification Selfie -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">📸 Verification Selfie</p>
+                @if($student->selfie_media_path)
+                    <button onclick="openHelperSelfieModal({{ $student->id }})" 
+                            class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                        View Selfie
+                    </button>
+                @else
+                    <p class="text-gray-400 italic">No selfie uploaded</p>
+                @endif
+            </div>
+
+            <!-- Revoke Helper Status -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">⚙️ Actions</p>
+                <form action="{{ route('admin.students.revoke_helper', $student->id) }}" 
+                      method="POST" 
+                      onsubmit="return confirm('Are you sure you want to revoke helper status? This will convert the user back to a regular student.')">
+                    @csrf
+                    <button type="submit" 
+                            class="inline-flex items-center gap-2 px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium rounded-lg transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                        Revoke Helper Status
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endif
+
     {{-- HELPER PROFILE --}}
     @if($student->role === 'helper')
     <div class="bg-white shadow-sm rounded-lg p-6 mt-6 border border-gray-200">
@@ -193,7 +278,7 @@
             Live selfie submitted during verification process.
         </p>
 
-        <img src="{{ asset('storage/' . $student->selfie_media_path) }}"
+        <img src="{{ route('admin.verifications.selfie', $student->id) }}"
              alt="Live Selfie"
              class="w-40 h-40 rounded-lg object-cover border shadow">
 
@@ -281,6 +366,29 @@ function submitBan() {
 
     form.submit();
 }
+
+// Helper Selfie Modal
+function openHelperSelfieModal(studentId) {
+    const modal = document.createElement('div');
+    modal.id = 'helperSelfieModal';
+    modal.className = 'fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4';
+    modal.onclick = () => modal.remove();
+    
+    modal.innerHTML = `
+        <div class="relative max-w-4xl max-h-full" onclick="event.stopPropagation()">
+            <button onclick="this.closest('#helperSelfieModal').remove()" 
+                    class="absolute -top-10 right-0 text-white hover:text-gray-300 text-2xl font-bold">
+                ×
+            </button>
+            <img src="/admin/students/${studentId}/selfie" 
+                 class="max-w-full max-h-[90vh] rounded-lg shadow-2xl" 
+                 alt="Helper Verification Selfie">
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
 </script>
 
 @endsection

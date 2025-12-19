@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
@@ -38,9 +38,16 @@ class User extends Authenticatable
         'faculty',
         'course',
         'address',
+        'latitude',
+        'longitude',
+        'location_verified_at',
         'skills',
         'work_experience_message',
-        'work_experience_file',   
+        'work_experience_message',
+        'work_experience_file', 
+        'verification_document_path',
+        'verification_note',  
+        'helper_verified_at',
     ];
 
     /**
@@ -67,6 +74,8 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'public_verified_at' => 'datetime',
             'staff_verified_at' => 'datetime',
+            'helper_verified_at' => 'datetime',
+            'location_verified_at' => 'datetime',
             'is_available' => 'boolean',
             'is_suspended' => 'boolean',
             'is_blacklisted' => 'boolean',

@@ -33,6 +33,11 @@ class RegisteredUserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => [
+                'required', 
+                'string', 
+                'email', 
+                'max:255', 
+                'unique:'.User::class,
                 'required',
                 'string',
                 'email',
@@ -55,19 +60,26 @@ class RegisteredUserController extends Controller
                 'nullable', 
                 'email',
                 function ($attribute, $value, $fail) use ($request) {
-                    if ($value) {
-                        if ($request->role === 'student') {
-                            if (!str_ends_with($value, '@siswa.upsi.edu.my')) {
-                                $fail('Student email must end with @siswa.upsi.edu.my');
-                            }
-                        } elseif ($request->role === 'community' && $request->community_type === 'staff') {
-                            if (!preg_match('/@([a-zA-Z]+\.)?upsi\.edu\.my$/', $value)) {
-                                $fail('Staff email must be in format @upsi.edu.my or @faculty.upsi.edu.my');
-                            }
+                    if ($request->role === 'student') {
+                        if (!str_ends_with($value, '@siswa.upsi.edu.my')) {
+                            $fail('Students must register with their @siswa.upsi.edu.my email.');
+                        }
+                    } elseif ($request->community_type === 'staff') { // Check community_type for staff
+                        // Allowed staff pattern (Central + Faculties + Depts)
+                        $pattern = '/^[a-zA-Z0-9._%+-]+@(upsi\.edu\.my|fsskj\.upsi\.edu\.my|fpm\.upsi\.edu\.my|fsmt\.upsi\.edu\.my|fskik\.upsi\.edu\.my|meta\.upsi\.edu\.my|fbk\.upsi\.edu\.my|fpe\.upsi\.edu\.my|fmsp\.upsi\.edu\.my|ftv\.upsi\.edu\.my|fsk\.upsi\.edu\.my|bendahari\.upsi\.edu\.my|ict\.upsi\.edu\.my)$/';
+                        
+                        if (!preg_match($pattern, $value)) {
+                            $fail('Staff must use a valid UPSI staff email (e.g., @upsi.edu.my or faculty subdomain).');
                         }
                     }
                 }
             ],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'role' => ['required', 'in:student,community'],
+            'phone' => ['required', 'string', 'max:20'],
+            'student_id' => ['required_if:role,student', 'nullable', 'string', 'max:20'],
+            'community_type' => ['nullable', 'in:public,staff'],
+            // staff_email removed - use main email
         ]);
 
         // Set verification status based on role
@@ -98,10 +110,8 @@ class RegisteredUserController extends Controller
             'role' => $request->role,
             'phone' => $request->phone,
             'student_id' => $request->student_id,
-            'staff_email' => $request->staff_email,
-            'verification_status' => $verificationStatus,
-            'public_verified_at' => $publicVerifiedAt,
-            'staff_verified_at' => $staffVerifiedAt,
+            // 'staff_email' => $request->staff_email, // Removed as we use main email
+            'verification_status' => 'pending', // Always pending until email verified
             'is_available' => $request->role === 'student' ? true : false,
         ]);
 
