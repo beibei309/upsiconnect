@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
@@ -38,9 +38,16 @@ class User extends Authenticatable
         'faculty',
         'course',
         'address',
+        'latitude',
+        'longitude',
+        'location_verified_at',
         'skills',
         'work_experience_message',
-        'work_experience_file',   
+        'work_experience_message',
+        'work_experience_file', 
+        'verification_document_path',
+        'verification_note',  
+        'helper_verified_at',
     ];
 
     /**
@@ -67,6 +74,8 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'public_verified_at' => 'datetime',
             'staff_verified_at' => 'datetime',
+            'helper_verified_at' => 'datetime',
+            'location_verified_at' => 'datetime',
             'is_available' => 'boolean',
             'is_suspended' => 'boolean',
             'is_blacklisted' => 'boolean',
@@ -122,27 +131,16 @@ class User extends Authenticatable
         return $this->hasMany(ServiceApplicationInterest::class, 'student_id');
     }
 
-    public function favorites()
-    {
-        return $this->belongsToMany(User::class, 'favorites', 'user_id', 'favorited_user_id')
-                    ->withTimestamps();
-    }
-
-    public function favoritedBy()
-    {
-        return $this->belongsToMany(User::class, 'favorites', 'favorited_user_id', 'user_id')
-                    ->withTimestamps();
-    }
-    
-    public function favoriteServices()
+public function favoriteServices()
 {
     return $this->belongsToMany(
         \App\Models\StudentService::class,
-        'favorites',
-        'user_id',
-        'service_id'
+        'favorites',   // pivot table
+        'user_id',     // user_id on favorites
+        'service_id'   // service_id on favorites (IMPORTANT)
     )->withTimestamps();
 }
+
 
 
     // Helpers
@@ -200,6 +198,12 @@ class User extends Authenticatable
     public function getAverageRatingAttribute(): ?float
     {
         return $this->reviewsReceived()->avg('rating');
+    }
+
+    public function studentStatus()
+    {
+        // Links User (id) -> StudentStatus (student_id)
+        return $this->hasOne(StudentStatus::class, 'student_id');
     }
 
     

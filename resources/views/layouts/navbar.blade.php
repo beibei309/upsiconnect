@@ -77,23 +77,25 @@
             <div class="hidden md:flex items-center space-x-3 lg:space-x-4">
                 @auth
                     <div class="flex items-center space-x-2 border-r border-gray-200 pr-4 mr-2">
-                        <button type="button" class="relative p-2 text-gray-500 hover:text-indigo-600 hover:bg-gray-100 rounded-full transition focus:outline-none">
+                        <a href="{{ route('notifications.index') }}" class="relative p-2 text-gray-500 hover:text-indigo-600 hover:bg-gray-100 rounded-full transition focus:outline-none">
                             <span class="sr-only">View notifications</span>
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C8.67 6.165 7 8.388 7 11v3.159c0 .538-.214 1.055-.595 1.436L5 17h10z" />
                             </svg>
-                            <span class="absolute top-1.5 right-1.5 flex h-2 w-2">
-                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                            </span>
-                        </button>
+                            @if(auth()->user()->unreadNotifications->count() > 0)
+                                <span class="absolute top-1.5 right-1.5 flex h-2 w-2">
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                                </span>
+                            @endif
+                        </a>
 
-                        <a href="{{ route('chat.index') }}" class="relative p-2 text-gray-500 hover:text-indigo-600 hover:bg-gray-100 rounded-full transition">
+                        {{-- <a href="{{ route('chat.index') }}" class="relative p-2 text-gray-500 hover:text-indigo-600 hover:bg-gray-100 rounded-full transition">
                             <span class="sr-only">Messages</span>
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                             </svg>
-                        </a>
+                        </a> --}}
 
                         {{-- BUYER-ONLY ICONS --}}
                         @if($viewMode === 'buyer')
@@ -116,7 +118,11 @@
                     @if ($user->role === 'student')
                         <a href="{{ route('onboarding.students') }}"
                            class="hidden lg:inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+<<<<<<< HEAD
                             Become a Helper
+=======
+                            Become a Seller
+>>>>>>> 6399068de6df6748517e7d5a89890a29e239f3f6
                         </a>
                     @elseif ($isHelper)
                         <form action="{{ route('switch.mode') }}" method="POST" class="hidden lg:inline-flex">
@@ -133,11 +139,25 @@
                     @endif
 
                     <div class="relative ml-3" x-data="{ userOpen: false }">
+<<<<<<< HEAD
                         <button @click="userOpen = !userOpen" type="button" class="bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" id="user-menu-button">
+=======
+                        <button @click="userOpen = !userOpen" type="button" class="bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 relative" id="user-menu-button">
+>>>>>>> 6399068de6df6748517e7d5a89890a29e239f3f6
                             <span class="sr-only">Open user menu</span>
                             <img class="h-9 w-9 rounded-full object-cover border border-gray-200"
                                  src="{{ $user->profile_photo_path ? asset('storage/' . $user->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=random' }}"
                                  alt="{{ $user->name }}">
+<<<<<<< HEAD
+=======
+                            @if($user->verification_status === 'approved')
+                                <span class="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-blue-500 ring-2 ring-white" title="Verified">
+                                    <svg class="h-2.5 w-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                    </svg>
+                                </span>
+                            @endif
+>>>>>>> 6399068de6df6748517e7d5a89890a29e239f3f6
                         </button>
 
                         <div x-show="userOpen" @click.away="userOpen = false" class="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50" style="display: none;">
@@ -202,8 +222,20 @@
         @auth
             <div class="pt-4 pb-4 border-t border-gray-200">
                 <div class="flex items-center px-5">
+<<<<<<< HEAD
                     <div class="flex-shrink-0">
                         <img class="h-10 w-10 rounded-full border border-gray-200" src="{{ $user->profile_photo_path ? asset('storage/' . $user->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) }}" alt="">
+=======
+                    <div class="flex-shrink-0 relative">
+                        <img class="h-10 w-10 rounded-full border border-gray-200" src="{{ $user->profile_photo_path ? asset('storage/' . $user->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) }}" alt="">
+                        @if($user->verification_status === 'approved')
+                            <span class="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-blue-500 ring-2 ring-white" title="Verified">
+                                <svg class="h-2.5 w-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                </svg>
+                            </span>
+                        @endif
+>>>>>>> 6399068de6df6748517e7d5a89890a29e239f3f6
                     </div>
                     <div class="ml-3">
                         <div class="text-base font-medium text-gray-800">{{ $user->name }}</div>
@@ -212,7 +244,11 @@
                 </div>
                 <div class="mt-3 px-2 space-y-1">
                     <a href="{{ route('profile.edit') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50">Your Profile</a>
+<<<<<<< HEAD
                     <a href="{{ route('chat.index') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50">Messages</a>
+=======
+                    {{-- <a href="{{ route('chat.index') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50">Messages</a> --}}
+>>>>>>> 6399068de6df6748517e7d5a89890a29e239f3f6
                     
                     @if($viewMode === 'buyer')
                         <a href="{{ route('favorites.index') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50">Favorites</a>
@@ -220,7 +256,11 @@
                     @endif
                     
                     @if ($user->role === 'student')
+<<<<<<< HEAD
                         <a href="{{ route('onboarding.students') }}" class="block px-3 py-2 rounded-md text-base font-medium text-indigo-600 hover:bg-indigo-50">Become a Helper</a>
+=======
+                        <a href="{{ route('onboarding.students') }}" class="block px-3 py-2 rounded-md text-base font-medium text-indigo-600 hover:bg-indigo-50">Become a Seller</a>
+>>>>>>> 6399068de6df6748517e7d5a89890a29e239f3f6
                     @elseif ($isHelper)
                         {{-- MOBILE SWITCH BUTTON --}}
                         <form action="{{ route('switch.mode') }}" method="POST">

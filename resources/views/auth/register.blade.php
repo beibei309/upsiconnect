@@ -88,14 +88,12 @@
                             placeholder="D202XXXXXX">
                         <x-input-error :messages="$errors->get('student_id')" class="mt-1 text-red-500 text-xs" />
                     </div>
-
-                    <div>
-                        <label for="staff_email" class="block text-sm font-medium text-gray-700 mb-1">UPSI Student Email</label>
-                        <input id="staff_email" type="email" name="staff_email" :value="old('staff_email')" 
-                            class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-                            placeholder="name@siswa.upsi.edu.my">
-                        <p class="text-[11px] text-gray-500 mt-1">Required for instant verification badge.</p>
-                        <x-input-error :messages="$errors->get('staff_email')" class="mt-1 text-red-500 text-xs" />
+                    
+                    <div class="flex items-start gap-3 bg-white/60 p-3 rounded-lg border border-indigo-200">
+                         <svg class="w-5 h-5 text-indigo-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+                         <p class="text-xs text-indigo-800 leading-snug">
+                             You must use your <b>@siswa.upsi.edu.my</b> email in the "Email Address" field above for instant processing.
+                         </p>
                     </div>
                 </div>
 
@@ -118,20 +116,11 @@
                         </div>
                     </div>
 
-                    <div x-show="communityType === 'staff'" x-transition>
-                        <label for="staff_email_community" class="block text-sm font-medium text-gray-700 mb-1">UPSI Staff Email</label>
-                        <input id="staff_email_community" type="email" name="staff_email" :value="old('staff_email')" 
-                            class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-                            placeholder="name@upsi.edu.my">
-                        <p class="text-[11px] text-gray-500 mt-1">For lecturers and staff verification.</p>
-                        <x-input-error :messages="$errors->get('staff_email')" class="mt-1 text-red-500 text-xs" />
-                    </div>
-
                     <div class="flex items-start gap-3 bg-white/60 p-3 rounded-lg border border-yellow-200">
                         <svg class="w-5 h-5 text-yellow-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
                         <p class="text-xs text-yellow-800 leading-snug">
-                            <span x-show="communityType === 'staff'">Staff accounts are auto-verified with a valid email.</span>
-                            <span x-show="communityType === 'public'">Public accounts may require manual admin approval.</span>
+                            <span x-show="communityType === 'staff'">Staff: Use your <b>@upsi.edu.my</b> email above for auto-verification.</span>
+                            <span x-show="communityType === 'public'">Public: You will need to upload proof of ID/Residence.</span>
                         </p>
                     </div>
                 </div>

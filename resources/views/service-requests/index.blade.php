@@ -159,7 +159,19 @@
                                                                             stroke-linejoin="round" stroke-width="2"
                                                                             d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                                                     </svg>
+<<<<<<< HEAD
                                                                     {{ \Carbon\Carbon::parse($request->selected_dates)->format('M j, Y') }}
+=======
+                                                                    @php
+                                                                        $dates = $request->selected_dates;
+                                                                        $firstDate = is_array($dates) ? $dates[0] : $dates;
+                                                                        $count = is_array($dates) ? count($dates) : 1;
+                                                                    @endphp
+                                                                    {{ \Carbon\Carbon::parse($firstDate)->format('M j, Y') }}
+                                                                    @if($count > 1)
+                                                                        <span class="ml-1">(+{{ $count - 1 }})</span>
+                                                                    @endif
+>>>>>>> 6399068de6df6748517e7d5a89890a29e239f3f6
                                                                 </span>
                                                             @endif
                                                         </div>
@@ -341,7 +353,19 @@
                                                                             stroke-linejoin="round" stroke-width="2"
                                                                             d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                                                     </svg>
+<<<<<<< HEAD
                                                                     {{ \Carbon\Carbon::parse($request->selected_dates)->format('M j, Y') }}
+=======
+                                                                    @php
+                                                                        $dates = $request->selected_dates;
+                                                                        $firstDate = is_array($dates) ? $dates[0] : $dates;
+                                                                        $count = is_array($dates) ? count($dates) : 1;
+                                                                    @endphp
+                                                                    {{ \Carbon\Carbon::parse($firstDate)->format('M j, Y') }}
+                                                                    @if($count > 1)
+                                                                        <span class="ml-1">(+{{ $count - 1 }})</span>
+                                                                    @endif
+>>>>>>> 6399068de6df6748517e7d5a89890a29e239f3f6
                                                                 </span>
                                                             @endif
                                                         </div>
@@ -467,7 +491,19 @@
 
                                                         @if ($request->selected_dates)
                                                             <div class="flex items-center gap-1.5 text-xs">
+<<<<<<< HEAD
                                                                 {{ \Carbon\Carbon::parse($request->selected_dates)->format('d M Y') }}
+=======
+                                                                @php
+                                                                    $dates = $request->selected_dates;
+                                                                    $firstDate = is_array($dates) ? $dates[0] : $dates;
+                                                                    $count = is_array($dates) ? count($dates) : 1;
+                                                                @endphp
+                                                                {{ \Carbon\Carbon::parse($firstDate)->format('d M Y') }}
+                                                                @if($count > 1)
+                                                                    <span>(+{{ $count - 1 }})</span>
+                                                                @endif
+>>>>>>> 6399068de6df6748517e7d5a89890a29e239f3f6
                                                             </div>
                                                         @endif
                                                     </div>

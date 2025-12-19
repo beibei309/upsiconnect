@@ -58,7 +58,12 @@
               {{ request('status') == 'blacklisted' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700' }}">
         Blacklisted
     </a>
-
+</div>
+      <div class="mb-4">
+    <a href="{{ route('admin.community.export', array_merge(request()->only('search', 'status'), ['format' => 'csv'])) }}"
+       class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+        Export CSV
+    </a>
 </div>
 
 
@@ -80,7 +85,7 @@
 
                     <!-- USER -->
                     <td class="py-3 px-4 flex items-center gap-3">
-                        <img src="{{ asset($user->profile_photo_path ?? 'uploads/profile/default.png') }}"
+                        <img src="{{ $user->profile_photo_path ? asset('storage/' . $user->profile_photo_path) : asset('uploads/profile/default.png') }}"
                              class="w-12 h-12 rounded-full object-cover border">
 
                         <div>

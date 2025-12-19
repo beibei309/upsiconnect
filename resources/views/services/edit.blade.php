@@ -1,488 +1,1036 @@
 @extends('layouts.helper')
 
+{{-- 1. Initialize Schedule Data (Merge Defaults with Existing DB Data) --}}
+@php
+    $defaultSchedule = [
+        'mon' => ['enabled' => true, 'start' => '09:00', 'end' => '17:00'],
+        'tue' => ['enabled' => true, 'start' => '09:00', 'end' => '17:00'],
+        'wed' => ['enabled' => true, 'start' => '09:00', 'end' => '17:00'],
+        'thu' => ['enabled' => true, 'start' => '09:00', 'end' => '17:00'],
+        'fri' => ['enabled' => true, 'start' => '09:00', 'end' => '17:00'],
+        'sat' => ['enabled' => false, 'start' => '10:00', 'end' => '14:00'],
+        'sun' => ['enabled' => false, 'start' => '10:00', 'end' => '14:00'],
+    ];
+    $scheduleData = $service->operating_hours ?? $defaultSchedule;
+    foreach ($defaultSchedule as $key => $val) {
+        if (!isset($scheduleData[$key])) {
+            $scheduleData[$key] = $val;
+        }
+    }
+@endphp
+
 @section('content')
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    {{-- Libraries --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    {{-- Alpine JS (Only for Schedule Logic) --}}
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
     <style>
+        /* Quill Customization */
         .ql-toolbar {
             border-top-left-radius: 0.5rem;
             border-top-right-radius: 0.5rem;
-            border-color: #d1d5db !important;
+            border-color: #e5e7eb !important;
             background-color: #f9fafb;
         }
 
         .ql-container {
             border-bottom-left-radius: 0.5rem;
             border-bottom-right-radius: 0.5rem;
-            border-color: #d1d5db !important;
+            border-color: #e5e7eb !important;
             font-family: inherit;
-            background-color: white;
         }
 
         .ql-editor {
             min-height: 120px;
-            font-size: 0.875rem;
+            font-size: 0.95rem;
+        }
+
+        /* Wizard Progress Line */
+        .step-active {
+            border-color: #4f46e5;
+            color: #4f46e5;
+        }
+
+        .step-completed {
+            border-color: #10b981;
+            color: #10b981;
+        }
+
+        .step-inactive {
+            border-color: transparent;
+            color: #9ca3af;
+        }
+
+        /* Alpine Utilities */
+        [x-cloak] {
+            display: none !important;
+        }
+
+        /* Toggle Switch */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #6366f1;
+        }
+
+        .toggle-checkbox:checked+.toggle-label {
+            background-color: #6366f1;
+        }
+
+        .toggle-checkbox {
+            right: 0;
+            z-index: 1;
+            border-color: #cbd5e1;
+            transition: all 0.3s;
+        }
+
+        .toggle-label {
+            width: 100%;
+            height: 100%;
+            background-color: #cbd5e1;
+            border-radius: 9999px;
+            transition: background-color 0.3s;
         }
     </style>
 
-    <div class="min-h-screen bg-gray-50 py-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="py-12 bg-gray-50 min-h-screen">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
 
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+            <div class="flex items-center justify-between mb-8">
                 <div>
-                    <br><br><br>
-                    <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Edit Service</h1>
-                    <p class="mt-2 text-sm text-gray-600">Update the details of your service offering.</p>
+                    <h1 class="text-3xl font-bold text-gray-900">Edit Service</h1>
+                    <p class="text-gray-600 mt-1">Update details for <strong>{{ $service->title }}</strong></p>
                 </div>
-                <div class="mt-4 md:mt-0">
-                    <a href="{{ route('services.manage') }}"
-                        class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200">
-                        <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                        </svg>
-                        Back to Manage
-                    </a>
+                <a href="{{ route('services.manage') }}"
+                    class="text-gray-600 hover:text-gray-900 font-medium flex items-center">
+                    <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back to Manage
+                </a>
+            </div>
+
+            <div class="mb-8">
+                <div class="border-b border-gray-200">
+                    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                        <button
+                            class="step-link step-active group w-1/4 py-4 px-1 border-b-2 font-medium text-sm flex items-center justify-center transition-colors"
+                            data-target="overview" onclick="switchTab('overview')">
+                            <span
+                                class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs mr-2 font-bold ring-1 ring-indigo-600">1</span>
+                            Overview
+                        </button>
+                        <button
+                            class="step-link step-inactive group w-1/4 py-4 px-1 border-b-2 font-medium text-sm flex items-center justify-center transition-colors"
+                            data-target="pricing" onclick="switchTab('pricing')">
+                            <span
+                                class="w-6 h-6 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center text-xs mr-2 font-bold">2</span>
+                            Pricing
+                        </button>
+                        <button
+                            class="step-link step-inactive group w-1/4 py-4 px-1 border-b-2 font-medium text-sm flex items-center justify-center transition-colors"
+                            data-target="description" onclick="switchTab('description')">
+                            <span
+                                class="w-6 h-6 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center text-xs mr-2 font-bold">3</span>
+                            Description
+                        </button>
+                        <button
+                            class="step-link step-inactive group w-1/4 py-4 px-1 border-b-2 font-medium text-sm flex items-center justify-center transition-colors"
+                            data-target="availability" onclick="switchTab('availability')">
+                            <span
+                                class="w-6 h-6 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center text-xs mr-2 font-bold">4</span>
+                            Availability
+                        </button>
+                    </nav>
                 </div>
             </div>
 
-            <form id="serviceForm" enctype="multipart/form-data">
+            <form id="editServiceForm" method="POST" enctype="multipart/form-data"
+                class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden relative">
                 @csrf
-                @method('PUT')
+                @method('PUT') {{-- IMPORTANT: Method Spoofing for Edit --}}
+                <input type="hidden" name="service_id" value="{{ $service->id }}">
 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div id="overview" class="tab-section p-8">
+                    <div class="mb-6">
+                        <h2 class="text-xl font-bold text-gray-900">Service Basics</h2>
+                        <p class="text-gray-500 text-sm">Core details about what you are offering.</p>
+                    </div>
 
-                    <div class="lg:col-span-2 space-y-8">
+                    <div class="grid grid-cols-1 gap-6 max-w-3xl">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Service Title <span
+                                    class="text-red-500">*</span></label>
+                            <input type="text" id="title" name="title" value="{{ $service->title }}"
+                                class="w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
 
-                        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                            <div class="p-6 border-b border-gray-100 bg-gray-50">
-                                <h3 class="text-lg font-medium leading-6 text-gray-900">Basic Information</h3>
-                                <p class="mt-1 text-sm text-gray-500">General details about your service.</p>
-                            </div>
-                            <div class="p-6 space-y-6">
-                                <div>
-                                    <label for="title" class="block text-sm font-medium text-gray-700">Service Title
-                                        <span class="text-red-500">*</span></label>
-                                    <input type="text" name="title" id="title" value="{{ $service->title }}"
-                                        required
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-4 py-3 border">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Category <span
+                                    class="text-red-500">*</span></label>
+                            <select id="category_id" name="category_id"
+                                class="w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
+                                @foreach ($categories as $category)
+                                    <option value="{{ $category->id }}"
+                                        {{ $service->category_id == $category->id ? 'selected' : '' }}>{{ $category->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Service Cover Image</label>
+
+                            @if ($service->image_path)
+                                <div class="mb-3">
+                                    <img src="{{ Str::startsWith($service->image_path, 'services/') ? asset('storage/' . $service->image_path) : asset($service->image_path) }}"
+                                        class="w-32 h-20 object-cover rounded-lg border border-gray-200 shadow-sm">
+                                    <p class="text-xs text-gray-500 mt-1">Current Image</p>
                                 </div>
+                            @endif
 
-                                <div>
-                                    <label for="category_id" class="block text-sm font-medium text-gray-700">Category <span
-                                            class="text-red-500">*</span></label>
-                                    <select name="category_id" id="category_id" required
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-4 py-3 border bg-white">
-                                        @foreach ($categories as $category)
-                                            <option value="{{ $category->id }}"
-                                                {{ $service->category_id == $category->id ? 'selected' : '' }}>
-                                                {{ $category->name }}
-                                            </option>
+                            <input type="file" id="image" name="image" accept="image/*"
+                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+
+                            <div class="mt-4">
+                                <p class="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">Or update from
+                                    template:</p>
+                                <div class="flex gap-3 overflow-x-auto pb-2">
+                                    <img src="/storage/service_tutor.jpg"
+                                        class="template-image w-20 h-20 object-cover rounded-md border-2 border-gray-100 cursor-pointer hover:border-indigo-500 transition"
+                                        data-val="/storage/service_tutor.jpg">
+                                    <img src="/storage/programming_service.jpg"
+                                        class="template-image w-20 h-20 object-cover rounded-md border-2 border-gray-100 cursor-pointer hover:border-indigo-500 transition"
+                                        data-val="/storage/priya.jpg">
+                                    <img src="/storage/design_service.jpg"
+                                        class="template-image w-20 h-20 object-cover rounded-md border-2 border-gray-100 cursor-pointer hover:border-indigo-500 transition"
+                                        data-val="/storage/design_service.jpg">
+                                    <img src="/storage/laundry_service.jpg"
+                                        class="template-image w-20 h-20 object-cover rounded-md border-2 border-gray-100 cursor-pointer hover:border-indigo-500 transition"
+                                        data-val="/storage/laundry_service.jpg">
+                                </div>
+                                <input type="hidden" name="template_image" id="template_image">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 pt-6 border-t border-gray-100 flex justify-end">
+                        <button type="button" onclick="nextStep('overview', 'pricing')"
+                            class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition shadow-sm flex items-center">
+                            Next Step <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="pricing" class="tab-section hidden p-8">
+                    <div class="mb-6">
+                        <h2 class="text-xl font-bold text-gray-900">Packages & Pricing</h2>
+                        <p class="text-gray-500 text-sm">Define your session durations and costs.</p>
+                    </div>
+
+                    <div class="border border-gray-200 rounded-xl p-6 mb-6 bg-gray-50 relative">
+                        <span
+                            class="absolute top-0 right-0 px-3 py-1 bg-gray-200 text-gray-600 text-xs font-bold rounded-bl-xl rounded-tr-xl">REQUIRED</span>
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                            <span class="w-3 h-3 bg-gray-800 rounded-full mr-2"></span> Basic Package
+                        </h3>
+                        <input type="hidden" name="packages[0][package_type]" value="basic">
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <label class="text-xs font-bold text-gray-500 uppercase">Price (RM) <span
+                                        class="text-red-500">*</span></label>
+                                <input type="number" id="basic_price" name="packages[0][price]"
+                                    value="{{ $service->basic_price }}"
+                                    class="w-full mt-1 border-gray-300 rounded-md focus:ring-gray-500 focus:border-gray-500">
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-gray-500 uppercase">Duration</label>
+                                <select name="packages[0][duration]" class="w-full mt-1 border-gray-300 rounded-md">
+                                    @php $durations = ['30 Minutes', '45 Minutes', '1 Hour', '1.5 Hours', '2 Hours', '3 Hours', 'Half Day (4 Hours)']; @endphp
+                                    @foreach ($durations as $d)
+                                        <option value="{{ $d }}"
+                                            {{ $service->basic_duration == $d ? 'selected' : '' }}>{{ $d }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-gray-500 uppercase">Frequency</label>
+                                <select name="packages[0][frequency]" class="w-full mt-1 border-gray-300 rounded-md">
+                                    <option value="Per Session"
+                                        {{ $service->basic_frequency == 'Per Session' ? 'selected' : '' }}>Per Session
+                                    </option>
+                                    <option value="Weekly" {{ $service->basic_frequency == 'Weekly' ? 'selected' : '' }}>
+                                        Weekly</option>
+                                    <option value="Monthly"
+                                        {{ $service->basic_frequency == 'Monthly' ? 'selected' : '' }}>Monthly</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-500 uppercase mb-1 block">What's included?</label>
+                            <div class="bg-white rounded-md border border-gray-300 overflow-hidden">
+                                <div id="editor-basic" class="h-24">{!! $service->basic_description !!}</div>
+                            </div>
+                            <input type="hidden" name="packages[0][description]" id="input-basic"
+                                value="{{ $service->basic_description }}">
+                        </div>
+                    </div>
+
+                    <div class="flex items-center mb-6 bg-indigo-50 p-4 rounded-lg border border-indigo-100">
+                        <input type="checkbox" id="offer_packages" name="offer_packages"
+                            {{ $service->standard_price || $service->premium_price ? 'checked' : '' }}
+                            class="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer">
+                        <label for="offer_packages"
+                            class="ml-3 block text-sm font-medium text-indigo-900 cursor-pointer select-none">
+                            Offer <strong>Standard</strong> & <strong>Premium</strong> tiers (Upsell options)
+                        </label>
+                    </div>
+
+                    <div id="extraPackages"
+                        class="{{ $service->standard_price || $service->premium_price ? '' : 'hidden' }} space-y-6">
+                        <div class="border border-blue-200 rounded-xl p-6 bg-blue-50/50">
+                            <h3 class="text-lg font-bold text-blue-800 mb-4 flex items-center"><span
+                                    class="w-3 h-3 bg-blue-600 rounded-full mr-2"></span> Standard Package</h3>
+                            <input type="hidden" name="packages[1][package_type]" value="standard">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                <div><label class="text-xs font-bold text-blue-600 uppercase">Price</label><input
+                                        type="number" name="packages[1][price]" value="{{ $service->standard_price }}"
+                                        class="w-full mt-1 border-blue-200 rounded-md"></div>
+                                <div><label class="text-xs font-bold text-blue-600 uppercase">Duration</label>
+                                    <select name="packages[1][duration]" class="w-full mt-1 border-blue-200 rounded-md">
+                                        @foreach ($durations as $d)
+                                            <option value="{{ $d }}"
+                                                {{ $service->standard_duration == $d ? 'selected' : '' }}>
+                                                {{ $d }}</option>
                                         @endforeach
                                     </select>
                                 </div>
-
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Description <span
-                                            class="text-red-500">*</span></label>
-
-                                    <div id="main-editor-container" style="height: 200px;">
-                                        {!! $service->description !!}
-                                    </div>
-
-                                    <input type="hidden" name="description" id="hidden-description">
-
-                                    <p class="mt-2 text-sm text-gray-500">Briefly describe what your service entails.</p>
+                                <div><label class="text-xs font-bold text-blue-600 uppercase">Frequency</label>
+                                    <select name="packages[1][frequency]" class="w-full mt-1 border-blue-200 rounded-md">
+                                        <option value="Per Session"
+                                            {{ $service->standard_frequency == 'Per Session' ? 'selected' : '' }}>Per
+                                            Session</option>
+                                        <option value="Weekly"
+                                            {{ $service->standard_frequency == 'Weekly' ? 'selected' : '' }}>Weekly
+                                        </option>
+                                        <option value="Monthly"
+                                            {{ $service->standard_frequency == 'Monthly' ? 'selected' : '' }}>Monthly
+                                        </option>
+                                    </select>
                                 </div>
                             </div>
+                            <div class="bg-white rounded-md border border-blue-200 overflow-hidden">
+                                <div id="editor-standard" class="h-20">{!! $service->standard_description !!}</div>
+                            </div>
+                            <input type="hidden" name="packages[1][description]" id="input-standard"
+                                value="{{ $service->standard_description }}">
                         </div>
 
-                        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                            <div class="p-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                                <div>
-                                    <h3 class="text-lg font-medium leading-6 text-gray-900">Pricing Packages</h3>
-                                    <p class="mt-1 text-sm text-gray-500">Define your service tiers.</p>
+                        <div class="border border-purple-200 rounded-xl p-6 bg-purple-50/50">
+                            <h3 class="text-lg font-bold text-purple-800 mb-4 flex items-center"><span
+                                    class="w-3 h-3 bg-purple-600 rounded-full mr-2"></span> Premium Package</h3>
+                            <input type="hidden" name="packages[2][package_type]" value="premium">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                <div><label class="text-xs font-bold text-purple-600 uppercase">Price</label><input
+                                        type="number" name="packages[2][price]" value="{{ $service->premium_price }}"
+                                        class="w-full mt-1 border-purple-200 rounded-md"></div>
+                                <div><label class="text-xs font-bold text-purple-600 uppercase">Duration</label>
+                                    <select name="packages[2][duration]" class="w-full mt-1 border-purple-200 rounded-md">
+                                        @foreach ($durations as $d)
+                                            <option value="{{ $d }}"
+                                                {{ $service->premium_duration == $d ? 'selected' : '' }}>
+                                                {{ $d }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
-                                @php
-                                    $offerPackages = $service->standard_price || $service->premium_price;
-                                @endphp
-                                <div class="flex items-center">
-                                    <input type="checkbox" id="togglePackages" name="offer_packages"
-                                        class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                                        {{ $offerPackages ? 'checked' : '' }}>
-                                    <label for="togglePackages" class="ml-2 block text-sm text-gray-900">Enable
-                                        Tiers</label>
-                                </div>
-                            </div>
-
-                            <div class="p-6">
-                                @php
-                                    $packages = [
-                                        [
-                                            'name' => 'Basic',
-                                            'key' => 'basic',
-                                            'color' => 'bg-gray-100 text-gray-800',
-                                            'duration' => $service->basic_duration,
-                                            'frequency' => $service->basic_frequency,
-                                            'price' => $service->basic_price,
-                                            'description' => $service->basic_description,
-                                        ],
-                                        [
-                                            'name' => 'Standard',
-                                            'key' => 'standard',
-                                            'color' => 'bg-blue-50 text-blue-800',
-                                            'duration' => $service->standard_duration,
-                                            'frequency' => $service->standard_frequency,
-                                            'price' => $service->standard_price,
-                                            'description' => $service->standard_description,
-                                        ],
-                                        [
-                                            'name' => 'Premium',
-                                            'key' => 'premium',
-                                            'color' => 'bg-indigo-50 text-indigo-800',
-                                            'duration' => $service->premium_duration,
-                                            'frequency' => $service->premium_frequency,
-                                            'price' => $service->premium_price,
-                                            'description' => $service->premium_description,
-                                        ],
-                                    ];
-                                @endphp
-
-                                <div class="space-y-8">
-                                    @foreach ($packages as $i => $pkg)
-                                        <div class="package-section {{ $i > 0 ? 'extra-package border-t pt-6 mt-6' : '' }}"
-                                            style="{{ $i > 0 && !$offerPackages ? 'display:none;' : '' }}">
-
-                                            <div class="flex items-center mb-4">
-                                                <span
-                                                    class="px-2.5 py-0.5 rounded-full text-xs font-medium {{ $pkg['color'] }}">
-                                                    {{ $pkg['name'] }}
-                                                </span>
-                                                <h4 class="ml-2 text-md font-semibold text-gray-900">{{ $pkg['name'] }}
-                                                    Package</h4>
-                                            </div>
-
-                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                                                <div class="col-span-1 md:col-span-2">
-                                                    <label
-                                                        class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Description</label>
-
-                                                    <div id="pkg-editor-{{ $i }}" class="bg-white"
-                                                        style="height: 100px;">
-                                                        {!! $pkg['description'] !!}
-                                                    </div>
-
-                                                    <input type="hidden" name="packages[{{ $i }}][description]"
-                                                        id="hidden-pkg-{{ $i }}">
-                                                </div>
-
-                                                <div>
-                                                    <label
-                                                        class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Price
-                                                        (RM)</label>
-                                                    <div class="relative rounded-md shadow-sm">
-                                                        <div
-                                                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                            <span class="text-gray-500 sm:text-sm">RM</span>
-                                                        </div>
-                                                        <input type="number" name="packages[{{ $i }}][price]"
-                                                            value="{{ $pkg['price'] }}" step="0.01"
-                                                            class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md px-3 py-2 border"
-                                                            placeholder="0.00">
-                                                    </div>
-                                                </div>
-
-                                                <div>
-                                                    <label
-                                                        class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Duration
-                                                        (Hours)</label>
-                                                    <select name="packages[{{ $i }}][duration]"
-                                                        class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border bg-white">
-                                                        <option value="">Select Duration</option>
-                                                        @for ($h = 1; $h <= 6; $h++)
-                                                            <option value="{{ $h }}"
-                                                                {{ $pkg['duration'] == $h ? 'selected' : '' }}>
-                                                                {{ $h }} Hour{{ $h > 1 ? 's' : '' }}
-                                                            </option>
-                                                        @endfor
-                                                    </select>
-                                                </div>
-
-                                                <div class="col-span-1 md:col-span-2">
-                                                    <label
-                                                        class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Frequency</label>
-                                                    <select name="packages[{{ $i }}][frequency]"
-                                                        class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border bg-white">
-                                                        <option value="">Select Frequency</option>
-                                                        <option value="Per Session"
-                                                            {{ $pkg['frequency'] == 'Per Session' ? 'selected' : '' }}>Per
-                                                            Session</option>
-                                                        <option value="Weekly"
-                                                            {{ $pkg['frequency'] == 'Weekly' ? 'selected' : '' }}>Weekly
-                                                        </option>
-                                                        <option value="Monthly"
-                                                            {{ $pkg['frequency'] == 'Monthly' ? 'selected' : '' }}>Monthly
-                                                        </option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @endforeach
+                                <div><label class="text-xs font-bold text-purple-600 uppercase">Frequency</label>
+                                    <select name="packages[2][frequency]"
+                                        class="w-full mt-1 border-purple-200 rounded-md">
+                                        <option value="Per Session"
+                                            {{ $service->premium_frequency == 'Per Session' ? 'selected' : '' }}>Per
+                                            Session</option>
+                                        <option value="Weekly"
+                                            {{ $service->premium_frequency == 'Weekly' ? 'selected' : '' }}>Weekly</option>
+                                        <option value="Monthly"
+                                            {{ $service->premium_frequency == 'Monthly' ? 'selected' : '' }}>Monthly
+                                        </option>
+                                    </select>
                                 </div>
                             </div>
+                            <div class="bg-white rounded-md border border-purple-200 overflow-hidden">
+                                <div id="editor-premium" class="h-20">{!! $service->premium_description !!}</div>
+                            </div>
+                            <input type="hidden" name="packages[2][description]" id="input-premium"
+                                value="{{ $service->premium_description }}">
                         </div>
                     </div>
 
-                    <div class="lg:col-span-1 space-y-8">
-                        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                            <div class="p-6 border-b border-gray-100 bg-gray-50">
-                                <h3 class="text-lg font-medium leading-6 text-gray-900">Media</h3>
-                            </div>
-                            <div class="p-6">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Service Image</label>
-                                @php
-                                    $currentImage = $service->image_path
-                                        ? (Str::startsWith($service->image_path, 'services/')
-                                            ? asset('storage/' . $service->image_path)
-                                            : asset($service->image_path))
-                                        : asset('images/default_service.jpg');
-                                @endphp
+                    <div class="mt-8 pt-6 border-t border-gray-100 flex justify-between">
+                        <button type="button" onclick="nextStep('pricing', 'overview')"
+                            class="px-5 py-2.5 text-gray-600 hover:text-gray-900 font-medium">
+                            ← Back
+                        </button>
+                        <button type="button" onclick="nextStep('pricing', 'description')"
+                            class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition shadow-sm flex items-center">
+                            Next Step <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
 
-                                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md relative hover:bg-gray-50 transition-colors group cursor-pointer"
-                                    onclick="document.getElementById('imageInput').click()">
-                                    <div class="space-y-1 text-center">
-                                        <div class="relative w-full h-48 mb-4">
-                                            <img id="imagePreview" src="{{ $currentImage }}"
-                                                class="w-full h-full object-cover rounded-lg shadow-sm">
-                                            <div
-                                                class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all rounded-lg flex items-center justify-center">
-                                                <span
-                                                    class="text-white opacity-0 group-hover:opacity-100 font-medium bg-black bg-opacity-50 px-3 py-1 rounded-full text-sm">Change</span>
+                <div id="description" class="tab-section hidden p-8">
+                    <div class="mb-6">
+                        <h2 class="text-xl font-bold text-gray-900">Detailed Description</h2>
+                        <p class="text-gray-500 text-sm">Tell students why they should choose your service.</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="bg-white rounded-lg border border-gray-300 overflow-hidden">
+                            <div id="editor-main" class="h-64">{!! $service->description !!}</div>
+                        </div>
+                        <input type="hidden" name="description" id="input-main" value="{{ $service->description }}">
+                        <p class="text-xs text-gray-400 mt-2 text-right">Be descriptive and professional.</p>
+                    </div>
+
+                    <div class="mt-8 pt-6 border-t border-gray-100 flex justify-between">
+                        <button type="button" onclick="nextStep('description', 'pricing')"
+                            class="px-5 py-2.5 text-gray-600 hover:text-gray-900 font-medium">
+                            ← Back
+                        </button>
+                        <button type="button" onclick="nextStep('description', 'availability')"
+                            class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition shadow-sm flex items-center">
+                            Next Step <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="availability" class="tab-section hidden p-8">
+                    <div class="mb-6">
+                        <h2 class="text-xl font-bold text-gray-900">Availability & Schedule</h2>
+                        <p class="text-gray-500 text-sm">Update how and when students can book you.</p>
+                    </div>
+
+                    {{-- Alpine Component --}}
+                    <div x-data="scheduleHandler()">
+
+                        {{-- Booking Type Toggle --}}
+                        <div
+                            class="bg-indigo-50 border border-indigo-100 rounded-xl p-5 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div>
+                                <h3 class="font-bold text-indigo-900">How is this service booked?</h3>
+                                <p class="text-sm text-indigo-700 mt-1">
+                                    <span x-show="isSessionBased"><strong>Appointment Based:</strong> Users book specific
+                                        time slots.</span>
+                                    <span x-show="!isSessionBased"><strong>Task Based:</strong> One-off requests (no
+                                        specific duration).</span>
+                                </p>
+                            </div>
+                            <div class="flex items-center bg-white rounded-lg p-1 border border-indigo-200 shadow-sm">
+                                <button type="button" @click="isSessionBased = true"
+                                    :class="isSessionBased ? 'bg-indigo-600 text-white shadow-sm' :
+                                        'text-gray-500 hover:bg-gray-50'"
+                                    class="px-4 py-2 rounded-md text-sm font-bold transition-all">Time Slots</button>
+                                <button type="button" @click="isSessionBased = false"
+                                    :class="!isSessionBased ? 'bg-indigo-600 text-white shadow-sm' :
+                                        'text-gray-500 hover:bg-gray-50'"
+                                    class="px-4 py-2 rounded-md text-sm font-bold transition-all">One-off Task</button>
+                            </div>
+                            <input type="hidden" name="is_session_based" :value="isSessionBased ? 1 : 0">
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+
+                            {{-- LEFT COLUMN --}}
+                            <div class="lg:col-span-2 space-y-6">
+
+                                {{-- Session Duration --}}
+                                <div x-show="isSessionBased" x-transition
+                                    class="bg-white rounded-3xl shadow-sm border border-slate-100 p-8">
+                                    <div class="flex items-start gap-5">
+                                        <div class="p-3.5 bg-indigo-50 rounded-2xl text-indigo-600"><i
+                                                class="fa-regular fa-hourglass-half text-2xl"></i></div>
+                                        <div class="flex-1">
+                                            <h2 class="font-bold text-slate-800 text-lg">Session Duration</h2>
+                                            <p class="text-sm text-slate-500 mb-6">How long is one slot?</p>
+                                            <div class="w-full max-w-xs relative">
+                                                <select name="session_duration" x-model.number="currentDuration"
+                                                    @change="refreshPreview()" :disabled="!isSessionBased"
+                                                    class="w-full rounded-xl border-slate-200 shadow-sm py-3 px-4 text-sm font-bold bg-slate-50">
+                                                    @foreach ([15, 20, 30, 45, 60, 90, 120] as $opt)
+                                                        <option value="{{ $opt }}"
+                                                            {{ ($service->session_duration ?? 60) == $opt ? 'selected' : '' }}>
+                                                            {{ $opt }} Minutes</option>
+                                                    @endforeach
+                                                </select>
                                             </div>
                                         </div>
-                                        <div class="flex text-sm text-gray-600 justify-center">
-                                            <span
-                                                class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
-                                                <span>Upload a file</span>
-                                                <input id="imageInput" name="image" type="file" class="sr-only">
-                                            </span>
+                                    </div>
+                                </div>
+
+                                {{-- Weekly Schedule --}}
+                                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                                    <div
+                                        class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                                        <h2 class="font-bold text-slate-800">Weekly Availability</h2>
+                                        <button type="button" @click="showBulk = !showBulk"
+                                            class="text-sm text-indigo-600 font-bold hover:text-indigo-700 bg-indigo-50 px-4 py-2 rounded-lg"><i
+                                                class="fa-solid fa-sliders mr-1"></i> Bulk Edit</button>
+                                    </div>
+                                    {{-- Bulk Edit --}}
+                                    <div x-show="showBulk"
+                                        class="bg-indigo-50/80 p-4 border-b border-indigo-100 flex items-center gap-4">
+                                        <span class="text-xs font-bold text-indigo-800 uppercase">Set all to:</span>
+                                        <div
+                                            class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-indigo-100 shadow-sm">
+                                            <input type="time" x-model="bulkStart"
+                                                class="border-none p-0 text-xs font-bold text-slate-700">
+                                            <span class="text-slate-300 text-xs">→</span>
+                                            <input type="time" x-model="bulkEnd"
+                                                class="border-none p-0 text-xs font-bold text-slate-700">
                                         </div>
-                                        <p class="text-xs text-gray-500">PNG, JPG, GIF up to 5MB</p>
+                                        <button type="button" @click="applyBulkTime()"
+                                            class="bg-indigo-600 text-white px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-indigo-700 shadow-md">Apply</button>
+                                    </div>
+                                    {{-- Days Loop --}}
+                                    <div class="divide-y divide-slate-100">
+                                        <template x-for="day in days" :key="day.key">
+                                            <div
+                                                class="flex items-center justify-between p-5 hover:bg-slate-50 transition-colors group">
+                                                <div class="flex items-center gap-5 w-48">
+                                                    <div class="relative inline-block w-12 h-7">
+                                                        <input type="checkbox"
+                                                            :name="`operating_hours[${day.key}][enabled]`"
+                                                            :id="`toggle-${day.key}`" x-model="schedule[day.key].enabled"
+                                                            @change="refreshPreview()" value="1"
+                                                            class="toggle-checkbox absolute block w-7 h-7 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-200 checked:right-0 checked:border-indigo-600 transition-all duration-300 shadow-sm" />
+                                                        <label :for="`toggle-${day.key}`"
+                                                            class="toggle-label block overflow-hidden h-7 rounded-full bg-slate-200 cursor-pointer"></label>
+                                                    </div>
+                                                    <label :for="`toggle-${day.key}`"
+                                                        class="text-sm font-bold text-slate-700"
+                                                        x-text="day.name"></label>
+                                                </div>
+                                                <div class="flex-1 flex justify-end">
+                                                    <div x-show="schedule[day.key].enabled"
+                                                        class="flex items-center gap-3">
+                                                        <div
+                                                            class="flex items-center bg-white border border-slate-200 rounded-lg px-3 py-1.5 shadow-sm">
+                                                            <input type="time"
+                                                                :name="`operating_hours[${day.key}][start]`"
+                                                                x-model="schedule[day.key].start"
+                                                                @change="refreshPreview()"
+                                                                class="border-none p-0 text-sm font-bold text-slate-700">
+                                                            <span class="text-slate-300 text-xs px-2 font-light">to</span>
+                                                            <input type="time"
+                                                                :name="`operating_hours[${day.key}][end]`"
+                                                                x-model="schedule[day.key].end" @change="refreshPreview()"
+                                                                class="border-none p-0 text-sm font-bold text-slate-700">
+                                                        </div>
+                                                    </div>
+                                                    <div x-show="!schedule[day.key].enabled"
+                                                        class="text-xs font-bold text-slate-400 py-2 px-5 bg-slate-100 rounded-lg uppercase tracking-wider">
+                                                        Closed</div>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+
+                                {{-- 🟢 NEW: PREVIEW SECTION (Student View Simulator) --}}
+                                {{-- 🟢 NEW: PREVIEW & BLOCKING SECTION --}}
+                                <div x-show="isSessionBased"
+                                    class="bg-slate-50 rounded-3xl border border-slate-200 p-6 relative">
+                                    <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+                                        <div>
+                                            <h3 class="font-bold text-slate-800"><i
+                                                    class="fa-regular fa-eye mr-2 text-indigo-500"></i>Manage Slots</h3>
+                                            <p class="text-xs text-slate-500">Click a green slot to <span
+                                                    class="text-red-500 font-bold">block</span> it.</p>
+                                        </div>
+                                        <input type="text" id="preview-date-picker"
+                                            class="text-xs border-slate-200 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 w-full md:w-auto"
+                                            placeholder="Pick date">
+                                    </div>
+
+                                    {{-- Hidden Input to send Blocked Slots to Backend --}}
+                                    <input type="hidden" name="blocked_slots" :value="JSON.stringify(blockedSlots)">
+
+                                    {{-- Empty State --}}
+                                    <div x-show="previewSlots.length === 0"
+                                        class="text-center py-8 text-slate-400 text-sm border-2 border-dashed border-slate-200 rounded-xl">
+                                        <span x-text="previewMessage"></span>
+                                    </div>
+
+                                    {{-- THE GRID --}}
+                                    <div class="grid grid-cols-2 gap-3" x-show="previewSlots.length > 0">
+                                        <template x-for="slot in previewSlots" :key="slot.start">
+
+                                            <button type="button" @click="toggleSlotBlock(slot)"
+                                                :disabled="slot.isBooked"
+                                                class="relative py-3 px-2 border rounded-xl flex flex-col items-center justify-center text-center h-20 transition-all duration-200"
+                                                :class="{
+                                                    'bg-red-50 border-red-100 opacity-60 cursor-not-allowed': slot
+                                                        .isBooked,
+                                                    'bg-gray-100 border-gray-300 hover:bg-gray-200': slot.isBlocked && !
+                                                        slot.isBooked,
+                                                    'bg-white border-green-200 shadow-sm hover:border-green-400 hover:shadow-md':
+                                                        !slot.isBooked && !slot.isBlocked
+                                                }">
+
+                                                {{-- Time Display --}}
+                                                <span class="text-xs font-bold tracking-wide"
+                                                    :class="{ 'line-through text-slate-400': slot
+                                                        .isBooked, 'text-gray-500': slot.isBlocked, 'text-slate-700': !
+                                                            slot.isBooked && !slot.isBlocked }"
+                                                    x-text="slot.display"></span>
+
+                                                {{-- Status Label --}}
+                                                <div class="mt-1">
+                                                    {{-- 1. Real Booking from DB --}}
+                                                    <template x-if="slot.isBooked">
+                                                        <span
+                                                            class="text-[10px] font-extrabold text-red-400 uppercase tracking-widest bg-red-100 px-2 py-0.5 rounded">Booked</span>
+                                                    </template>
+
+                                                    {{-- 2. Manually Blocked by User --}}
+                                                    <template x-if="slot.isBlocked && !slot.isBooked">
+                                                        <span
+                                                            class="text-[10px] font-bold text-gray-500 uppercase tracking-wide flex items-center gap-1">
+                                                            <i class="fa-solid fa-ban text-[9px]"></i> Blocked
+                                                        </span>
+                                                    </template>
+
+                                                    {{-- 3. Available --}}
+                                                    <template x-if="!slot.isBooked && !slot.isBlocked">
+                                                        <span
+                                                            class="text-[10px] text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded border border-green-100">Available</span>
+                                                    </template>
+                                                </div>
+
+                                            </button>
+
+                                        </template>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                            <div class="p-6 border-b border-gray-100 bg-gray-50">
-                                <h3 class="text-lg font-medium leading-6 text-gray-900">Availability</h3>
-                            </div>
-                            <div class="p-6">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Unavailable Dates</label>
-                                <div class="relative">
-                                    <input type="text" id="unavailableDates" name="unavailable_dates"
-                                        value="{{ implode(',', json_decode($service->unavailable_dates ?? '[]', true)) }}"
-                                        class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                        placeholder="Select dates...">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
-                                            </path>
-                                        </svg>
+                            {{-- RIGHT COLUMN (Block Dates) --}}
+                            <div class="lg:col-span-1 space-y-6">
+                                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 sticky top-24">
+                                    <h2 class="font-bold text-slate-800 mb-2">Block Dates</h2>
+                                    <p class="text-xs text-slate-500 mb-6">Select specific dates (like holidays) when you
+                                        are unavailable.</p>
+                                    <div class="relative mb-4">
+                                        <input id="unavailableDates" name="unavailable_dates"
+                                            class="w-full pl-10 px-4 py-3 border border-slate-200 rounded-xl bg-white focus:ring-indigo-500"
+                                            placeholder="Select dates..."
+                                            value="{{ $service->unavailable_dates ? implode(',', json_decode($service->unavailable_dates, true)) : '' }}">
+                                        <i class="fa-regular fa-calendar absolute left-3.5 top-3.5 text-slate-400"></i>
                                     </div>
+                                    <div class="grid grid-cols-2 gap-3 mb-3">
+                                        <button type="button" onclick="quickBlockDates(1, 'week')"
+                                            class="text-xs bg-slate-50 border border-slate-200 text-slate-600 py-2 rounded-lg hover:bg-slate-100">+
+                                            1 Week</button>
+                                        <button type="button" onclick="quickBlockDates(1, 'month')"
+                                            class="text-xs bg-slate-50 border border-slate-200 text-slate-600 py-2 rounded-lg hover:bg-slate-100">+
+                                            1 Month</button>
+                                    </div>
+                                    <button type="button" onclick="clearUnavailableDates()"
+                                        class="w-full text-xs bg-red-50 text-red-600 border border-red-100 py-2 rounded-lg hover:bg-red-100"><i
+                                            class="fa-solid fa-trash-can mr-1"></i> Clear All Dates</button>
                                 </div>
-                                <p class="mt-2 text-xs text-gray-500">Select dates when you are not available to provide
-                                    this service.</p>
                             </div>
-                        </div>
 
-                        <div class="pt-2">
-                            <button type="submit"
-                                class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-custom-teal hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
-                                Save Changes
-                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Save Buttons --}}
+                    <div class="bg-gray-50 rounded-xl p-8 text-center border border-gray-100 mt-8">
+                        <h3 class="text-lg font-bold text-gray-900">Update Service?</h3>
+                        <div class="flex justify-center gap-4 mt-4">
+                            <button type="button" onclick="nextStep('availability', 'description')"
+                                class="px-5 py-3 text-gray-600 hover:bg-gray-100 rounded-lg font-medium transition">Review
+                                Details</button>
+                            <button type="button" onclick="submitForm()"
+                                class="px-8 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition shadow-lg flex items-center">Save
+                                Changes</button>
                         </div>
                     </div>
                 </div>
+
             </form>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        // --- 1. QUILL CONFIG ---
+        const toolbarOptions = [
+            ['bold', 'italic', 'underline'],
+            [{
+                'list': 'bullet'
+            }]
+        ];
 
-            // --- 1. SETUP QUILL EDITORS ---
-
-            // Main Description Editor
-            var quillMain = new Quill('#main-editor-container', {
-                theme: 'snow',
-                placeholder: 'Describe your service...',
-                modules: {
-                    toolbar: [
-                        ['bold', 'italic', 'underline', 'strike'],
-                        [{
-                            'list': 'ordered'
-                        }, {
-                            'list': 'bullet'
-                        }],
-                        [{
-                            'header': [1, 2, 3, false]
-                        }],
-                        [{
-                            'color': []
-                        }, {
-                            'background': []
-                        }],
-                        ['clean']
-                    ]
-                }
-            });
-
-            // Package Editors
-            var quillPkgs = [];
-            for (let i = 0; i < 3; i++) {
-                var q = new Quill('#pkg-editor-' + i, {
+        function setupQuill(editorId, inputId, placeholder) {
+            if (document.getElementById(editorId)) {
+                var quill = new Quill('#' + editorId, {
                     theme: 'snow',
-                    placeholder: 'Package details...',
                     modules: {
-                        // Simplified toolbar for smaller inputs
-                        toolbar: [
-                            ['bold', 'italic', 'underline'],
-                            [{
-                                'list': 'bullet'
-                            }],
-                            ['clean']
-                        ]
-                    }
+                        toolbar: toolbarOptions
+                    },
+                    placeholder: placeholder
                 });
-                quillPkgs.push(q);
+                quill.on('text-change', function() {
+                    document.getElementById(inputId).value = quill.root.innerHTML;
+                });
             }
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            setupQuill('editor-basic', 'input-basic', 'e.g. 1 hour online consultation...');
+            setupQuill('editor-standard', 'input-standard', 'Describe standard package...');
+            setupQuill('editor-premium', 'input-premium', 'Describe premium package...');
+            setupQuill('editor-main', 'input-main', 'Provide a comprehensive description of your service...');
+        });
 
-            // --- 2. EXISTING LOGIC ---
-
-            // Image preview logic
-            const imageInput = document.getElementById('imageInput');
-            const imagePreview = document.getElementById('imagePreview');
-            const originalImageSrc = "{{ $currentImage }}";
-
-            imageInput.addEventListener('change', function() {
-                const file = this.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = e => imagePreview.src = e.target.result;
-                    reader.readAsDataURL(file);
-                } else {
-                    imagePreview.src = originalImageSrc;
-                }
+        // --- 2. TEMPLATE IMAGE ---
+        document.querySelectorAll('.template-image').forEach(img => {
+            img.addEventListener('click', function() {
+                document.querySelectorAll('.template-image').forEach(i => i.classList.remove('ring-4',
+                    'ring-indigo-300'));
+                this.classList.add('ring-4', 'ring-indigo-300');
+                document.getElementById('template_image').value = this.dataset.val;
+                document.getElementById('image').value = "";
             });
+        });
 
-            // Flatpickr
-            flatpickr("#unavailableDates", {
+        // --- 3. EXTRA PACKAGES ---
+        document.getElementById('offer_packages').addEventListener('change', function() {
+            const extra = document.getElementById('extraPackages');
+            if (this.checked) extra.classList.remove('hidden');
+            else extra.classList.add('hidden');
+        });
+
+        // --- 4. ALPINE SCHEDULE ---
+        function scheduleHandler() {
+            return {
+                isSessionBased: @json($service->session_duration !== null),
+                currentDuration: @json($service->session_duration ?? 60),
+
+                // Data from Controller
+                schedule: @json($scheduleData),
+                bookedSlots: @json($bookedSlots ?? []), // Real bookings (cannot change)
+
+                // 🟢 NEW: Manually Blocked Slots (e.g., ["2025-12-17 14:00"])
+                blockedSlots: @json($service->blocked_slots ?? []),
+
+                days: [{
+                        key: 'mon',
+                        name: 'Monday'
+                    }, {
+                        key: 'tue',
+                        name: 'Tuesday'
+                    },
+                    {
+                        key: 'wed',
+                        name: 'Wednesday'
+                    }, {
+                        key: 'thu',
+                        name: 'Thursday'
+                    },
+                    {
+                        key: 'fri',
+                        name: 'Friday'
+                    }, {
+                        key: 'sat',
+                        name: 'Saturday'
+                    },
+                    {
+                        key: 'sun',
+                        name: 'Sunday'
+                    }
+                ],
+
+                showBulk: false,
+                bulkStart: '09:00',
+                bulkEnd: '17:00',
+
+                // Preview Data
+                previewDate: null,
+                previewSlots: [],
+                previewMessage: 'Select a date above to manage slots.',
+
+                init() {
+                    flatpickr("#preview-date-picker", {
+                        minDate: "today",
+                        defaultDate: new Date(), // Select today by default
+                        onChange: (selectedDates, dateStr) => {
+                            this.previewDate = dateStr;
+                            this.generatePreview();
+                        }
+                    });
+                    // Initial Load
+                    this.previewDate = new Date().toISOString().split('T')[0];
+                    this.$nextTick(() => {
+                        this.generatePreview();
+                    });
+                },
+
+                // 🟢 NEW FUNCTION: Toggle Block Status
+                toggleSlotBlock(slot) {
+                    // Cannot toggle real bookings
+                    if (slot.isBooked) return;
+
+                    // Construct the key (e.g., "2025-12-17 14:00")
+                    const slotKey = `${this.previewDate} ${slot.start}`;
+
+                    if (this.blockedSlots.includes(slotKey)) {
+                        // If exists, remove it (Unblock)
+                        this.blockedSlots = this.blockedSlots.filter(s => s !== slotKey);
+                    } else {
+                        // If not exists, add it (Block)
+                        this.blockedSlots.push(slotKey);
+                    }
+
+                    // Regenerate view to reflect changes
+                    this.generatePreview();
+                },
+
+                generatePreview() {
+                    if (!this.previewDate) return;
+                    this.previewSlots = [];
+
+                    // 1. Get Day Settings
+                    const d = new Date(this.previewDate);
+                    const dayName = d.toLocaleDateString('en-US', {
+                        weekday: 'short'
+                    }).toLowerCase();
+                    const daySettings = this.schedule[dayName];
+
+                    if (!daySettings || !daySettings.enabled) {
+                        this.previewMessage = 'Service is closed on ' + dayName + 's.';
+                        return;
+                    }
+
+                    // 2. Loop Time
+                    let startMinutes = this.timeToMinutes(daySettings.start);
+                    let endMinutes = this.timeToMinutes(daySettings.end);
+                    let duration = parseInt(this.currentDuration);
+
+                    for (let time = startMinutes; time + duration <= endMinutes; time += duration) {
+                        let startTimeStr = this.minutesToTime(time);
+                        let endTimeStr = this.minutesToTime(time + duration);
+
+                        // Key identifier
+                        let slotKey = `${this.previewDate} ${startTimeStr}`;
+
+                        // Check Statuses
+                        let isBooked = this.bookedSlots.includes(slotKey); // Database booking
+                        let isBlocked = this.blockedSlots.includes(slotKey); // Manual Block
+
+                        this.previewSlots.push({
+                            start: startTimeStr,
+                            display: `${this.formatAmPm(startTimeStr)} - ${this.formatAmPm(endTimeStr)}`,
+                            isBooked: isBooked,
+                            isBlocked: isBlocked // Pass block status to view
+                        });
+                    }
+
+                    if (this.previewSlots.length === 0) this.previewMessage = 'No slots available settings.';
+                },
+
+                // --- Helpers ---
+                applyBulkTime() {
+                    for (const dayKey in this.schedule) {
+                        if (this.schedule[dayKey].enabled) {
+                            this.schedule[dayKey].start = this.bulkStart;
+                            this.schedule[dayKey].end = this.bulkEnd;
+                        }
+                    }
+                    this.showBulk = false;
+                    this.generatePreview();
+                },
+                timeToMinutes(time) {
+                    const [h, m] = time.split(':').map(Number);
+                    return h * 60 + m;
+                },
+                minutesToTime(minutes) {
+                    const h = Math.floor(minutes / 60);
+                    const m = minutes % 60;
+                    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+                },
+                formatAmPm(time) {
+                    let [h, m] = time.split(':');
+                    h = parseInt(h);
+                    let ampm = h >= 12 ? 'PM' : 'AM';
+                    h = h % 12;
+                    h = h ? h : 12;
+                    return `${h}:${m} ${ampm}`;
+                }
+            }
+        }
+
+        // --- 5. FLATPICKR ---
+        let fpInstance;
+        document.addEventListener('DOMContentLoaded', function() {
+            fpInstance = flatpickr("#unavailableDates", {
                 mode: "multiple",
                 dateFormat: "Y-m-d",
                 minDate: "today",
-                conjunction: ", "
-            });
-
-            // Toggle extra packages
-            const toggle = document.getElementById('togglePackages');
-            const extraPackages = document.querySelectorAll('.extra-package');
-
-            function updatePackageVisibility() {
-                extraPackages.forEach(pkg => {
-                    const inputs = pkg.querySelectorAll('input, select');
-                    // Note: We don't disable Quill divs, visual hiding is enough for UX, 
-                    // backend handles logic based on toggle state usually.
-                    if (toggle.checked) {
-                        pkg.style.display = 'block';
-                        inputs.forEach(input => input.disabled = false);
-                    } else {
-                        pkg.style.display = 'none';
-                        inputs.forEach(input => input.disabled = true);
-                    }
-                });
-            }
-
-            if (toggle) {
-                toggle.addEventListener('change', updatePackageVisibility);
-                updatePackageVisibility();
-            }
-
-            // --- 3. FORM SUBMISSION ---
-            document.getElementById('serviceForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-
-                // >>> IMPORTANT: SYNC QUILL DATA TO HIDDEN INPUTS BEFORE SUBMIT <<<
-                document.getElementById('hidden-description').value = quillMain.root.innerHTML;
-
-                for (let i = 0; i < 3; i++) {
-                    // Check if editor exists (it always should based on loop, but safety check)
-                    if (document.getElementById('hidden-pkg-' + i)) {
-                        document.getElementById('hidden-pkg-' + i).value = quillPkgs[i].root.innerHTML;
-                    }
+                conjunction: ", ",
+                defaultDate: @json($service->unavailable_dates ?? []),
+                locale: {
+                    firstDayOfWeek: 1
                 }
-
-                const submitBtn = this.querySelector('button[type="submit"]');
-                const originalBtnText = submitBtn.innerText;
-                submitBtn.disabled = true;
-                submitBtn.innerText = 'Saving...';
-
-                const formData = new FormData(this);
-
-                fetch("{{ route('services.update', $service->id) }}", {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
-                                .getAttribute('content'),
-                            'Accept': 'application/json'
-                        }
-                    })
-                    .then(async res => {
-                        const data = await res.json().catch(() => ({}));
-                        if (res.ok && data.success) {
-                            Swal.fire({
-                                title: 'Success!',
-                                text: data.message || 'Service updated successfully.',
-                                icon: 'success',
-                                confirmButtonText: 'Great!',
-                                confirmButtonColor: '#4f46e5'
-                            }).then(() => {
-                                window.location.href = "{{ route('services.manage') }}";
-                            });
-                        } else {
-                            let errorMessage = data.message || 'An error occurred while saving.';
-                            if (data.errors) {
-                                errorMessage = Object.values(data.errors).flat().join('\n');
-                            }
-                            Swal.fire({
-                                title: 'Error',
-                                text: errorMessage,
-                                icon: 'error',
-                                confirmButtonText: 'Okay'
-                            });
-                        }
-                    })
-                    .catch(err => {
-                        console.error('Fetch error:', err);
-                        Swal.fire({
-                            title: 'System Error',
-                            text: 'Something went wrong.',
-                            icon: 'error'
-                        });
-                    })
-                    .finally(() => {
-                        submitBtn.disabled = false;
-                        submitBtn.innerText = originalBtnText;
-                    });
             });
         });
+
+        function formatDate(date) {
+            return date.toISOString().split('T')[0];
+        }
+        window.quickBlockDates = function(amount, unit) {
+            if (!fpInstance) return;
+            let daysToAdd = unit === 'week' ? amount * 7 : amount * 30,
+                newDates = [],
+                today = new Date();
+            for (let i = 0; i < daysToAdd; i++) {
+                let d = new Date(today);
+                d.setDate(today.getDate() + i);
+                newDates.push(formatDate(d));
+            }
+            let current = fpInstance.selectedDates.map(d => formatDate(d));
+            fpInstance.setDate([...new Set([...current, ...newDates])], true);
+        };
+        window.clearUnavailableDates = function() {
+            if (fpInstance) fpInstance.clear();
+        };
+
+        // --- 6. NAVIGATION LOGIC (VANILLA JS TO MATCH CREATE) ---
+        function switchTab(targetId) {
+            document.querySelectorAll('.tab-section').forEach(el => el.classList.add('hidden'));
+            document.getElementById(targetId).classList.remove('hidden');
+            updateHeader(targetId);
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        function nextStep(currentId, nextId) {
+            // Validate Basic
+            if (currentId === 'overview' && nextId === 'pricing') {
+                if (!document.getElementById('title').value || !document.getElementById('category_id').value) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Required Fields',
+                        text: 'Please provide a Title and Category.'
+                    });
+                    return;
+                }
+            }
+            // Validate Price
+            if (currentId === 'pricing' && nextId === 'description') {
+                if (!document.getElementById('basic_price').value) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Required Fields',
+                        text: 'Please set a price for the Basic Package.'
+                    });
+                    return;
+                }
+            }
+            switchTab(nextId);
+        }
+
+        function updateHeader(activeId) {
+            const map = {
+                'overview': 0,
+                'pricing': 1,
+                'description': 2,
+                'availability': 3
+            };
+            const activeIndex = map[activeId];
+            const links = document.querySelectorAll('.step-link');
+            links.forEach((link, index) => {
+                link.className =
+                    "step-link w-1/4 py-4 px-1 border-b-2 font-medium text-sm flex items-center justify-center transition-colors"; // Base
+                const circle = link.querySelector('span');
+                if (index < activeIndex) {
+                    link.classList.add('step-completed', 'border-green-500', 'text-green-600');
+                    circle.className =
+                        "w-6 h-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xs mr-2 font-bold";
+                    circle.innerHTML = "✓";
+                } else if (index === activeIndex) {
+                    link.classList.add('step-active', 'border-indigo-500', 'text-indigo-600');
+                    circle.className =
+                        "w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs mr-2 font-bold ring-1 ring-indigo-600";
+                    circle.innerHTML = index + 1;
+                } else {
+                    link.classList.add('step-inactive', 'border-transparent', 'text-gray-400');
+                    circle.className =
+                        "w-6 h-6 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center text-xs mr-2 font-bold";
+                    circle.innerHTML = index + 1;
+                }
+            });
+
+        // --- 7. FINAL SUBMISSION ---
+        async function submitForm() {
+            const form = document.getElementById('editServiceForm');
+            if (fpInstance) document.getElementById('unavailableDates').value = fpInstance.input.value;
+
+            const formData = new FormData(form);
+            Swal.fire({
+                title: 'Saving Changes',
+                text: 'Updating...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            try {
+                const response = await fetch("{{ route('services.update', $service->id) }}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                });
+                const data = await response.json();
+                if (data.success) {
+                    Swal.fire({
+                            icon: 'success',
+                            title: 'Updated Successfully!',
+                            confirmButtonColor: '#10b981'
+                        })
+                        .then(() => window.location.href = "{{ route('services.manage') }}");
+                } else {
+                    Swal.fire('Error', data.error || 'Something went wrong.', 'error');
+                }
+            } catch (error) {
+                console.error(error);
+                Swal.fire('System Error', 'Check console.', 'error');
+            }
+        }
     </script>
 @endsection

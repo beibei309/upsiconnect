@@ -10,12 +10,19 @@ return new class extends Migration
     {
         // 1️⃣ Add new columns FIRST
         Schema::table('users', function (Blueprint $table) {
-            if (!Schema::hasColumn('users', 'work_experience_message')) {
+            // Pastikan column work_experience wujud sebelum guna after() atau drop
+            if (Schema::hasColumn('users', 'work_experience')) {
+                $table->text('work_experience_message')->nullable()->after('work_experience');
+            } else {
+                // Jika tak wujud, letak saja kat hujung
                 $table->text('work_experience_message')->nullable();
             }
 
-            if (!Schema::hasColumn('users', 'work_experience_file')) {
-                $table->string('work_experience_file')->nullable();
+            $table->string('work_experience_file')->nullable();
+
+            // Drop kalau wujud
+            if (Schema::hasColumn('users', 'work_experience')) {
+                $table->dropColumn('work_experience');
             }
         });
 
@@ -31,12 +38,6 @@ return new class extends Migration
     {
         // Restore old column if needed
         Schema::table('users', function (Blueprint $table) {
-            if (!Schema::hasColumn('users', 'work_experience')) {
-                $table->text('work_experience')->nullable();
-            }
-        });
-
-        Schema::table('users', function (Blueprint $table) {
             if (Schema::hasColumn('users', 'work_experience_message')) {
                 $table->dropColumn('work_experience_message');
             }
@@ -44,6 +45,9 @@ return new class extends Migration
             if (Schema::hasColumn('users', 'work_experience_file')) {
                 $table->dropColumn('work_experience_file');
             }
+
+            // Optional: return old column
+            // $table->text('work_experience')->nullable();
         });
     }
 };

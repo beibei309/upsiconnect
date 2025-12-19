@@ -13,6 +13,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
+<<<<<<< HEAD
+=======
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+>>>>>>> 6399068de6df6748517e7d5a89890a29e239f3f6
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -109,6 +114,7 @@
     <!-- Footer -->
     @include('layouts.footer')
 
+    @stack('scripts')
 </body>
 
 </html>

@@ -25,4 +25,48 @@ class AdminRequestController extends Controller
 
         return view('admin.requests.index', compact('requests'));
     }
+<<<<<<< HEAD
+=======
+
+    public function export(Request $request)
+{
+    $query = \App\Models\ServiceRequest::with(['requester', 'provider', 'studentService']);
+
+    // Apply search filter
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->whereHas('requester', fn($q) => $q->where('name', 'like', "%{$search}%"))
+              ->orWhereHas('studentService', fn($q) => $q->where('title', 'like', "%{$search}%"));
+    }
+
+    // Apply status filter
+    if ($request->filled('status')) {
+        $status = $request->status;
+        $query->where('status', $status);
+    }
+
+    $requests = $query->get();
+
+    $csvData = $requests->map(function ($r) {
+        return [
+            'Requester' => $r->requester->name,
+            'Service' => $r->studentService->title,
+            'Provider' => $r->provider->name,
+            'Request Date' => $r->created_at->format('d/m/Y'),
+            'Price' => number_format($r->studentService->suggested_price, 2),
+            'Status' => $r->status,
+        ];
+    });
+
+    return response()->streamDownload(function () use ($csvData) {
+        $handle = fopen('php://output', 'w');
+        fputcsv($handle, array_keys($csvData->first()));
+        foreach ($csvData as $row) {
+            fputcsv($handle, $row);
+        }
+        fclose($handle);
+    }, 'service_requests.csv');
+}
+
+>>>>>>> 6399068de6df6748517e7d5a89890a29e239f3f6
 }

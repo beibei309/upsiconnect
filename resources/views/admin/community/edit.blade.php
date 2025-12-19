@@ -23,7 +23,7 @@
                 <h2 class="text-xl font-semibold mb-3 text-gray-800">Profile Photo</h2>
 
                 <div class="flex items-center gap-6">
-                    <img src="{{ asset($user->profile_photo_path ?? 'uploads/profile/default.png') }}"
+                    <img src="{{ $user->profile_photo_path ? asset('storage/' . $user->profile_photo_path) : asset('uploads/profile/default.png') }}"
                          class="w-24 h-24 rounded-full object-cover border shadow">
 
                     <input type="file" name="profile_photo" 

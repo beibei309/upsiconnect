@@ -9,6 +9,8 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Routing\Controller as BaseController;
+use App\Notifications\NewServiceRequest;
+use App\Notifications\ServiceRequestStatusUpdated;
 
 class ServiceRequestController extends BaseController
 {
@@ -20,10 +22,11 @@ class ServiceRequestController extends BaseController
     /**
      * Store a new service request
      */
-    public function store(Request $request)
+ public function store(Request $request)
 {
     try {
         $user = Auth::user();
+<<<<<<< HEAD
      $hasActiveRequest = false;
 
     if ($user) {
@@ -39,27 +42,38 @@ class ServiceRequestController extends BaseController
             'selected_package' => 'required|string',
             'message' => 'nullable|string|max:1000',
             'offered_price' => 'nullable|numeric|min:0|max:99999.99'
+=======
+        
+        // 1. Validate basic fields (Make times nullable for flexibility)
+        $validated = $request->validate([
+            'student_service_id' => 'required|exists:student_services,id',
+            'selected_dates'     => 'required|date',
+            'start_time'         => 'nullable|string', 
+            'end_time'           => 'nullable|string',
+            'selected_package'   => 'required|string',
+            'message'            => 'nullable|string|max:1000',
+            'offered_price'      => 'nullable|numeric|min:0|max:99999.99'
+>>>>>>> 6399068de6df6748517e7d5a89890a29e239f3f6
         ]);
 
         $studentService = StudentService::findOrFail($validated['student_service_id']);
 
-        if (!$studentService->is_active) {
-            return response()->json(['error' => 'This service is no longer available.'], 400);
+        // Check availability
+        if (!$studentService->is_active || !$studentService->user->is_available) {
+            return response()->json(['error' => 'Service or provider unavailable.'], 400);
         }
 
-        if (!$studentService->user->is_available) {
-            return response()->json(['error' => 'This service provider is currently unavailable.'], 400);
-        }
-
-        $existingRequest = ServiceRequest::where('student_service_id', $studentService->id)
-            ->where('requester_id', $user->id)
+        // Check for existing active requests from this user
+        $hasActiveRequest = ServiceRequest::where('requester_id', $user->id)
+            ->where('provider_id', $studentService->user_id)
             ->whereIn('status', ['pending', 'accepted', 'in_progress'])
-            ->first();
+            ->exists();
 
-        if ($existingRequest) {
-            return response()->json(['error' => 'You already have an active request for this service.'], 400);
+        if ($hasActiveRequest) {
+            return response()->json(['error' => 'You already have an active request with this helper.'], 400);
         }
 
+<<<<<<< HEAD
 
         $serviceRequest = ServiceRequest::create([
             'student_service_id' => $studentService->id,
@@ -71,7 +85,57 @@ class ServiceRequestController extends BaseController
             'message' => $validated['message'],
             'offered_price' => $validated['offered_price'],
             'status' => 'pending'
+=======
+        // --- LOGIC SPLIT: Session vs Task ---
+        $startTime = $validated['start_time'];
+        $endTime   = $validated['end_time'];
+
+        // If it is Session Based, we MUST have times and check overlap
+        if ($studentService->session_duration) {
+            if (!$startTime || !$endTime) {
+                return response()->json(['error' => 'Start and End time are required for this service.'], 422);
+            }
+
+            // Check Overlap logic ONLY for session-based services
+            $overlapping = ServiceRequest::where('student_service_id', $studentService->id)
+                ->where('selected_dates', $validated['selected_dates'])
+                ->whereIn('status', ['pending', 'accepted', 'in_progress', 'approved'])
+                ->where(function ($query) use ($startTime, $endTime) {
+                    $query->where('start_time', '<', $endTime)
+                          ->where('end_time', '>', $startTime);
+                })
+                ->exists();
+
+            if ($overlapping) {
+                return response()->json(['error' => 'This time slot is booked. Please select another.'], 400);
+            }
+        } else {
+            // Task Based (No session duration)
+            // Default to full day if not provided by frontend
+            $startTime = $startTime ?? '00:00';
+            $endTime   = $endTime ?? '23:59';
+            
+            // Optional: Check if provider already has a task for this specific DATE?
+            // If you want to allow multiple tasks per day, do nothing here.
+        }
+
+        // Create Request
+        $serviceRequest = ServiceRequest::create([
+            'student_service_id' => $studentService->id,
+            'requester_id'       => $user->id,
+            'provider_id'        => $studentService->user_id,
+            'selected_dates'     => $validated['selected_dates'],
+            'start_time'         => $startTime,
+            'end_time'           => $endTime,
+            'selected_package'   => json_encode($validated['selected_package']),
+            'message'            => $validated['message'],
+            'offered_price'      => $validated['offered_price'],
+            'status'             => 'pending'
+>>>>>>> 6399068de6df6748517e7d5a89890a29e239f3f6
         ]);
+
+        // Notify Provider
+        $studentService->user->notify(new NewServiceRequest($serviceRequest));
 
         return response()->json([
             'success' => true,
@@ -79,9 +143,10 @@ class ServiceRequestController extends BaseController
             'request_id' => $serviceRequest->id,
             'hasActiveRequest' => $hasActiveRequest
         ]);
+
     } catch (\Exception $e) {
         \Log::error('ServiceRequest store error: ' . $e->getMessage());
-        return response()->json(['error' => $e->getMessage()], 500);
+        return response()->json(['error' => 'Server error occurred.'], 500);
     }
 }
 
@@ -157,6 +222,9 @@ public function index(Request $request)
 
         $serviceRequest->accept();
 
+        // Notify Requester
+        $serviceRequest->requester->notify(new ServiceRequestStatusUpdated($serviceRequest, 'accepted'));
+
         return response()->json([
             'success' => true,
             'message' => 'Service request accepted successfully!'
@@ -180,6 +248,9 @@ public function index(Request $request)
         }
 
         $serviceRequest->reject();
+
+        // Notify Requester
+        $serviceRequest->requester->notify(new ServiceRequestStatusUpdated($serviceRequest, 'rejected'));
 
         return response()->json([
             'success' => true,
@@ -205,6 +276,9 @@ public function index(Request $request)
 
         $serviceRequest->markInProgress();
 
+        // Notify Requester
+        $serviceRequest->requester->notify(new ServiceRequestStatusUpdated($serviceRequest, 'in_progress'));
+
         return response()->json([
             'success' => true,
             'message' => 'Service marked as in progress!'
@@ -228,6 +302,9 @@ public function index(Request $request)
         }
 
         $serviceRequest->markCompleted();
+
+        // Notify Requester
+        $serviceRequest->requester->notify(new ServiceRequestStatusUpdated($serviceRequest, 'completed'));
 
         return response()->json([
             'success' => true,
@@ -258,4 +335,29 @@ public function index(Request $request)
             'message' => 'Service request cancelled.'
         ]);
     }
+
+    public function updateStatus(Request $request, $id)
+{
+    $serviceRequest = ServiceRequest::findOrFail($id);
+    
+    // Validate that the user owns the request or is the provider
+    if (auth()->id() !== $serviceRequest->requester_id && auth()->id() !== $serviceRequest->provider_id) {
+        return response()->json(['error' => 'Unauthorized'], 403);
+    }
+
+    // Validate the new status
+    $validated = $request->validate([
+        'status' => 'required|in:pending,accepted,in_progress,completed,cancelled,rejected'
+    ]);
+
+    // Update the status
+    $serviceRequest->update([
+        'status' => $validated['status']
+    ]);
+
+    return response()->json([
+        'success' => true, 
+        'message' => 'Booking status updated to ' . $validated['status']
+    ]);
+}
 }

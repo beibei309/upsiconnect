@@ -16,14 +16,14 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
-        // 👇 FIX 1: Clean up tables to prevent Unique Constraint Violation Errors on repeated seeding
         StudentService::query()->delete();
         User::query()->delete();
         Category::query()->delete();
 
+        $this->call(AboutSeeder::class);
+        $this->call(FaqSeeder::class);
         $this->seedCategories();
         
-        // Create community user
         User::create([
             'name' => 'Community User',
             'email' => 'community@example.com',
@@ -110,7 +110,7 @@ class DatabaseSeeder extends Seeder
         }
     }
 
-    protected function getStudentData()
+     protected function getStudentData()
     {
         return [
             [
