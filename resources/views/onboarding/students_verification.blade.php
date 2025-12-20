@@ -439,7 +439,7 @@
             if(data.success){
                 Swal.fire({
                     icon:'success', 
-                    title:'You\'re Now a Helper!', 
+                    title:'You\'re Now a Seller!', 
                     text: 'Redirecting to your dashboard...', 
                     timer: 2000, 
                     showConfirmButton: false
