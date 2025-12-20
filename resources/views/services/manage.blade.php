@@ -4,294 +4,361 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <div class="py-12 bg-gray-50 min-h-screen">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+<div class="py-12 bg-gray-50 min-h-screen">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-            {{-- Page Title --}}
-            <div class="flex flex-col md:flex-row md:items-center justify-between mb-8">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-900 tracking-tight">My Services</h1>
-                    <p class="text-gray-500 mt-1">Manage your service portfolio</p>
-                </div>
-                
-                <a href="{{ route('services.create') }}"
-                    class="mt-4 md:mt-0 inline-flex items-center px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-lg shadow-sm transition-all duration-200">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                    </svg>
-                    Add New Service
-                </a>
+        {{-- Header Section --}}
+        <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Service Portfolio</h1>
+                <p class="text-gray-500 mt-2">Manage your listings and check approval status.</p>
             </div>
+            
+            <a href="{{ route('services.create') }}"
+                class="inline-flex items-center justify-center px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Create New Service
+            </a>
+        </div>
 
-            <div class="mb-8 border-b border-gray-200">
-                <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                    @foreach(['all' => 'All Services', 'pending' => 'Pending', 'approved' => 'Approved', 'rejected' => 'Rejected'] as $key => $label)
-                        <button data-tab="{{ $key }}"
-                            class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 {{ $key === 'all' ? 'border-teal-500 text-teal-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
-                            {{ $label }}
-                        </button>
-                    @endforeach
-                </nav>
-            </div>
+        {{-- Tabs --}}
+        <div class="mb-8 border-b border-gray-200">
+            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                @foreach(['all' => 'All Services', 'pending' => 'Pending Approval', 'approved' => 'Live / Approved', 'rejected' => 'Rejected'] as $key => $label)
+                    <button data-tab="{{ $key }}"
+                        class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 {{ $key === 'all' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                        {{ $label }}
+                    </button>
+                @endforeach
+            </nav>
+        </div>
 
-            <div id="tab-contents">
-                @php $statuses = ['all', 'pending', 'approved', 'rejected']; @endphp
+        {{-- Grid Content --}}
+        <div id="tab-contents">
+            @php $statuses = ['all', 'pending', 'approved', 'rejected']; @endphp
 
-                @foreach ($statuses as $status)
-                    <div id="{{ $status }}-tab-content"
-                        class="tab-content grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 {{ $status !== 'all' ? 'hidden' : '' }}">
-                        @php
-                            $filtered = $status === 'all' ? $services : $services->where('approval_status', $status);
-                        @endphp
-                        
-                        @foreach ($filtered as $service)
-                            <div class="group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col h-full overflow-hidden relative"
-                                 data-service-id="{{ $service->id }}">
+            @foreach ($statuses as $status)
+                <div id="{{ $status }}-tab-content"
+                    class="tab-content grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 {{ $status !== 'all' ? 'hidden' : '' }}">
+                    
+                    @php
+                        $filtered = $status === 'all' ? $services : $services->where('approval_status', $status);
+                    @endphp
+                    
+                    @foreach ($filtered as $service)
+                        <div class="group bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 flex flex-col overflow-hidden"
+                             data-service-id="{{ $service->id }}">
+                            
+                            {{-- Hidden Data for Modal --}}
+                            <div class="hidden" id="data-desc-{{ $service->id }}">{!! $service->description !!}</div>
+                            <div class="hidden" id="data-pkg-basic-desc-{{ $service->id }}">{!! $service->basic_description !!}</div>
+                            <div class="hidden" id="data-pkg-standard-desc-{{ $service->id }}">{!! $service->standard_description !!}</div>
+                            <div class="hidden" id="data-pkg-premium-desc-{{ $service->id }}">{!! $service->premium_description !!}</div>
+
+                            {{-- Card Image & Overlays --}}
+                            <div class="relative h-48 overflow-hidden bg-gray-100">
+                                @php $isStorageImage = Str::startsWith($service->image_path, 'services/'); @endphp
+                                <img src="{{ $isStorageImage ? asset('storage/' . $service->image_path) : asset($service->image_path) }}"
+                                     class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                     onerror="this.src='https://via.placeholder.com/400x300?text=Service+Image'">
                                 
-                                <div class="hidden" id="data-desc-{{ $service->id }}">{!! $service->description !!}</div>
-                                <div class="hidden" id="data-pkg-basic-desc-{{ $service->id }}">{!! $service->basic_description !!}</div>
-                                <div class="hidden" id="data-pkg-standard-desc-{{ $service->id }}">{!! $service->standard_description !!}</div>
-                                <div class="hidden" id="data-pkg-premium-desc-{{ $service->id }}">{!! $service->premium_description !!}</div>
-
-                                <div class="relative h-48 overflow-hidden bg-gray-100">
-                                    @php $isStorageImage = Str::startsWith($service->image_path, 'services/'); @endphp
-                                    <img src="{{ $isStorageImage ? asset('storage/' . $service->image_path) : asset($service->image_path) }}"
-                                         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                         alt="{{ $service->title }}"
-                                         onerror="this.src='https://via.placeholder.com/400x300?text=No+Image'">
-                                    
+                                {{-- 🟢 UPDATE: Only show badge if NOT approved --}}
+                                @if(strtolower($service->approval_status) !== 'approved')
                                     <div class="absolute top-3 right-3">
                                         @php
-                                            $badgeColor = match(strtolower($service->approval_status)) {
-                                                'pending' => 'bg-amber-100 text-amber-800 border-amber-200',
-                                                'approved' => 'bg-green-100 text-green-800 border-green-200',
-                                                'rejected' => 'bg-red-100 text-red-800 border-red-200',
-                                                default => 'bg-gray-100 text-gray-800'
+                                            $badgeClass = match(strtolower($service->approval_status)) {
+                                                'pending' => 'bg-amber-500 text-white',
+                                                'rejected' => 'bg-red-500 text-white',
+                                                default => 'bg-gray-500 text-white'
+                                            };
+                                            $icon = match(strtolower($service->approval_status)) {
+                                                'pending' => '<i class="fa-solid fa-clock mr-1"></i>',
+                                                'rejected' => '<i class="fa-solid fa-circle-xmark mr-1"></i>',
+                                                default => ''
                                             };
                                         @endphp
-                                        <span class="px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider border {{ $badgeColor }}">
-                                            {{ $service->approval_status }}
+                                        <span class="backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm {{ $badgeClass }}">
+                                            {!! $icon !!} {{ $service->approval_status }}
                                         </span>
                                     </div>
-                                </div>
+                                @endif
+                            </div>
 
-                                <div class="p-5 flex-1 flex flex-col">
+                            {{-- Card Body --}}
+                            <div class="p-5 flex-1 flex flex-col">
+                                {{-- Category --}}
+                                <div class="flex justify-between items-start mb-2">
                                     @if ($service->category)
-                                        <span class="text-xs font-bold uppercase tracking-wide mb-2 block" style="color: {{ $service->category->color }}">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wide bg-indigo-50 text-indigo-700">
                                             {{ $service->category->name }}
                                         </span>
                                     @endif
+                                </div>
 
-                                    <h3 class="text-lg font-bold text-gray-900 mb-4 line-clamp-1" title="{{ $service->title }}">
-                                        {{ $service->title }}
-                                    </h3>
+                                {{-- Title --}}
+                                <h3 class="text-lg font-bold text-gray-900 mb-3 line-clamp-2 leading-tight group-hover:text-indigo-600 transition-colors">
+                                    {{ $service->title }}
+                                </h3>
 
-                                    <div class="space-y-2 mb-6 bg-gray-50 rounded-xl p-3 border border-gray-100">
-                                        @php $hasPrice = false; @endphp
-                                        @foreach(['Basic' => 'basic', 'Standard' => 'standard', 'Premium' => 'premium'] as $label => $key)
-                                            @if($service->{$key.'_price'})
-                                                @php $hasPrice = true; @endphp
-                                                <div class="flex justify-between items-center text-sm">
-                                                    <span class="text-gray-500 font-medium">{{ $label }}</span>
-                                                    <div class="text-right">
-                                                        <span class="font-bold text-gray-900">RM{{ number_format($service->{$key.'_price'}) }}</span>
-                                                        <span class="text-xs text-gray-400">/{{ $service->{$key.'_frequency'} }}</span>
-                                                    </div>
-                                                </div>
-                                            @endif
-                                        @endforeach
-                                        @if(!$hasPrice)
-                                            <div class="text-center text-xs text-gray-400 italic">No pricing available</div>
-                                        @endif
-                                    </div>
+                                {{-- 🟢 UPDATE: Booking Status as Solid Bubble --}}
+                                <div class="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
+                                    <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Service Status</span>
+                                    
+                                    @if($service->status === 'available')
+                                        {{-- Available Bubble --}}
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500 text-white shadow-sm">
+                                            <i class="fa-solid fa-check-circle text-[10px]"></i> Available
+                                        </span>
+                                    @else
+                                        {{-- Unavailable Bubble --}}
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-400 text-white shadow-sm">
+                                            <i class="fa-solid fa-ban text-[10px]"></i> Unavailable
+                                        </span>
+                                    @endif
+                                </div>
 
-                                    <div class="mt-auto flex items-center gap-3">
-                                        <button onclick="openServiceModal({{ json_encode($service) }})"
-                                            class="flex-1 bg-white border border-gray-200 hover:border-teal-500 hover:text-teal-600 text-gray-700 py-2 rounded-lg text-sm font-semibold transition-all shadow-sm">
-                                            View Details
-                                        </button>
+                                {{-- Price Summary --}}
+                                <div class="mb-4">
+                                    @if($service->basic_price)
+                                        <p class="text-xs text-gray-400 font-medium uppercase mb-0.5">Starts from</p>
+                                        <div class="flex items-baseline gap-1">
+                                            <span class="text-xl font-extrabold text-gray-900">RM {{ number_format($service->basic_price) }}</span>
+                                            <span class="text-xs text-gray-500 font-medium">/ {{ $service->basic_frequency }}</span>
+                                        </div>
+                                    @else
+                                        <span class="text-sm italic text-gray-400">Price not set</span>
+                                    @endif
+                                </div>
 
-                                        <button onclick="editService({{ $service->id }})" class="p-2 text-gray-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors" title="Edit">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                                        </button>
-                                        
-                                        <button onclick="deleteService({{ $service->id }})" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                        </button>
-                                    </div>
+                                {{-- Action Buttons --}}
+                                <div class="mt-auto grid grid-cols-2 gap-3">
+                                    <button onclick="editService({{ $service->id }})" 
+                                        class="flex items-center justify-center px-4 py-2.5 bg-gray-50 text-gray-700 text-sm font-semibold rounded-xl hover:bg-gray-100 hover:text-gray-900 transition-all border border-gray-200">
+                                        Edit / Status
+                                    </button>
+                                    <button onclick="openServiceModal({{ json_encode($service) }})" 
+                                        class="flex items-center justify-center px-4 py-2.5 bg-indigo-50 text-indigo-700 text-sm font-semibold rounded-xl hover:bg-indigo-100 transition-all border border-indigo-100">
+                                        Preview
+                                    </button>
+                                </div>
+                                <div class="mt-3 text-center">
+                                     <button onclick="deleteService({{ $service->id }})" class="text-xs text-red-400 hover:text-red-600 hover:underline transition-colors font-medium">
+                                        Delete Service
+                                    </button>
                                 </div>
                             </div>
-                        @endforeach
-                    </div>
-                @endforeach
-            </div>
+                        </div>
+                    @endforeach
+                    
+                    @if($filtered->isEmpty())
+                        <div class="col-span-full py-16 flex flex-col items-center justify-center text-center">
+                            <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4 text-gray-300">
+                                <i class="fa-solid fa-folder-open text-3xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-900">No services found</h3>
+                            <p class="text-gray-500 mt-1 mb-6 max-w-sm mx-auto">It looks empty here. Start by creating your first service listing.</p>
+                            <a href="{{ route('services.create') }}" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl shadow-lg transition-transform hover:-translate-y-0.5">
+                                Create Service
+                            </a>
+                        </div>
+                    @endif
+                </div>
+            @endforeach
         </div>
     </div>
+</div>
 
-    <div id="serviceModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="fixed inset-0 bg-gray-900 bg-opacity-50 transition-opacity backdrop-blur-sm" onclick="closeServiceModal()"></div>
+{{-- MODAL --}}
+<div id="serviceModal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    {{-- Backdrop --}}
+    <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onclick="closeServiceModal()"></div>
 
-        <div class="flex items-center justify-center min-h-screen p-4 text-center sm:p-0">
-            <div class="relative bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-2xl w-full">
+    <div class="fixed inset-0 z-10 overflow-y-auto">
+        <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+            <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl">
                 
-                <div class="relative h-48 bg-gray-100">
+                {{-- Modal Header Image --}}
+                <div class="relative h-64 bg-gray-200 group">
                     <img id="modalImage" src="" class="w-full h-full object-cover">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                    <button onclick="closeServiceModal()" class="absolute top-4 right-4 bg-white/20 hover:bg-white/40 text-white rounded-full p-1 transition">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                    
+                    <button onclick="closeServiceModal()" class="absolute top-4 right-4 bg-black/20 hover:bg-black/40 text-white rounded-full p-2 transition backdrop-blur-md">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
-                    <div class="absolute bottom-4 left-6 text-white">
-                        <span id="modalCategory" class="text-xs font-bold uppercase tracking-wider mb-1 block opacity-90"></span>
-                        <h3 id="modalTitle" class="text-2xl font-bold leading-tight"></h3>
+
+                    <div class="absolute bottom-0 left-0 p-8 w-full">
+                        <span id="modalCategory" class="inline-block px-2.5 py-1 mb-3 text-xs font-bold text-white bg-white/20 backdrop-blur-md rounded-lg uppercase tracking-wider border border-white/30"></span>
+                        <h3 id="modalTitle" class="text-3xl font-bold text-white leading-tight shadow-sm"></h3>
                     </div>
                 </div>
 
-                <div class="p-6 sm:p-8">
+                {{-- Modal Content --}}
+                <div class="px-8 py-8 max-h-[60vh] overflow-y-auto custom-scrollbar">
                     <div class="mb-8">
-                        <h4 class="text-sm font-bold text-gray-900 uppercase tracking-wide mb-3">About this Service</h4>
-                        <div id="modalDescription" class="rich-text text-gray-600 text-sm leading-relaxed max-h-60 overflow-y-auto pr-2 modern-scrollbar"></div>
+                        <h4 class="text-sm font-bold text-indigo-900 uppercase tracking-wide mb-3 flex items-center">
+                            <i class="fa-solid fa-align-left mr-2 text-indigo-500"></i> Description
+                        </h4>
+                        <div id="modalDescription" class="prose prose-sm prose-indigo text-gray-600 leading-relaxed max-w-none"></div>
                     </div>
 
-                    <h4 class="text-sm font-bold text-gray-900 uppercase tracking-wide mb-3">Packages & Pricing</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="modalPackagesContainer">
+                    <div>
+                        <h4 class="text-sm font-bold text-indigo-900 uppercase tracking-wide mb-4 flex items-center">
+                            <i class="fa-solid fa-tags mr-2 text-indigo-500"></i> Pricing Packages
+                        </h4>
+                        <div class="grid grid-cols-1 gap-4" id="modalPackagesContainer">
+                            {{-- JS Injects here --}}
                         </div>
+                    </div>
                 </div>
-                
-                <div class="bg-gray-50 px-6 py-4 flex justify-end">
-                    <button type="button" onclick="closeServiceModal()" class="w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:w-auto sm:text-sm">
+
+                <div class="bg-gray-50 px-6 py-4 flex flex-row-reverse border-t border-gray-100">
+                    <button type="button" onclick="closeServiceModal()" class="w-full inline-flex justify-center rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-bold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:w-auto">
                         Close
                     </button>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <style>
-        .rich-text ul { list-style-type: disc; padding-left: 1.25rem; margin-bottom: 0.5rem; }
-        .rich-text ol { list-style-type: decimal; padding-left: 1.25rem; margin-bottom: 0.5rem; }
-        .rich-text p { margin-bottom: 0.5rem; }
-        .modern-scrollbar::-webkit-scrollbar { width: 4px; }
-        .modern-scrollbar::-webkit-scrollbar-thumb { background-color: #D1D5DB; border-radius: 4px; }
-    </style>
+<style>
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #c7c7c7; border-radius: 3px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a0a0a0; }
+    .prose ul { list-style-type: disc; padding-left: 1.5em; margin-top: 0.5em; margin-bottom: 0.5em; }
+    .prose ol { list-style-type: decimal; padding-left: 1.5em; margin-top: 0.5em; margin-bottom: 0.5em; }
+    .prose p { margin-bottom: 0.75em; }
+</style>
 
-    <script>
-        // 1. Tab Switching Logic
-        const tabButtons = document.querySelectorAll('.tab-btn');
-        const tabContents = document.querySelectorAll('.tab-content');
+<script>
+    // --- 1. Tab Logic ---
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
 
-        tabButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const target = btn.getAttribute('data-tab');
-                
-                // Hide all
-                tabContents.forEach(tc => tc.classList.add('hidden'));
-                document.getElementById(`${target}-tab-content`).classList.remove('hidden');
+    tabButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const target = btn.getAttribute('data-tab');
+            tabContents.forEach(tc => tc.classList.add('hidden'));
+            document.getElementById(`${target}-tab-content`).classList.remove('hidden');
 
-                // Styling
-                tabButtons.forEach(b => {
-                    b.classList.remove('border-teal-500', 'text-teal-600');
-                    b.classList.add('border-transparent', 'text-gray-500');
-                });
-                btn.classList.remove('border-transparent', 'text-gray-500');
-                btn.classList.add('border-teal-500', 'text-teal-600');
+            tabButtons.forEach(b => {
+                b.classList.remove('border-indigo-600', 'text-indigo-600');
+                b.classList.add('border-transparent', 'text-gray-500');
             });
+            btn.classList.remove('border-transparent', 'text-gray-500');
+            btn.classList.add('border-indigo-600', 'text-indigo-600');
+        });
+    });
+
+    // --- 2. Modal Logic ---
+    function openServiceModal(service) {
+        const modal = document.getElementById('serviceModal');
+        
+        document.getElementById('modalTitle').textContent = service.title;
+        const imgPath = service.image_path.startsWith('services/') ? `/storage/${service.image_path}` : service.image_path;
+        document.getElementById('modalImage').src = imgPath;
+        
+        if(service.category) {
+            document.getElementById('modalCategory').textContent = service.category.name;
+        }
+
+        const descContent = document.getElementById(`data-desc-${service.id}`).innerHTML;
+        document.getElementById('modalDescription').innerHTML = descContent;
+
+        const pkgContainer = document.getElementById('modalPackagesContainer');
+        pkgContainer.innerHTML = ''; 
+
+        const tiers = [
+            { key: 'basic', label: 'Basic Tier', color: 'teal', badge: 'bg-teal-100 text-teal-700' },
+            { key: 'standard', label: 'Standard Tier', color: 'yellow', badge: 'bg-yellow-100 text-yellow-700' },
+            { key: 'premium', label: 'Premium Tier', color: 'red', badge: 'bg-red-100 text-red-700' }
+        ];
+
+        let hasPackages = false;
+
+        tiers.forEach(tier => {
+            if(service[`${tier.key}_price`]) {
+                hasPackages = true;
+                const desc = document.getElementById(`data-pkg-${tier.key}-desc-${service.id}`).innerHTML;
+                
+                const colors = {
+                    teal: 'bg-white border-teal-600 hover:border-teal-600',
+                    yellow: 'bg-yellow-50/50 border-yellow-600 hover:border-yellow-600',
+                    red: 'bg-red-50/50 border-red-600 hover:border-red-600'
+                };
+
+                const html = `
+                    <div class="relative flex flex-col md:flex-row gap-5 border rounded-2xl p-5 ${colors[tier.color]} transition hover:shadow-md group">
+                        <div class="md:w-1/3 flex flex-col justify-center border-b md:border-b-0 md:border-r border-black/5 pb-4 md:pb-0 md:pr-5">
+                            <span class="inline-block self-start px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider mb-2 ${tier.badge}">${tier.label}</span>
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-2xl font-extrabold text-gray-900">RM${service[`${tier.key}_price`]}</span>
+                            </div>
+                            <span class="text-xs text-gray-500 font-medium">per ${service[`${tier.key}_frequency`]}</span>
+                        </div>
+                        <div class="md:w-2/3 prose prose-sm max-w-none text-gray-600 text-sm flex items-center">
+                            <div>${desc || '<span class="italic opacity-50">No description provided.</span>'}</div>
+                        </div>
+                    </div>
+                `;
+                pkgContainer.innerHTML += html;
+            }
         });
 
-        // 2. Modal Logic
-        function openServiceModal(service) {
-            const modal = document.getElementById('serviceModal');
-            
-            // Populate Basic Info
-            document.getElementById('modalTitle').textContent = service.title;
-            const imgPath = service.image_path.startsWith('services/') ? `/storage/${service.image_path}` : service.image_path;
-            document.getElementById('modalImage').src = imgPath;
-            
-            if(service.category) {
-                const catEl = document.getElementById('modalCategory');
-                catEl.textContent = service.category.name;
-                catEl.style.color = service.category.color; // Or keep it white text
+        if(!hasPackages) {
+            pkgContainer.innerHTML = '<div class="text-center p-6 text-gray-400 italic bg-gray-50 rounded-xl border border-dashed border-gray-200">No pricing packages configured.</div>';
+        }
+
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; 
+    }
+
+    function closeServiceModal() {
+        document.getElementById('serviceModal').classList.add('hidden');
+        document.body.style.overflow = 'auto'; 
+    }
+
+    // --- 3. Actions ---
+    function editService(id) { window.location.href = `/services/${id}/edit`; }
+
+    function deleteService(serviceId) {
+        Swal.fire({
+            title: 'Delete Service?',
+            text: "This action cannot be undone.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Yes, delete it'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                let url = "{{ route('services.destroy', ':id') }}".replace(':id', serviceId);
+                fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                }).then(res => res.json()).then(data => {
+                    if (data.service) {
+                        document.querySelector(`[data-service-id='${serviceId}']`).remove();
+                        const Toast = Swal.mixin({
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true
+                        });
+                        Toast.fire({ icon: 'success', title: 'Service deleted successfully' });
+                    } else {
+                        Swal.fire('Error', 'Unable to delete.', 'error');
+                    }
+                });
             }
-
-            // Populate Rich Text Description (Get from hidden div to preserve HTML)
-            const descContent = document.getElementById(`data-desc-${service.id}`).innerHTML;
-            document.getElementById('modalDescription').innerHTML = descContent;
-
-            // Populate Packages
-            const pkgContainer = document.getElementById('modalPackagesContainer');
-            pkgContainer.innerHTML = ''; // Clear previous
-
-            ['basic', 'standard', 'premium'].forEach(level => {
-                const price = service[`${level}_price`];
-                if(price) {
-                    const capitalLevel = level.charAt(0).toUpperCase() + level.slice(1);
-                    // Get hidden rich text description for package
-                    const pkgDesc = document.getElementById(`data-pkg-${level}-desc-${service.id}`).innerHTML;
-                    
-                    // Colors based on level
-                    let bgClass = level === 'basic' ? 'bg-gray-50 border-gray-200' : (level === 'standard' ? 'bg-blue-50 border-blue-200' : 'bg-purple-50 border-purple-200');
-                    let titleColor = level === 'basic' ? 'text-gray-800' : (level === 'standard' ? 'text-blue-800' : 'text-purple-800');
-
-                    const html = `
-                        <div class="border rounded-xl p-4 ${bgClass}">
-                            <div class="flex justify-between items-center mb-2">
-                                <h5 class="font-bold ${titleColor}">${capitalLevel}</h5>
-                            </div>
-                            <div class="text-2xl font-bold text-gray-900 mb-1">RM${price}</div>
-                            <div class="text-xs text-gray-500 uppercase font-bold mb-3">${service[`${level}_frequency`]}</div>
-                            <div class="text-xs text-gray-600 rich-text border-t border-gray-200/50 pt-2">
-                                ${pkgDesc || '<span class="italic text-gray-400">No description</span>'}
-                            </div>
-                        </div>
-                    `;
-                    pkgContainer.innerHTML += html;
-                }
-            });
-
-            if(pkgContainer.innerHTML === '') {
-                pkgContainer.innerHTML = '<div class="col-span-3 text-center text-gray-400 italic">No packages configured for this service.</div>';
-            }
-
-            // Show Modal
-            modal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden'; // Prevent background scrolling
-        }
-
-        function closeServiceModal() {
-            document.getElementById('serviceModal').classList.add('hidden');
-            document.body.style.overflow = 'auto'; 
-        }
-
-        // 3. Navigation Functions
-        function editService(id) { window.location.href = `/services/${id}/edit`; }
-
-        function deleteService(serviceId) {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "You won't be able to revert this!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete it!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    let url = "{{ route('services.destroy', ':id') }}".replace(':id', serviceId);
-                    fetch(url, {
-                        method: 'DELETE',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                            'Accept': 'application/json'
-                        }
-                    }).then(res => res.json()).then(data => {
-                        if (data.service) {
-                            document.querySelector(`[data-service-id='${serviceId}']`).remove();
-                            Swal.fire('Deleted!', 'Service deleted.', 'success');
-                        } else {
-                            Swal.fire('Error', 'Unable to delete.', 'error');
-                        }
-                    });
-                }
-            });
-        }
-    </script>
+        });
+    }
+</script>
 @endsection

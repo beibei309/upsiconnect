@@ -17,7 +17,7 @@
             @endphp
 
             <div id="received-content" class="sr-tab-content">
-                <div class="bg-gray-50 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
                         <h3 class="text-lg font-medium mb-4">My Services Orders ({{ $receivedRequests->count() }} total)</h3>
 
