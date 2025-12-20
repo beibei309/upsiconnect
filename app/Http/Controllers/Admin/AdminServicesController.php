@@ -10,6 +10,11 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ServiceWarningMail;
+use App\Mail\ServiceApprovedMail; 
+use App\Mail\ServiceRejectedMail; 
+
+// Import the Notification
+use App\Notifications\ServiceStatusNotification;
 
 class AdminServicesController extends Controller
 {
@@ -56,6 +61,15 @@ class AdminServicesController extends Controller
         $service->approval_status = 'approved';
         $service->save();
 
+        if ($service->user && $service->user->email) {
+            Mail::to($service->user->email)->send(new ServiceApprovedMail($service));
+        }
+
+        // 2. Send Database Notification
+        if ($service->user) {
+            $service->user->notify(new ServiceStatusNotification('approved', $service));
+        }
+
         return redirect()->route('admin.services.index')->with('success', 'Service approved.');
     }
 
@@ -65,38 +79,52 @@ class AdminServicesController extends Controller
         $service->approval_status = 'rejected';
         $service->save();
 
+        if ($service->user && $service->user->email) {
+            Mail::to($service->user->email)->send(new ServiceRejectedMail($service));
+        }
+
+        // 2. Send Database Notification
+        if ($service->user) {
+            $service->user->notify(new ServiceStatusNotification('rejected', $service));
+        }
+
         return redirect()->route('admin.services.index')->with('success', 'Service rejected.');
     }
 
-  public function sendWarning(Request $request, $id)
+ public function sendWarning(Request $request, $id)
     {
         $request->validate([
             'reason' => 'required|string|max:500',
         ]);
 
-        // Guna StudentService, bukan Service
-        // Kita load 'user' sekali sebab nak ambil email dia
         $service = StudentService::with('user')->findOrFail($id);
 
-        // 1. Update Database
-        $service->increment('warning_count'); 
+        // Update Database
+        $service->increment('warning_count');
         $service->warning_reason = $request->input('reason');
         
-        // Logic auto-block kalau dah 3 kali (Optional, ikut keperluan awak)
+        $statusType = 'warning'; // Default notification type
+
+        // Logic auto-block if count >= 3
         if($service->warning_count >= 3) {
             $service->approval_status = 'blocked';
+            $statusType = 'blocked'; // Change notification type if blocked
         }
 
         $service->save();
 
-        // 2. Hantar Email ke Student
-        // Check kalau user wujud & ada email
+        // 1. Send Email
         if ($service->user && $service->user->email) {
             Mail::to($service->user->email)
                 ->send(new ServiceWarningMail($service, $request->input('reason')));
         }
 
-        return back()->with('success', 'Warning sent and email notification dispatched to the student.');
+        // 2. Send Database Notification
+        if ($service->user) {
+            $service->user->notify(new ServiceStatusNotification($statusType, $service, $request->input('reason')));
+        }
+
+        return back()->with('success', 'Warning sent, email dispatched, and notification created.');
     }
     
 }
