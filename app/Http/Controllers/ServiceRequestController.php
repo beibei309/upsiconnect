@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Routing\Controller as BaseController;
 use App\Notifications\NewServiceRequest;
 use App\Notifications\ServiceRequestStatusUpdated;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\NewServiceRequestNotification;
 
 class ServiceRequestController extends BaseController
 {
@@ -104,6 +106,18 @@ class ServiceRequestController extends BaseController
 
         // Notify Provider
         $studentService->user->notify(new NewServiceRequest($serviceRequest));
+        // Through email
+        if ($studentService->user->email) {
+            Mail::to($studentService->user->email)
+                ->send(new NewServiceRequestNotification($serviceRequest, 'provider'));
+        }
+
+        // Send Email to Student (Requester)
+        if ($user->email) {
+            Mail::to($user->email)
+                ->send(new NewServiceRequestNotification($serviceRequest, 'student'));
+        }
+        
 
         return response()->json([
             'success' => true,

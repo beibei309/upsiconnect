@@ -31,7 +31,7 @@ class ServiceRequestStatusUpdated extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', 'mail']; 
     }
 
     /**
@@ -74,5 +74,78 @@ class ServiceRequestStatusUpdated extends Notification
             'status' => $this->status,
             'type' => 'status_update'
         ];
+    }
+
+    /**
+     * Email notification
+     */
+    /**
+     * Email notification
+     */
+    public function toMail($notifiable)
+    {
+        $serviceTitle = $this->serviceRequest->studentService->title;
+        $providerName = $this->serviceRequest->provider->name;
+        $formattedDate = \Carbon\Carbon::parse($this->serviceRequest->selected_dates)->format('d M Y');
+        
+        // Tetapkan Subject, Intro Message, dan Next Step mengikut status
+        switch ($this->status) {
+            case 'accepted':
+                $subject = 'Good News: Request Accepted!';
+                $intro = "Great news! **{$providerName}** has accepted your request for **{$serviceTitle}**.";
+                $instruction = "Please communicate with the provider to discuss further details or wait for the service to start.";
+                $color = 'success'; // Hijau
+                break;
+
+            case 'rejected':
+                $subject = 'Request Update: Rejected';
+                $intro = "We are sorry to inform you that **{$providerName}** is unable to accept your request for **{$serviceTitle}** at this time.";
+                $instruction = "You may look for other providers offering similar services on our platform.";
+                $color = 'error'; // Merah
+                break;
+
+            case 'in_progress':
+                $subject = 'Service Started: ' . $serviceTitle;
+                $intro = "The service **{$serviceTitle}** has been marked as **In Progress**.";
+                $instruction = "The provider has started working on your request.";
+                $color = 'primary'; // Biru
+                break;
+
+            case 'completed':
+                $subject = 'Service Completed: ' . $serviceTitle;
+                $intro = "The service **{$serviceTitle}** has been marked as **Completed** by the provider.";
+                $instruction = "Please log in to confirm the completion and **leave a review** for the student seller. Your feedback helps our community!";
+                $color = 'success'; // Hijau
+                break;
+
+            case 'cancelled':
+                $subject = 'Request Cancelled';
+                $intro = "The service request for **{$serviceTitle}** has been cancelled.";
+                $instruction = "If this was a mistake, please make a new request.";
+                $color = 'gray';
+                break;
+
+            default:
+                $subject = 'Update on your Service Request';
+                $intro = "The status of your request for **{$serviceTitle}** has been updated to **{$this->status}**.";
+                $instruction = "Please check your dashboard for more details.";
+                $color = 'primary';
+        }
+
+        return (new MailMessage)
+            ->subject($subject)
+            ->greeting('Hi ' . $notifiable->name . ',')
+            ->line($intro)
+            
+            // Paparkan kotak detail ringkas
+            ->line('__Request Details:__')
+            ->line('Date: ' . $formattedDate)
+            ->line('Seller: ' . $providerName)
+            ->line('Price: RM' . number_format($this->serviceRequest->offered_price, 2))
+            
+            ->line($instruction)
+            ->action('View Request & Chat', route('service-requests.show', $this->serviceRequest->id))
+            ->line('Thank you for using S2U - UPSI Connect.')
+            ->salutation('Regards, The S2U Team');
     }
 }

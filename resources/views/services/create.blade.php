@@ -838,8 +838,8 @@
                 if (data.success) {
                     Swal.fire({
                         icon: 'success',
-                        title: 'Service Published!',
-                        text: 'Your service is now live.',
+                        title: 'Submission Successful',
+                        text: 'Your service has been submitted to admin for approval.',
                         confirmButtonText: 'Go to Dashboard',
                         confirmButtonColor: '#10b981'
                     }).then(() => {

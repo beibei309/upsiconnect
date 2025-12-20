@@ -49,11 +49,11 @@
         <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
             <div>
                 <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight">My Saved Services</h1>
-                <p class="text-slate-500 mt-2 text-lg">Manage and view the student helpers you've bookmarked.</p>
+                <p class="text-slate-500 mt-2 text-lg">Access and view your list of favourite services</p>
             </div>
             <a href="{{ route('services.index') }}"
                 class="text-indigo-600 font-bold hover:text-indigo-700 flex items-center gap-2 transition-all">
-                Find more helpers <i class="fa-solid fa-arrow-right text-sm"></i>
+                Find more services <i class="fa-solid fa-arrow-right text-sm"></i>
             </a>
         </div>
 
