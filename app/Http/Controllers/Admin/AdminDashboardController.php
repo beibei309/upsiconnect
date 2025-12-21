@@ -17,6 +17,16 @@ class AdminDashboardController extends Controller
     $totalServices = StudentService::count();
     $pendingRequests = ServiceApplication::where('status', 'pending')->count();
 
+    // 🔔 NEW: Pending Student Approvals
+    $pendingStudents = User::where('role', 'student')
+    ->where('verification_status', 'pending')
+    ->count();
+
+    // 🔔 Pending helper verification
+$pendingHelpers = User::where('role', 'helper')
+    ->where('verification_status', 'pending')
+    ->count();
+
     /* ---------------------------------------------
      |  MONTHLY STUDENT REGISTRATIONS (Line Chart)
      --------------------------------------------- */
@@ -48,6 +58,8 @@ class AdminDashboardController extends Controller
         'totalCommunityUsers',
         'totalServices',
         'pendingRequests',
+        'pendingStudents', // ✅ pass to view
+        'pendingHelpers',   // 👈 ADD THIS
         'studentsPerMonth',
         'servicesPerMonth'
     ));

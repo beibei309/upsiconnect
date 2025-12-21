@@ -41,6 +41,34 @@
 
     </div>
 
+    @if($pendingStudents > 0)
+<div class="mt-6 bg-red-100 border border-red-300 text-red-700 px-6 py-4 rounded-xl flex items-center justify-between">
+    <div>
+        <strong>⚠ Action Required</strong><br>
+        {{ $pendingStudents }} student(s) are waiting for approval.
+    </div>
+
+    <a href="{{ route('admin.students.index', ['verification_status' => 'pending']) }}"
+       class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition">
+        Review Now
+    </a>
+</div>
+@endif
+
+@if($pendingHelpers > 0)
+<div class="mt-4 bg-yellow-100 border border-yellow-300 text-yellow-800 px-6 py-4 rounded-xl flex items-center justify-between">
+    <div>
+        <strong>⚠ Action Required</strong><br>
+        {{ $pendingHelpers }} helper(s) are waiting for verification.
+    </div>
+
+    <a href="{{ route('admin.students.index', ['verification_status' => 'pending']) }}"
+       class="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition">
+        Review Helpers
+    </a>
+</div>
+@endif
+
     <!-- CHARTS -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
 

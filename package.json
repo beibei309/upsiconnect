@@ -22,6 +22,7 @@
         "vite": "^7.0.7"
     },
     "dependencies": {
+        "baseline-browser-mapping": "^2.9.11",
         "socket.io-client": "^4.8.1"
     }
 }
