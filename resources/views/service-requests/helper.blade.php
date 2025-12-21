@@ -433,97 +433,214 @@
                             @endif
                         </div>
 
-                        <div id="completed-content"
-                            class="sr-status-tab-content {{ $defaultStatusTab === 'completed' ? '' : 'hidden' }}">
-                            @if ($receivedRequests->whereIn('status', ['completed', 'cancelled', 'rejected'])->isEmpty())
-                                <div class="text-center py-8">
-                                    <h3 class="mt-2 text-sm font-medium text-gray-900">No Completed Requests</h3>
-                                    <p class="mt-1 text-sm text-gray-500">You have no completed service requests.</p>
-                                </div>
-                            @else
-                                <div class="space-y-6">
-                                    @foreach ($receivedRequests->whereIn('status', ['completed', 'cancelled', 'rejected']) as $request)
-                                        @php
-                                            $service = $request->studentService;
-                                            $pkgType = strtolower($request->selected_package ?? 'basic');
-                                            $pkgDescription = $service->{$pkgType . '_description'} ?? null;
-                                            $pkgDuration = $service->{$pkgType . '_duration'} ?? null;
-                                            $pkgFrequency = $service->{$pkgType . '_frequency'} ?? null;
+                       <div id="completed-content" class="sr-status-tab-content {{ $defaultStatusTab === 'completed' ? '' : 'hidden' }}">
+    
+    @if ($receivedRequests->whereIn('status', ['completed', 'cancelled', 'rejected'])->isEmpty())
+        {{-- Empty State --}}
+        <div class="flex flex-col items-center justify-center py-12 text-center rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50">
+            <div class="rounded-full bg-gray-100 p-4 mb-3">
+                <svg class="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+            </div>
+            <h3 class="text-sm font-semibold text-gray-900">No Completed Requests</h3>
+            <p class="mt-1 text-sm text-gray-500">You don't have any past history yet.</p>
+        </div>
+    @else
+        <div class="grid grid-cols-1 gap-6">
+            @foreach ($receivedRequests->whereIn('status', ['completed', 'cancelled', 'rejected']) as $request)
+                @php
+                    // Status Styling Logic
+                    $statusStyles = match ($request->status) {
+                        'completed' => ['bg' => 'bg-green-50', 'text' => 'text-green-700', 'dot' => 'bg-green-500', 'border' => 'border-green-100'],
+                        'cancelled' => ['bg' => 'bg-gray-100', 'text' => 'text-gray-700', 'dot' => 'bg-gray-500', 'border' => 'border-gray-200'],
+                        'rejected'  => ['bg' => 'bg-red-50', 'text' => 'text-red-700', 'dot' => 'bg-red-500', 'border' => 'border-red-100'],
+                        default     => ['bg' => 'bg-gray-50', 'text' => 'text-gray-600', 'dot' => 'bg-gray-400', 'border' => 'border-gray-200'],
+                    };
+                @endphp
 
-                                            // Determine border/text colors based on status for history view
-                                            $statusColor = match ($request->status) {
-                                                'completed' => 'bg-green-500',
-                                                'cancelled' => 'bg-gray-400',
-                                                'rejected' => 'bg-red-500',
-                                                default => 'bg-gray-300',
-                                            };
-                                        @endphp
-                                        @if($request->review)
-        <button onclick='openReviewModal(@json($request->review), "{{ $request->requester->name }}")'
-            class="flex w-full items-center justify-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-sm font-semibold text-indigo-700 shadow-sm transition-all hover:bg-indigo-100 hover:shadow-md">
-            <i class="fas fa-star text-yellow-500"></i>
-            {{ $request->review->reply ? 'View Review' : 'Reply Review' }}
-        </button>
-    @elseif($request->status === 'completed')
-        <span class="text-xs text-gray-400 text-center italic">Waiting for review...</span>
-    @endif
-    {{-- REVIEW MODAL --}}
-<div id="reviewModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        {{-- Background overlay --}}
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeReviewModal()"></div>
-
-        <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
-
-        <div class="inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
-            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                <div class="sm:flex sm:items-start">
-                    <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-yellow-100 sm:mx-0 sm:h-10 sm:w-10">
-                        <i class="fas fa-star text-yellow-500"></i>
-                    </div>
-                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                        <h3 class="text-lg font-medium leading-6 text-gray-900" id="modal-title">Client Review</h3>
-                        
-                        {{-- Client Review Section --}}
-                        <div class="mt-4 bg-gray-50 p-4 rounded-lg border border-gray-100">
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="font-bold text-sm text-gray-700" id="modalRequesterName"></span>
-                                <div class="text-yellow-400 text-sm" id="modalStars"></div>
+                <div class="group relative overflow-hidden rounded-xl border {{ $statusStyles['border'] }} bg-white shadow-sm transition-all duration-200 hover:shadow-md">
+                    
+                    {{-- Card Header: Service & Status --}}
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-5 pb-3 gap-4">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <h4 class="text-lg font-bold text-gray-900 line-clamp-1">
+                                    {{ optional($request->studentService)->title ?? 'Custom Request' }}
+                                </h4>
                             </div>
-                            <p class="text-sm text-gray-600 italic" id="modalComment"></p>
-                            <p class="text-xs text-gray-400 mt-2 text-right" id="modalDate"></p>
+                            <div class="flex items-center text-sm text-gray-500">
+                                <span class="font-medium text-gray-700 mr-1">Client:</span> 
+                                {{ $request->requester->name }}
+                            </div>
                         </div>
 
-                        {{-- Reply Section --}}
-                        <div class="mt-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Your Reply:</label>
-                            
-                            {{-- State A: Already Replied (Show Text) --}}
-                            <div id="viewReplyContainer" class="hidden">
-                                <div class="bg-indigo-50 p-3 rounded-lg border border-indigo-100 text-sm text-gray-700">
-                                    <p id="modalReplyText"></p>
-                                    <p class="text-xs text-indigo-400 mt-2 text-right">Replied on <span id="modalRepliedAt"></span></p>
+                        {{-- Status Pill --}}
+                        <span class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold {{ $statusStyles['bg'] }} {{ $statusStyles['text'] }}">
+                            <span class="h-1.5 w-1.5 rounded-full {{ $statusStyles['dot'] }}"></span>
+                            {{ ucfirst($request->status) }}
+                        </span>
+                    </div>
+
+                    <hr class="border-gray-100 mx-5">
+
+                    {{-- Card Body: Details Grid --}}
+                    <div class="p-5 pt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        
+                        {{-- Left Column: Request Meta --}}
+                        <div class="space-y-3">
+                            {{-- Package --}}
+                            <div class="flex items-center text-sm text-gray-600">
+                                <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 mr-3">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-400 uppercase font-bold tracking-wider">Package</p>
+                                    <p class="font-medium text-gray-900">{{ ucfirst($request->selected_package ?? 'Custom') }}</p>
                                 </div>
                             </div>
 
-                            {{-- State B: Not Replied (Show Form) --}}
-                            <form id="replyForm" method="POST" action="" class="hidden">
-                                @csrf
-                                <textarea name="reply" rows="3" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Write your thank you note or response here..."></textarea>
-                                <div class="mt-3 flex justify-end">
-                                    <button type="submit" class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:text-sm">
-                                        Send Reply
-                                    </button>
+                            {{-- Price --}}
+                            @if ($request->offered_price)
+                            <div class="flex items-center text-sm text-gray-600">
+                                <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 mr-3">
+                                    <span class="font-bold text-xs">RM</span>
                                 </div>
-                            </form>
+                                <div>
+                                    <p class="text-xs text-gray-400 uppercase font-bold tracking-wider">Total Price</p>
+                                    <p class="font-medium text-gray-900">RM {{ number_format($request->offered_price, 2) }}</p>
+                                </div>
+                            </div>
+                            @endif
+                        </div>
+
+                        {{-- Right Column: Dates & Actions --}}
+                        <div class="space-y-3">
+                            {{-- Date --}}
+                            @if ($request->selected_dates)
+                            <div class="flex items-center text-sm text-gray-600">
+                                <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50 text-orange-600 mr-3">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-400 uppercase font-bold tracking-wider">Date</p>
+                                    <p class="font-medium text-gray-900">
+                                        @php
+                                            $dates = $request->selected_dates;
+                                            $firstDate = is_array($dates) ? $dates[0] : $dates;
+                                            $count = is_array($dates) ? count($dates) : 1;
+                                        @endphp
+                                        {{ \Carbon\Carbon::parse($firstDate)->format('d M Y') }}
+                                        @if ($count > 1) <span class="text-gray-400 text-xs">(+{{ $count - 1 }} more)</span> @endif
+                                    </p>
+                                </div>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    {{-- Footer: Actions --}}
+                    <div class="bg-gray-50 px-5 py-3 flex flex-col sm:flex-row justify-between items-center gap-3 border-t border-gray-100">
+                        {{-- Link to Details --}}
+                        <a href="{{ route('service-requests.show', $request) }}" class="text-sm text-gray-600 hover:text-indigo-600 font-medium flex items-center transition-colors">
+                            View Full Details
+                            <svg class="ml-1 h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                        </a>
+
+                        {{-- Review Action Logic --}}
+                        <div class="w-full sm:w-auto">
+                            @if ($request->review)
+                                <button onclick='openReviewModal(@json($request->review), "{{ $request->requester->name }}")'
+                                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-yellow-700 bg-yellow-50 hover:bg-yellow-100 border border-yellow-200 transition-all shadow-sm">
+                                    <div class="flex gap-0.5 text-yellow-500">
+                                        @for($i=1; $i<=5; $i++)
+                                            <i class="{{ $i <= $request->review->rating ? 'fas' : 'far' }} fa-star text-xs"></i>
+                                        @endfor
+                                    </div>
+                                    <span class="ml-1">{{ $request->review->reply ? 'See Reply' : 'Reply to Review' }}</span>
+                                </button>
+                            @elseif($request->status === 'completed')
+                                <div class="inline-flex items-center gap-2 text-xs text-gray-400 bg-white px-3 py-1.5 rounded-md border border-gray-200">
+                                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    Waiting for client review
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                <button type="button" onclick="closeReviewModal()" class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                    Close
-                </button>
+            @endforeach
+        </div>
+    @endif
+</div>
+
+<div id="reviewModal" class="relative z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-gray-900/75 backdrop-blur-sm transition-opacity"></div>
+
+    <div class="fixed inset-0 z-10 overflow-y-auto">
+        <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+            <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                
+                {{-- Modal Header --}}
+                <div class="bg-indigo-600 px-4 py-4 sm:px-6">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-base font-semibold leading-6 text-white" id="modal-title">Client Review</h3>
+                        <button type="button" onclick="closeReviewModal()" class="text-indigo-200 hover:text-white">
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    {{-- Client Review Box --}}
+                    <div class="rounded-xl bg-yellow-50 p-4 border border-yellow-100 mb-6">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h4 class="font-bold text-gray-900 text-sm" id="modalRequesterName">Client Name</h4>
+                                <p class="text-xs text-gray-500" id="modalDate">Date</p>
+                            </div>
+                            <div class="text-yellow-400 text-sm flex gap-1" id="modalStars"></div>
+                        </div>
+                        <div class="relative mt-2">
+                            <span class="absolute top-0 left-0 text-yellow-200 text-4xl -translate-y-2 -translate-x-2">"</span>
+                            <p class="relative text-sm text-gray-700 italic px-2 z-10" id="modalComment"></p>
+                        </div>
+                    </div>
+
+                    {{-- Reply Section --}}
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-900 mb-3 flex items-center gap-2">
+                            <svg class="h-4 w-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
+                            Your Response
+                        </h4>
+
+                        {{-- State A: Already Replied --}}
+                        <div id="viewReplyContainer" class="hidden">
+                            <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 text-sm text-gray-700 relative">
+                                <p id="modalReplyText"></p>
+                                <div class="mt-2 text-right">
+                                    <span class="text-xs text-gray-400">Replied on <span id="modalRepliedAt"></span></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- State B: Form --}}
+                        <form id="replyForm" method="POST" action="" class="hidden">
+                            @csrf
+                            <div class="relative">
+                                <textarea name="reply" rows="4" class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3" placeholder="Thank the client for their feedback..."></textarea>
+                            </div>
+                            <div class="mt-4 flex justify-end">
+                                <button type="submit" class="inline-flex justify-center rounded-lg border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                                    Post Reply
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -531,37 +648,35 @@
 
 <script>
     function openReviewModal(review, requesterName) {
-        // 1. Populate Client Review Data
+        // 1. Populate Client Review
         document.getElementById('modalRequesterName').innerText = requesterName;
-        document.getElementById('modalComment').innerText = '"' + (review.comment || 'No comment provided') + '"';
-        document.getElementById('modalDate').innerText = new Date(review.created_at).toLocaleDateString();
-        
+        document.getElementById('modalComment').innerText = review.comment || 'No textual comment provided.';
+        document.getElementById('modalDate').innerText = new Date(review.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+
         // Generate Stars
         let starsHtml = '';
-        for(let i=1; i<=5; i++) {
+        for (let i = 1; i <= 5; i++) {
             starsHtml += `<i class="${i <= review.rating ? 'fas' : 'far'} fa-star"></i>`;
         }
         document.getElementById('modalStars').innerHTML = starsHtml;
 
-        // 2. Handle Reply Logic
+        // 2. Handle Reply State
         const replyForm = document.getElementById('replyForm');
         const viewReplyContainer = document.getElementById('viewReplyContainer');
 
         if (review.reply) {
-            // Already replied -> Show text
             replyForm.classList.add('hidden');
             viewReplyContainer.classList.remove('hidden');
             document.getElementById('modalReplyText').innerText = review.reply;
             document.getElementById('modalRepliedAt').innerText = new Date(review.replied_at).toLocaleDateString();
         } else {
-            // Not replied -> Show form
             viewReplyContainer.classList.add('hidden');
             replyForm.classList.remove('hidden');
-            // Set dynamic action URL for the form
+            // Ensure you have a named route like 'reviews.reply' that accepts the ID
+            // If your route is resource based: /reviews/{id}/reply
             replyForm.action = `/reviews/${review.id}/reply`; 
         }
 
-        // 3. Show Modal
         document.getElementById('reviewModal').classList.remove('hidden');
     }
 
@@ -569,103 +684,6 @@
         document.getElementById('reviewModal').classList.add('hidden');
     }
 </script>
-
-                                        <div
-                                            class="group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-6 opacity-85 transition-all duration-300 hover:opacity-100 hover:shadow-md sr-request-item">
-
-                                            <div class="absolute left-0 top-0 bottom-0 w-1 {{ $statusColor }}"></div>
-
-                                            <div class="flex flex-col gap-6 md:flex-row">
-
-                                                <div class="flex-1 space-y-4 pl-3">
-
-                                                    <div class="flex justify-between items-start">
-                                                        <div>
-                                                            <h4 class="text-lg font-bold text-gray-800">
-                                                                {{ optional($request->studentService)->title ?? 'Custom Request' }}
-                                                            </h4>
-                                                            <div
-                                                                class="mt-1 flex items-center gap-2 text-sm text-gray-400">
-                                                                <span class="font-medium">Client:
-                                                                    {{ $request->requester->name }}</span>
-                                                                <span class="text-gray-300">|</span>
-                                                                <span class="text-xs">
-                                                                    @if ($request->status === 'completed')
-                                                                        Completed
-                                                                        {{ $request->updated_at->format('M j, Y') }}
-                                                                    @else
-                                                                        Updated {{ $request->updated_at->diffForHumans() }}
-                                                                    @endif
-                                                                </span>
-                                                            </div>
-                                                        </div>
-
-                                                        <span
-                                                            class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide {{ $request->status_color }}">
-                                                            {{ $request->formatted_status }}
-                                                        </span>
-                                                    </div>
-
-                                                    <div
-                                                        class="flex flex-wrap items-center gap-3 text-sm text-gray-500 bg-gray-50 rounded-lg p-3 border border-gray-100">
-                                                        <div class="flex items-center gap-1.5">
-                                                            <svg class="h-4 w-4 text-gray-400" fill="none"
-                                                                viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    stroke-width="2"
-                                                                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                                                            </svg>
-                                                            <span
-                                                                class="font-medium">{{ ucfirst($request->selected_package ?? 'Custom') }}</span>
-                                                        </div>
-
-                                                        @if ($request->offered_price)
-                                                            <div class="flex items-center gap-1.5 text-gray-700">
-                                                                <span class="font-bold">RM
-                                                                    {{ number_format($request->offered_price, 2) }}</span>
-                                                            </div>
-                                                        @endif
-
-                                                        @if ($request->selected_dates)
-                                                            <div class="flex items-center gap-1.5 text-xs">
-                                                                <svg class="h-3.5 w-3.5 text-gray-400" fill="none"
-                                                                    viewBox="0 0 24 24" stroke="currentColor">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                                        stroke-width="2"
-                                                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                                </svg>
-                                                                @php
-                                                                    $dates = $request->selected_dates;
-                                                                    $firstDate = is_array($dates) ? $dates[0] : $dates;
-                                                                    $count = is_array($dates) ? count($dates) : 1;
-                                                                @endphp
-                                                                {{ \Carbon\Carbon::parse($firstDate)->format('d M Y') }}
-                                                                @if ($count > 1)
-                                                                    <span>(+{{ $count - 1 }})</span>
-                                                                @endif
-                                                            </div>
-                                                        @endif
-                                                    </div>
-
-                                                    <div class="pt-1">
-                                                        <a href="{{ route('service-requests.show', $request) }}"
-                                                            class="inline-flex items-center text-sm font-semibold text-gray-500 hover:text-indigo-600 transition-colors">
-                                                            View History Details
-                                                            <svg class="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24"
-                                                                stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    stroke-width="2" d="M9 5l7 7-7 7" />
-                                                            </svg>
-                                                        </a>
-                                                    </div>
-                                                </div>
-
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            @endif
-                        </div>
 
                     </div>
                 </div>

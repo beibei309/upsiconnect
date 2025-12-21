@@ -38,49 +38,76 @@
             </div>
         </div>
 
+
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div
-                class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between group hover:border-indigo-100 transition-all">
+            <a href="{{ route('service-requests.index') }}#pending"
+                class="block bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between group hover:border-blue-100 hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-pointer">
                 <div>
-                    <p class="text-sm font-medium text-gray-500">Active Services</p>
+                    <p class="text-sm font-medium text-gray-500 group-hover:text-blue-600 transition-colors">Pending Request
+                    </p>
+                    <h3 class="text-2xl font-bold text-yellow-500 mt-1">
+                        {{-- Mengambil jumlah dari array newOrders yang sudah di-sum di controller --}}
+                        {{ array_sum($newOrders ?? []) }}
+                    </h3>
+                </div>
+                <div
+                    class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                    <i class="fa-solid fa-clock-rotate-left text-xl"></i>
+                </div>
+            </a>
+            {{-- 1. Active Services Link --}}
+            <a href="{{ route('services.manage') }}"
+                class="block bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between group hover:border-indigo-100 hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 group-hover:text-indigo-600 transition-colors">My
+                        Services</p>
                     <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ Auth::user()->studentServices()->count() }}</h3>
                 </div>
                 <div
                     class="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
                     <i class="fa-solid fa-briefcase text-xl"></i>
                 </div>
-            </div>
+            </a>
 
-            <div
-                class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between group hover:border-orange-100 transition-all">
+            {{-- 2. Pending Requests Link --}}
+        <a href="{{ route('service-requests.index') }}#completed"
+                class="block bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between group hover:border-emerald-100 hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-pointer">
                 <div>
-                    <p class="text-sm font-medium text-gray-500">Pending Requests</p>
+                    <p class="text-sm font-medium text-gray-500 group-hover:text-emerald-600 transition-colors">Completed
+                        Order</p>
                     <h3 class="text-2xl font-bold text-slate-900 mt-1">
-                        {{ Auth::user()->chatRequestsReceived()->where('status', 'pending')->count() }}</h3>
+                        {{-- Menggunakan variable $completedOrders dari controller --}}
+                        {{ $completedOrders ?? 0 }}
+                    </h3>
                 </div>
                 <div
-                    class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center text-orange-600 group-hover:bg-orange-500 group-hover:text-white transition-colors">
-                    <i class="fa-regular fa-comment-dots text-xl"></i>
+                    class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                    <i class="fa-solid fa-circle-check text-xl"></i>
                 </div>
-            </div>
+            </a>
 
-            <div
-                class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between group hover:border-emerald-100 transition-all">
+
+            {{-- 3. Total Revenue Link --}}
+            <a href="#" {{-- Masukkan route wallet/payout sini --}}
+                class="block bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between group hover:border-emerald-100 hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-pointer">
                 <div>
-                    <p class="text-sm font-medium text-gray-500">Total Revenue</p>
-                    <h3 class="text-2xl font-bold text-slate-900 mt-1">RM{{ number_format(array_sum($sales ?? []), 2) }}
+                    <p class="text-sm font-medium text-gray-500 group-hover:text-emerald-600 transition-colors">Total
+                        Estimated Revenue</p>
+                    <h3 class="text-2xl font-bold text-green-500 mt-1">RM{{ number_format(array_sum($sales ?? []), 2) }}
                     </h3>
                 </div>
                 <div
                     class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
                     <i class="fa-solid fa-coins text-xl"></i>
                 </div>
-            </div>
+            </a>
 
-            <div
-                class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between group hover:border-yellow-100 transition-all">
+            {{-- 4. Average Rating Link --}}
+            <a href="{{ route('students.edit') }}" {{-- Atau link ke profile review --}}
+                class="block bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between group hover:border-yellow-100 hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-pointer">
                 <div>
-                    <p class="text-sm font-medium text-gray-500">Average Rating</p>
+                    <p class="text-sm font-medium text-gray-500 group-hover:text-yellow-600 transition-colors">Average
+                        Rating</p>
                     <div class="flex items-center gap-2 mt-1">
                         <h3 class="text-2xl font-bold text-slate-900">4.9</h3>
                         <i class="fa-solid fa-star text-yellow-400 text-sm"></i>
@@ -90,7 +117,7 @@
                     class="w-12 h-12 bg-yellow-50 rounded-xl flex items-center justify-center text-yellow-600 group-hover:bg-yellow-500 group-hover:text-white transition-colors">
                     <i class="fa-solid fa-trophy text-xl"></i>
                 </div>
-            </div>
+            </a>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -113,7 +140,6 @@
                             </select>
                         </form>
                     </div>
-
                     <div class="relative h-[300px] w-full">
                         <canvas id="overviewChart"></canvas>
                     </div>
@@ -141,13 +167,7 @@
                                     'bg' => 'bg-blue-50',
                                     'route' => route('services.manage'),
                                 ],
-                                [
-                                    'title' => 'Message Requests',
-                                    'icon' => 'fa-envelope',
-                                    'color' => 'text-purple-600',
-                                    'bg' => 'bg-purple-50',
-                                    'route' => route('chat.index'),
-                                ],
+
                                 [
                                     'title' => 'Edit Profile',
                                     'icon' => 'fa-user-pen',
@@ -171,6 +191,29 @@
                                     class="fa-solid fa-chevron-right ml-auto text-gray-300 group-hover:text-gray-500 text-xs"></i>
                             </a>
                         @endforeach
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                    <h2 class="text-lg font-bold text-slate-900 mb-4">Latest Feedback</h2>
+                    <div class="space-y-4">
+                        @forelse($recentReviews ?? [] as $review)
+                            <div class="p-3 rounded-xl bg-gray-50 border border-gray-100">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-sm font-bold text-gray-900">{{ $review->user->name }}</span>
+                                    </div>
+                                    <div class="flex text-yellow-400 text-xs">
+                                        @for ($i = 0; $i < $review->rating; $i++)
+                                            <i class="fa-solid fa-star"></i>
+                                        @endfor
+                                    </div>
+                                </div>
+                                <p class="text-xs text-gray-600 italic">"{{ Str::limit($review->comment, 80) }}"</p>
+                            </div>
+                        @empty
+                            <p class="text-sm text-gray-400 text-center py-2">No reviews yet.</p>
+                        @endforelse
                     </div>
                 </div>
 

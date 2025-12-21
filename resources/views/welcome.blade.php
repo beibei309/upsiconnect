@@ -193,7 +193,7 @@
                         <button @click="activeTab = 'providers'" 
                             :class="activeTab === 'providers' ? 'bg-slate-900 text-white shadow-lg' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
                             class="px-6 py-2 rounded-full font-semibold transition-all">
-                            For Students
+                            For Sellers
                         </button>
                     </div>
                 </div>
@@ -208,7 +208,7 @@
                         <div class="relative">
                             <div class="w-16 h-16 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto mb-6">2</div>
                             <h3 class="text-xl font-bold text-gray-900 mb-2">Connect Directly</h3>
-                            <p class="text-gray-500">Chat with the provider to discuss details, deadlines, and requirements.</p>
+                            <p class="text-gray-500">Chat with the seller to discuss details, deadlines, and requirements.</p>
                         </div>
                         <div class="relative">
                             <div class="w-16 h-16 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto mb-6">3</div>

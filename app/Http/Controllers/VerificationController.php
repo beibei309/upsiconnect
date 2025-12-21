@@ -254,6 +254,8 @@ class VerificationController extends Controller
         }
     }
 
+    
+
     public function submitDoc(Request $request)
     {
         $request->validate([
@@ -271,7 +273,7 @@ class VerificationController extends Controller
 
             // Update User
             $user->verification_document_path = $path;
-            $user->verification_status = 'approved'; // Set to pending ONLY at final step
+            $user->verification_status = 'approved'; 
             $user->save();
 
             return redirect()->back()->with('status', 'Verification submitted! Admin will review shortly.');

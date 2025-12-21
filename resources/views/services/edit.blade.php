@@ -160,7 +160,7 @@
 
                 <div id="overview" class="tab-section p-8">
                     <div class="mb-6">
-                        <h2 class="text-xl font-bold text-gray-900">Service Basics</h2>
+                        <h2 class="text-xl font-bold text-gray-900">Service Basic</h2>
                         <p class="text-gray-500 text-sm">Core details about what you are offering.</p>
                     </div>
 
@@ -200,7 +200,7 @@
                                 class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
 
                             <div class="mt-4">
-                                <p class="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">Or update from
+                                <p class="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">Or choose from
                                     template:</p>
                                 <div class="flex gap-3 overflow-x-auto pb-2">
                                     <img src="/storage/service_tutor.jpg"
@@ -248,7 +248,7 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                             <div>
-                                <label class="text-xs font-bold text-gray-500 uppercase">Price (RM) <span
+                                <label class="text-xs font-bold text-gray-500 uppercase">Suggested Price From (RM) <span
                                         class="text-red-500">*</span></label>
                                 <input type="number" id="basic_price" name="packages[0][price]"
                                     value="{{ $service->basic_price }}"

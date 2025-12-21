@@ -418,25 +418,40 @@ $isUnavailable = $request->has('is_unavailable'); // Check checkbox status
     ]);
 }
 
-    public function manage(Request $request)
-    {
-        $user = $request->user();
+   public function manage(Request $request)
+{
+    $user = $request->user();
 
-        // Optional: Ensure only helpers can access this
-        if (!$user || $user->role !== 'helper') {
-            abort(403, 'Only student helpers can manage services.');
-        }
-
-        // Fetch services created by this user
-        $services = StudentService::query()
-            ->where('user_id', $user->id)
-            ->with('category') // Eager load category to prevent N+1 query issues
-            ->orderByDesc('created_at')
-            ->get();
-
-        // Return the view
-        return view('services.manage', compact('services'));
+    if (!$user || $user->role !== 'helper') {
+        abort(403, 'Only student helpers can manage services.');
     }
+
+    $query = StudentService::query()
+        ->where('user_id', $user->id)
+        ->with('category');
+
+    // Filter Search (Nama Service)
+    if ($request->filled('search')) {
+        $query->where('name', 'like', '%' . $request->search . '%');
+    }
+
+    // Filter Category (Hanya yang ada dalam senarai student service user ini)
+    if ($request->filled('category')) {
+        $query->where('category_id', $request->category);
+    }
+
+    $services = $query->orderByDesc('created_at')->get();
+
+    // Dapatkan senarai kategori unik daripada servis milik user ini sahaja untuk filter dropdown
+    $categories = $user->studentServices() // Pastikan ada relationship 'studentServices' di User model
+        ->with('category')
+        ->get()
+        ->pluck('category')
+        ->unique('id')
+        ->filter();
+
+    return view('services.manage', compact('services', 'categories'));
+}
 
     public function approve(StudentService $service)
     {

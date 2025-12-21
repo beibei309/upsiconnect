@@ -101,6 +101,7 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(StudentService::class, 'user_id');
     }
+    
 
     public function chatRequestsSent()
     {
@@ -206,6 +207,12 @@ public function favoriteServices()
         // Links User (id) -> StudentStatus (student_id)
         return $this->hasOne(StudentStatus::class, 'student_id');
     }
+
+    public function serviceRequestsReceived()
+{
+    // provider_id adalah foreign key dalam table service_requests yang merujuk kepada ID user (seller)
+    return $this->hasMany(ServiceRequest::class, 'provider_id');
+}
 
     
 

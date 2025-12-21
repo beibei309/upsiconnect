@@ -398,7 +398,7 @@
                     <!-- Left: Text Content -->
                     <div class="text-gray-600 text-lg leading-relaxed space-y-4">
                         <p>
-                            S2U was created in 2024 to provide a trusted, more effective, friendly, and overall better
+                            S2U was created in 2025 to provide a trusted, more effective, friendly, and overall better
                             way
                             to find peer-to-peer services among UPSI students.
                         </p>

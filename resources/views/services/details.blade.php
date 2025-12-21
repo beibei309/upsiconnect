@@ -139,10 +139,28 @@
                     </div>
                 </div>
 
-                <div class="rounded-2xl overflow-hidden shadow-lg border border-gray-100 bg-white">
-                    <img src="{{ $service->image_path ? asset('storage/' . $service->image_path) : 'https://via.placeholder.com/1200x700' }}"
-                        class="w-full h-[400px] object-cover">
-                </div>
+           <div class="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-md transition-all duration-300 hover:shadow-xl">
+    {{-- Image Container --}}
+    <div class="aspect-video h-[400px] w-full overflow-hidden bg-gray-100">
+        @if($service->image_path)
+            <img 
+                src="{{ Str::startsWith($service->image_path, 'services/') ? asset('storage/'.$service->image_path) : asset($service->image_path) }}" 
+                alt="{{ $service->name ?? 'Service Image' }}"
+                class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            >
+        @else
+            <div class="flex h-full w-full flex-col items-center justify-center bg-gray-50 text-gray-400">
+                <svg class="mb-2 h-12 w-12 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span class="text-xs font-medium uppercase tracking-wider">No Image Available</span>
+            </div>
+        @endif
+
+        {{-- Optional: Gradient Overlay (Makes text easier to read if you add titles over the image later) --}}
+    </div>
+</div>
+                
 
                 <section class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100">
                     <h2 class="text-xl font-bold text-slate-900 mb-4 border-b border-gray-100 pb-2">Description</h2>
@@ -404,7 +422,7 @@
                             {{-- Price & Simple Info Display --}}
                             <div class="flex flex-col items-end mb-6 text-right">
                                 <span class="font-bold text-gray-400 text-xs uppercase tracking-wider mb-1">
-                                    <span x-text="isSessionBased ? 'Total Estimate' : 'Task Price'"></span>
+                                    <span x-text="isSessionBased ? 'From' : 'Task Price'"></span>
                                 </span>
 
                                 {{-- Price --}}
@@ -419,7 +437,7 @@
                                     {{-- Show divider/text only if both exist --}}
                                     <span
                                         x-show="packages[currentPackage].duration && packages[currentPackage].frequency">
-                                        per
+                                        
                                     </span>
 
                                     <span x-text="packages[currentPackage].frequency"></span>
@@ -727,20 +745,20 @@
                     basic: {
                         price: {{ $service->basic_price ?? 0 }},
                         description: `{!! $service->basic_description ?? '' !!}`,
-                        duration: "{{ $service->basic_duration ?? 'N/A' }}",
-                        frequency: "{{ $service->basic_frequency ?? 'N/A' }}"
+                        duration: "{{ $service->basic_duration ?? '' }}",
+                        frequency: "{{ $service->basic_frequency ?? '' }}"
                     },
                     standard: {
                         price: {{ $service->standard_price ?? 0 }},
                         description: `{!! $service->standard_description ?? '' !!}`,
-                        duration: "{{ $service->standard_duration ?? 'N/A' }}",
-                        frequency: "{{ $service->standard_frequency ?? 'N/A' }}"
+                        duration: "{{ $service->standard_duration ?? '' }}",
+                        frequency: "{{ $service->standard_frequency ?? '' }}"
                     },
                     premium: {
                         price: {{ $service->premium_price ?? 0 }},
                         description: `{!! $service->premium_description ?? '' !!}`,
-                        duration: "{{ $service->premium_duration ?? 'N/A' }}",
-                        frequency: "{{ $service->premium_frequency ?? 'N/A' }}"
+                        duration: "{{ $service->premium_duration ?? '' }}",
+                        frequency: "{{ $service->premium_frequency ?? '' }}"
                     }
                 },
 

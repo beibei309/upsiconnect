@@ -18,13 +18,54 @@
 
             <div id="sent-content" class="sr-tab-content">
                 <div class=" overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6 text-gray-900">
-                        <h3 class="text-lg font-medium mb-4">My Order ({{ $sentRequests->count() }} total)</h3>
+                    <div class="p-6 text-gray-800">
+                        <h3 class="font-medium mb-4 700" style="font-size: 25px;">My Order ({{ $sentRequests->count() }} total)</h3>
 
-                        <div class="mb-4">
-                            <input type="text" id="request-search" placeholder="Search my requests..."
-                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-custom-teal focus:border-custom-teal">
-                        </div>
+                       {{-- SEARCH & FILTER SECTION --}}
+<div class="mb-6 flex flex-col md:flex-row gap-4">
+    {{-- Search Bar --}}
+    <div class="relative flex-1">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+        </div>
+        <input type="text" id="request-search" 
+            class="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm shadow-sm transition" 
+            placeholder="Search by title, seller, etc...">
+    </div>
+
+    {{-- Category Filter Dropdown --}}
+    <div class="w-full md:w-64">
+        <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+            </div>
+            
+            {{-- Extract unique categories from requests automatically --}}
+            @php
+                $uniqueCategories = $sentRequests->map(function($request) {
+                    return optional($request->studentService->category)->name ?? 'Other';
+                })->unique()->sort()->values();
+            @endphp
+
+            <select id="category-filter" 
+                class="block w-full pl-10 pr-10 py-2.5 border border-gray-200 rounded-xl leading-5 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm shadow-sm appearance-none cursor-pointer">
+                <option value="">All Categories</option>
+                @foreach($uniqueCategories as $category)
+                    <option value="{{ $category }}">{{ $category }}</option>
+                @endforeach
+            </select>
+            
+            {{-- Custom chevron icon for select --}}
+            <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
+        </div>
+    </div>
+</div>
 
                         <div class="mb-6">
                             <div class="flex space-x-4 border-b border-gray-200">
@@ -84,7 +125,7 @@
                                                             </h4>
                                                             <div
                                                                 class="mt-1 flex items-center gap-2 text-sm text-gray-500">
-                                                                <span class="font-medium text-gray-700">Provider:
+                                                                <span class="font-medium text-gray-700">Seller:
                                                                     {{ $request->provider->name }}</span>
                                                                 <span class="text-gray-300">|</span>
                                                                 <span class="text-xs">Sent
@@ -272,7 +313,7 @@
                                                             </h4>
                                                             <div
                                                                 class="mt-1 flex items-center gap-2 text-sm text-gray-500">
-                                                                <span class="font-medium text-gray-700">Provider:
+                                                                <span class="font-medium text-gray-700">Seller:
                                                                     {{ $request->provider->name }}</span>
                                                                 <span class="text-gray-300">|</span>
                                                                 <span class="text-xs">Started
@@ -446,7 +487,7 @@
                                                             </h4>
                                                             <div
                                                                 class="mt-1 flex items-center gap-2 text-sm text-gray-400">
-                                                                <span class="font-medium">Provider:
+                                                                <span class="font-medium">Seller:
                                                                     {{ $request->provider->name }}</span>
                                                                 <span class="text-gray-300">|</span>
                                                                 <span class="text-xs">
@@ -715,5 +756,61 @@
                 item.style.display = text.includes(query) ? '' : 'none';
             });
         });
+
+        const searchInput = document.getElementById('request-search');
+const categoryFilter = document.getElementById('category-filter');
+
+function filterItems() {
+    const query = searchInput.value.toLowerCase();
+    const selectedCategory = categoryFilter.value; // Don't lowerCase this yet, match exact value
+
+    // 1. Identify which tab is currently visible
+    const activeTabContent = document.querySelector('.sr-status-tab-content:not(.hidden)');
+    
+    if (!activeTabContent) return;
+
+    // 2. Select items only within the active tab
+    const items = activeTabContent.querySelectorAll('.sr-request-item');
+
+    items.forEach(item => {
+        // Get text content for search
+        const text = item.textContent.toLowerCase();
+        // Get category data attribute
+        const itemCategory = item.getAttribute('data-category');
+
+        // Check Matches
+        const matchesSearch = text.includes(query);
+        const matchesCategory = selectedCategory === "" || itemCategory === selectedCategory;
+
+        // Toggle Visibility
+        if (matchesSearch && matchesCategory) {
+            item.style.display = '';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+// Attach Event Listeners
+searchInput.addEventListener('input', filterItems);
+categoryFilter.addEventListener('change', filterItems);
+
+// Hook into tab switching to re-apply filters when changing tabs
+const originalShowStatusTab = window.showStatusTab; // Save old function if defined strictly globally
+window.showStatusTab = function(status) {
+    // Run original tab switch logic (from previous code)
+    document.querySelectorAll('.sr-status-tab-content').forEach(content => content.classList.add('hidden'));
+    document.querySelectorAll('.sr-status-tab-button').forEach(button => {
+        button.classList.remove('bg-indigo-50', 'text-indigo-700', 'shadow-sm');
+        button.classList.add('text-gray-500', 'hover:text-gray-700', 'hover:bg-gray-50');
+    });
+    document.getElementById(status + '-content').classList.remove('hidden');
+    const activeTab = document.getElementById(status + '-tab');
+    activeTab.classList.remove('text-gray-500', 'hover:text-gray-700', 'hover:bg-gray-50');
+    activeTab.classList.add('bg-indigo-50', 'text-indigo-700', 'shadow-sm');
+
+    // Re-run filter immediately so the new tab respects current search/category inputs
+    filterItems();
+};
     </script>
 </x-app-layout>

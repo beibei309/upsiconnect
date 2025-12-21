@@ -72,6 +72,9 @@ Route::middleware(['auth'])->group(function () {
     // Route untuk Save Location Data
     Route::post('/verification/save-location', [VerificationController::class, 'saveLocation'])
         ->name('verification.save_location');
+        
+    Route::post('/onboarding/community/verify-location', [VerificationController::class, 'verifyLocation'])
+        ->name('onboarding.community.verify_location');
 
 });
 

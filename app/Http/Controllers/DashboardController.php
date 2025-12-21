@@ -32,6 +32,7 @@ public function index(Request $request)
             $query->where('user_id', '!=', $currentUserId);
         }
 
+
         // Filter by Search Query (Title or Description)
         if ($q) {
             $query->where(function ($sub) use ($q) {
@@ -52,28 +53,25 @@ public function index(Request $request)
             $query->where('status', 'unavailable');
         }
 
-        // --- 4. Execute Query (For "Services You Might Like") ---
-        // We take 6 for the dashboard preview. 
-        // If a user searches, they usually go to the full index page, 
-        // but this allows basic searching on dashboard too.
+
         $services = $query->latest()->take(6)->get();
 
-        // --- 5. Get Categories ---
         $categories = Category::withCount(['services' => function ($q) {
             $q->where('approval_status', 'approved');
         }])->get();
 
-        // --- 6. Get Top Helpers (For "Top Helpers Online") ---
-        // This calculates the USER'S global reputation (all their services combined)
-        $topStudents = User::where('role', 'helper')
-            ->whereHas('services', function ($q) {
-                $q->where('approval_status', 'approved');
-            })
-            ->withCount('reviewsReceived') // Count all reviews received by this user
-            ->withAvg('reviewsReceived', 'rating') // Average of all reviews
-            ->orderByDesc('reviews_received_avg_rating') // Rank by best rating
-            ->take(10)
-            ->get();
+       $topStudents = User::where('role', 'helper')
+        ->when($currentUserId, function ($query) use ($currentUserId) {
+            return $query->where('id', '!=', $currentUserId);
+        })
+        ->whereHas('services', function ($q) {
+            $q->where('approval_status', 'approved');
+        })
+        ->withCount('reviewsReceived') 
+        ->withAvg('reviewsReceived', 'rating') 
+        ->orderByDesc('reviews_received_avg_rating') 
+        ->take(10)
+        ->get();
 
         return view('dashboard', compact('services', 'categories', 'topStudents', 'q', 'category_id'));
     }

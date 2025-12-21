@@ -9,19 +9,50 @@
 
         {{-- Header Section --}}
         <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Service Portfolio</h1>
-                <p class="text-gray-500 mt-2">Manage your listings and check approval status.</p>
-            </div>
-            
-            <a href="{{ route('services.create') }}"
-                class="inline-flex items-center justify-center px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                </svg>
-                Create New Service
-            </a>
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Service Portfolio</h1>
+        <p class="text-gray-500 mt-2">Manage your listings and check approval status.</p>
+    </div>
+
+    <a href="{{ route('services.create') }}"
+        class="inline-flex items-center justify-center px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-all duration-200">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+        </svg>
+        Create New Service
+    </a>
+</div>
+
+<form action="{{ route('services.manage') }}" method="GET" class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="relative">
+        <input type="text" name="search" value="{{ request('search') }}" 
+            placeholder="Search service name..." 
+            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
         </div>
+    </div>
+
+    <select name="category" class="w-full border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 py-2">
+        <option value="">All Categories</option>
+        @foreach($categories as $category)
+            <option value="{{ $category->id }}" {{ request('category') == $category->id ? 'selected' : '' }}>
+                {{ $category->name }}
+            </option>
+        @endforeach
+    </select>
+
+    <div class="flex gap-2">
+        <button type="submit" class="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-900 transition">
+            Search
+        </button>
+        <a href="{{ route('services.manage') }}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition">
+            Clear
+        </a>
+    </div>
+</form>
 
         {{-- Tabs --}}
         <div class="mb-8 border-b border-gray-200">

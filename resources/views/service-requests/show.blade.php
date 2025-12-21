@@ -73,7 +73,7 @@
                                     </div>
 
                                     <div>
-                                        <label class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Price Agreed</label>
+                                        <label class="text-xs font-semibold text-gray-400 uppercase tracking-wide">From</label>
                                         <p class="text-lg font-bold text-green-600 mt-1">
                                             @if($serviceRequest->offered_price)
                                                 RM {{ number_format($serviceRequest->offered_price, 2) }}
@@ -115,18 +115,8 @@
                                 </div>
                             </div>
 
-                            <div class="rounded-2xl overflow-hidden shadow-lg border border-gray-100 bg-white">
-                                <img src="{{ $service->image_path ? asset('storage/' . $service->image_path) : 'https://via.placeholder.com/1200x700' }}"
-                                    alt="Service image"
-                                    class="w-full h-[300px] object-cover hover:scale-105 transition-transform duration-700">
-                            </div>
 
-                            <section class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100">
-                                <h2 class="text-xl font-bold text-slate-900 mb-4 border-b border-gray-100 pb-2">About This Service</h2>
-                                <div class="rich-text text-gray-600 leading-relaxed">
-                                    {!! $service->description !!}
-                                </div>
-                            </section>
+                           
 
                             @if($service)
                             <div>

@@ -1,5 +1,4 @@
 <x-guest-layout>
-    <!-- SweetAlert2 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <div class="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -7,10 +6,9 @@
             
             <div class="text-center mb-10">
                 <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Community Verification</h1>
-                <p class="mt-2 text-slate-500">Complete these 3 steps to verify your identity and ensure community safety.</p>
+                <p class="mt-2 text-slate-500">Complete these steps to verify your identity and ensure community safety.</p>
             </div>
 
-            <!-- STATUS BANNER -->
             @if(auth()->user()->verification_status === 'pending' && auth()->user()->verification_document_path)
                 <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-6 mb-8 text-center">
                     <div class="w-16 h-16 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -35,11 +33,50 @@
             @if(auth()->user()->verification_status !== 'pending' || !auth()->user()->verification_document_path || auth()->user()->verification_status === 'rejected')
             <div class="space-y-8">
 
-                <!-- STEP 1: PROFILE PHOTO -->
-                <div id="step1" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div id="step1" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden {{ auth()->user()->location_verified_at ? 'opacity-70 pointer-events-none' : '' }}">
                     <div class="p-6 sm:p-8">
                         <div class="flex items-center gap-4 mb-6">
-                            <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">1</div>
+                            <div class="w-10 h-10 rounded-full {{ auth()->user()->location_verified_at ? 'bg-green-100 text-green-600' : 'bg-indigo-100 text-indigo-600' }} flex items-center justify-center font-bold">
+                                {{ auth()->user()->location_verified_at ? '✓' : '1' }}
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-bold text-slate-900">Verify Location</h2>
+                                <p class="text-sm text-slate-500">You must be in the Tanjung Malim / UPSI area.</p>
+                            </div>
+                        </div>
+
+                        @if(auth()->user()->location_verified_at)
+                            <div class="bg-green-50 border border-green-100 text-green-700 p-4 rounded-xl flex items-center gap-3">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                <span class="font-bold">Location Verified</span>
+                            </div>
+                        @else
+                            <div class="space-y-4 max-w-lg">
+                                <button id="detect_location_btn" class="w-full flex items-center justify-center gap-3 bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-6 rounded-xl font-bold shadow-md transition-all">
+                                    <svg class="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                    <span>Detect My Location</span>
+                                </button>
+                                
+                                <div class="relative flex py-2 items-center">
+                                    <div class="flex-grow border-t border-slate-200"></div>
+                                    <span class="flex-shrink-0 mx-4 text-slate-400 text-xs font-semibold uppercase tracking-wider">Or Enter Manually</span>
+                                    <div class="flex-grow border-t border-slate-200"></div>
+                                </div>
+
+                                <div class="flex gap-2">
+                                    <input type="text" id="manual_address" placeholder="e.g. Kolej Aminuddin Baki" class="flex-1 rounded-xl border-slate-200 bg-slate-50 text-sm py-3 px-4">
+                                    <button id="verify_manual_btn" class="bg-white border-2 border-slate-200 hover:border-indigo-600 hover:text-indigo-600 text-slate-600 px-6 rounded-xl font-bold transition-all text-sm">Check</button>
+                                </div>
+                                <div id="location_status_msg" class="text-center text-sm font-medium"></div>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <div id="step2" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden {{ auth()->user()->location_verified_at ? '' : 'opacity-50 pointer-events-none' }}">
+                    <div class="p-6 sm:p-8">
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">2</div>
                             <h2 class="text-xl font-bold text-slate-900">Upload Profile Photo</h2>
                         </div>
 
@@ -59,18 +96,16 @@
                     </div>
                 </div>
 
-                <!-- STEP 2: LIVE SELFIE -->
-                <div id="step2" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden {{ auth()->user()->profile_photo_path ? '' : 'opacity-50 pointer-events-none' }}">
+                <div id="step3" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden {{ auth()->user()->profile_photo_path ? '' : 'opacity-50 pointer-events-none' }}">
                     <div class="p-6 sm:p-8">
                         <div class="flex items-center gap-4 mb-6">
-                            <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">2</div>
+                            <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">3</div>
                             <h2 class="text-xl font-bold text-slate-900">Live Selfie Check</h2>
                         </div>
                         
                         <p class="text-slate-600 mb-4 text-sm">To prove you are a real person, please follow the specific gesture instruction below.</p>
 
                         <div class="bg-slate-900 rounded-2xl p-4 relative overflow-hidden">
-                            <!-- Challenge Instruction Banner -->
                             <div id="challenge_banner" class="hidden absolute top-4 left-0 w-full z-10 text-center px-4">
                                 <div class="bg-yellow-400 text-slate-900 font-bold py-2 px-4 rounded-full inline-block shadow-lg border-2 border-yellow-200 animate-pulse">
                                     Target Gesture: <span id="challenge_text" class="uppercase">Retrieving...</span>
@@ -86,7 +121,6 @@
                                     <span class="text-sm">Camera inactive</span>
                                 </div>
                                 
-                                <!-- Guide Overlay -->
                                 <div id="face_guide" class="absolute inset-0 border-4 border-white/30 rounded-[50%] w-48 h-64 m-auto hidden pointer-events-none"></div>
                             </div>
 
@@ -101,11 +135,10 @@
                     </div>
                 </div>
 
-                <!-- STEP 3: DOCUMENT UPLOAD -->
-                <div id="step3" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden {{ auth()->user()->selfie_media_path ? '' : 'opacity-50 pointer-events-none' }}">
+                <div id="step4" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden {{ auth()->user()->selfie_media_path ? '' : 'opacity-50 pointer-events-none' }}">
                     <div class="p-6 sm:p-8">
                         <div class="flex items-center gap-4 mb-6">
-                            <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">3</div>
+                            <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">4</div>
                             <h2 class="text-xl font-bold text-slate-900">Upload Proof Document</h2>
                         </div>
 
@@ -145,7 +178,108 @@
 
     @push('scripts')
     <script>
-        // --- STEP 1: PROFILE PREVIEW ---
+        // --- CONSTANTS FOR LOCATION ---
+        const UPSI_LAT = 3.7832;
+        const UPSI_LNG = 101.5927;
+        const RADIUS_KM = 1000; // Large radius for testing, tighten this for production
+
+        // --- STEP 1: LOCATION LOGIC ---
+        
+        function markLocationVerified(lat, lng, addr) {
+            // UI Update
+            const step1 = document.getElementById('step1');
+            const step2 = document.getElementById('step2');
+            const msgEl = document.getElementById('location_status_msg');
+            const btn = document.getElementById('detect_location_btn');
+            
+            // Show Success Message
+            msgEl.innerHTML = `<div class="flex items-center justify-center gap-2 text-green-600 bg-green-50 px-4 py-3 rounded-lg border border-green-100 mt-2"><span class="font-bold">✓ Verified: ${addr}</span></div>`;
+            
+            // Disable buttons
+            if(btn) btn.disabled = true;
+
+            // Send to Server
+            if (lat && lng) {
+                fetch("{{ route('verification.save_location') }}", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': "{{ csrf_token() }}" },
+                    body: JSON.stringify({ latitude: lat, longitude: lng, address: addr })
+                }).then(res => res.json())
+                  .then(data => {
+                      if(data.success) {
+                          // Unlock Step 2
+                          Swal.fire({icon: 'success', title: 'Location Verified', text: 'You can now proceed to photo upload.', timer: 1500, showConfirmButton: false});
+                          step2.classList.remove('opacity-50', 'pointer-events-none');
+                      }
+                  });
+            } else {
+                 // For manual address match
+                 fetch("{{ route('verification.save_location') }}", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': "{{ csrf_token() }}" },
+                    body: JSON.stringify({ latitude: UPSI_LAT, longitude: UPSI_LNG, address: addr }) // Use Generic UPSI Coords for manual match
+                }).then(() => {
+                    step2.classList.remove('opacity-50', 'pointer-events-none');
+                });
+            }
+        }
+
+        const detectBtn = document.getElementById('detect_location_btn');
+        if(detectBtn) {
+            detectBtn.addEventListener('click', function() {
+                const btn = this; 
+                const original = btn.innerHTML;
+                btn.innerHTML = '<span>Detecting...</span>'; 
+                btn.disabled = true;
+
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(pos => {
+                        const lat = pos.coords.latitude; 
+                        const lng = pos.coords.longitude;
+                        
+                        // Haversine Formula
+                        const R = 6371; 
+                        const dLat = (lat - UPSI_LAT) * Math.PI / 180;
+                        const dLon = (lng - UPSI_LNG) * Math.PI / 180;
+                        const a = Math.sin(dLat / 2) ** 2 + Math.cos(UPSI_LAT * Math.PI / 180) * Math.cos(lat * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+                        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                        const dist = R * c;
+
+                        btn.innerHTML = original; 
+                        btn.disabled = false;
+
+                        if (dist <= RADIUS_KM) {
+                            markLocationVerified(lat, lng, `GPS: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+                        } else {
+                            Swal.fire({ icon: 'error', text: 'You seem to be too far from the Tanjung Malim area.' });
+                        }
+                    }, err => {
+                        btn.innerHTML = original; 
+                        btn.disabled = false;
+                        Swal.fire({ icon: 'error', text: 'Please allow location access or use manual entry.' });
+                    });
+                } else {
+                    Swal.fire({ icon: 'error', text: 'Geolocation is not supported by your browser.' });
+                }
+            });
+        }
+
+        const manualBtn = document.getElementById('verify_manual_btn');
+        if(manualBtn) {
+            manualBtn.addEventListener('click', () => {
+                const addr = document.getElementById('manual_address').value.toLowerCase();
+                const keywords = ['tanjung', 'upsi', 'kolej', 'taman', 'section', 'seksyen', 'jalan'];
+                
+                // Simple keyword check
+                if (keywords.some(k => addr.includes(k))) {
+                    markLocationVerified(null, null, addr); // Pass null coords for manual
+                } else {
+                    Swal.fire({ icon: 'error', text: 'Address not recognized as a local Tanjung Malim area.' });
+                }
+            });
+        }
+
+        // --- STEP 2: PROFILE PREVIEW ---
         document.getElementById('profile_photo_input').addEventListener('change', function(e){
             const file = e.target.files[0];
             if(file){
@@ -155,7 +289,7 @@
             }
         });
 
-        // --- STEP 2: CAMERA LOGIC ---
+        // --- STEP 3: CAMERA LOGIC ---
         let stream = null;
         let selfieDataUrl = null;
         let currentChallenge = "";
@@ -236,25 +370,16 @@
         });
 
         confirmBtn.addEventListener('click', () => {
-            console.log('[SELFIE] Confirm button clicked');
-            
             if(!selfieDataUrl) {
                 Swal.fire({icon:'warning', title:'No Image', text:'Please take a photo first!'});
                 return;
             }
 
-            console.log('[SELFIE] Image data length:', selfieDataUrl.length);
-            console.log('[SELFIE] Challenge:', currentChallenge);
-
-            // Disable button immediately to prevent double-click / show feedback
             confirmBtn.disabled = true;
             confirmBtn.innerText = "Uploading...";
             
             Swal.fire({title: 'Uploading Selfie...', didOpen: () => Swal.showLoading(), allowOutsideClick: false});
 
-            console.log('[SELFIE] Starting fetch request...');
-
-            // Setup Timeout (30s)
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 30000);
 
@@ -272,28 +397,21 @@
                 signal: controller.signal
             })
             .then(async res => {
-                console.log('[SELFIE] Response received. Status:', res.status);
                 clearTimeout(timeoutId);
                 const contentType = res.headers.get("content-type");
-                console.log('[SELFIE] Content-Type:', contentType);
                 
                 if (!res.ok) {
                     if(res.status === 413) throw new Error("Image too large. Please retry.");
-                    const txt = await res.text();
-                    console.error("Server Error Response:", txt);
                     throw new Error(`Server Error (${res.status})`);
                 }
 
                 if (contentType && contentType.indexOf("application/json") !== -1) {
                     return res.json();
                 } else {
-                    const txt = await res.text();
-                    console.error("Invalid Response:", txt);
-                    throw new Error("Invalid server response. Check console.");
+                    throw new Error("Invalid server response.");
                 }
             })
             .then(data => {
-                console.log('[SELFIE] JSON parsed successfully:', data);
                 if(data.success){
                     Swal.fire({icon:'success', title:'Verified!', text:'Selfie with gesture uploaded.', timer: 1500, showConfirmButton: false}).then(() => {
                         window.location.reload(); 
@@ -303,16 +421,13 @@
                 }
             })
             .catch(err => {
-                console.error('[SELFIE] Error caught:', err);
-                console.error('[SELFIE] Error name:', err.name);
-                console.error('[SELFIE] Error message:', err.message);
                 confirmBtn.disabled = false;
                 confirmBtn.innerText = "Confirm & Upload";
                 Swal.fire({
                     icon:'error', 
                     title:'Upload Failed', 
                     text: err.message,
-                    footer: '<small>Common fix: Try taking the photo in better lighting or restart browser.</small>'
+                    footer: '<small>Common fix: Try taking the photo in better lighting.</small>'
                 });
             });
         });

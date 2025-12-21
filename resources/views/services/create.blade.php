@@ -246,11 +246,8 @@
                             </div>
                             <div>
                                 <label class="text-xs font-bold text-gray-500 uppercase">Frequency</label>
-                                <select name="packages[0][frequency]" class="w-full mt-1 border-gray-300 rounded-md">
-                                    <option value="Per Session">Per Session</option>
-                                    <option value="Weekly">Weekly</option>
-                                    <option value="Monthly">Monthly</option>
-                                </select>
+                               <input type="text" name="packages[0][frequency]" placeholder="e.g. per session"
+                                    class="w-full mt-1 border-gray-300 rounded-md">
                             </div>
                         </div>
                         <div>
@@ -286,11 +283,9 @@
                                         class="w-full mt-1 border-blue-200 rounded-md"></div>
                                 <div>
                                     <label class="text-xs font-bold text-blue-600 uppercase">Frequency</label>
-                                    <select name="packages[1][frequency]" class="w-full mt-1 border-blue-200 rounded-md">
-                                        <option value="Per Session">Per Session</option>
-                                        <option value="Weekly">Weekly</option>
-                                        <option value="Monthly">Monthly</option>
-                                    </select>
+                                     <input type="text" name="packages[1][frequency]" placeholder="e.g. per session"
+                                        class="w-full mt-1 border-blue-300 rounded-md">
+                              
                                 </div>
                             </div>
                             <div class="bg-white rounded-md border border-blue-200 overflow-hidden">
@@ -313,12 +308,8 @@
                                         class="w-full mt-1 border-purple-200 rounded-md"></div>
                                 <div>
                                     <label class="text-xs font-bold text-purple-600 uppercase">Frequency</label>
-                                    <select name="packages[2][frequency]"
-                                        class="w-full mt-1 border-purple-200 rounded-md">
-                                        <option value="Per Session">Per Session</option>
-                                        <option value="Weekly">Weekly</option>
-                                        <option value="Monthly">Monthly</option>
-                                    </select>
+                                   <input type="text" name="packages[2][frequency]" placeholder="e.g. per session"
+                                        class="w-full mt-1 border-purple-300 rounded-md">
                                 </div>
                             </div>
                             <div class="bg-white rounded-md border border-purple-200 overflow-hidden">

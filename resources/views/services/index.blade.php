@@ -224,7 +224,10 @@
                                     {{-- IMAGE SECTION --}}
                                     <div
                                         class="sm:w-64 h-56 sm:h-auto flex-shrink-0 relative rounded-xl overflow-hidden bg-gray-100">
-                                        <img src="{{ $service->image_path ? asset('storage/' . $service->image_path) : 'https://via.placeholder.com/1200x700' }}"
+                                         @php $isStorageImage = Str::startsWith($service->image_path, 'services/'); @endphp
+                                <img src="{{ $isStorageImage ? asset('storage/' . $service->image_path) : asset($service->image_path) }}"
+                                     class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                     onerror="this.src='https://via.placeholder.com/400x300?text=Service+Image'">
                                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
 
                                         @if ($service->category)
