@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\AboutSeeder;
+use Database\Seeders\FaqSeeder;
 use App\Models\User;
 use App\Models\Category;
 use App\Models\StudentService;
@@ -17,14 +19,14 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
-        // 👇 FIX 1: Clean up tables to prevent Unique Constraint Violation Errors on repeated seeding
         StudentService::query()->delete();
         User::query()->delete();
         Category::query()->delete();
 
+        $this->call(AboutSeeder::class);
+        $this->call(FaqSeeder::class);
         $this->seedCategories();
         
-        // Create community user
         User::create([
             'name' => 'Community User',
             'email' => 'community@example.com',
@@ -111,7 +113,7 @@ class DatabaseSeeder extends Seeder
         }
     }
 
-    protected function getStudentData()
+     protected function getStudentData()
     {
         return [
             [
@@ -126,19 +128,19 @@ class DatabaseSeeder extends Seeder
                         'category' => 'Academic Tutoring',
                         'packages' => [
                             'basic' => [
-                                'duration' => '1 Hour',
+                                'duration' => '1',
                                 'frequency' => 'One Session',
                                 'price' => 25.00,
                                 'description' => 'Quick session focusing on 1-2 difficult topics.'
                             ],
                             'standard' => [
-                                'duration' => '3 Hours',
+                                'duration' => '3',
                                 'frequency' => 'One Session',
                                 'price' => 70.00,
                                 'description' => 'In-depth study session including practice exercises.'
                             ],
                             'premium' => [
-                                'duration' => '4 Hours',
+                                'duration' => '4',
                                 'frequency' => 'Weekly',
                                 'price' => 250.00,
                                 'description' => 'Intensive guidance for a month leading up to the final exam.'
@@ -155,24 +157,24 @@ class DatabaseSeeder extends Seeder
                 'services' => [
                     [
                         'title' => 'Web Development (Laravel/React)',
-                        'image_path' => 'service_tech.jpg',
+                        'image_path' => 'programming_service.jpg',
                         'description' => 'Full-stack web development services using Laravel and React.', 
                         'category' => 'Programming & Tech',
                         'packages' => [
                             'basic' => [
-                                'duration' => '3 Days',
+                                'duration' => '3',
                                 'frequency' => 'Small Project',
                                 'price' => 150.00,
                                 'description' => 'Bug fixing or small feature additions.'
                             ],
                             'standard' => [
-                                'duration' => '1 Week',
+                                'duration' => '1',
                                 'frequency' => 'Simple Project',
                                 'price' => 500.00,
                                 'description' => 'Landing page website or full portfolio.'
                             ],
                             'premium' => [
-                                'duration' => '3 Weeks',
+                                'duration' => '3',
                                 'frequency' => 'Complex Project',
                                 'price' => 1500.00,
                                 'description' => 'Complete CRUD system (e.g., simple inventory management system).'
@@ -188,24 +190,24 @@ class DatabaseSeeder extends Seeder
                 'services' => [
                     [
                         'title' => 'Logo & Branding Design',
-                        'image_path' => 'service_design.jpg',
+                        'image_path' => 'service_planning.jpg',
                         'description' => 'Professional logo design, posters, and branding materials.', 
                         'category' => 'Design & Creative',
                         'packages' => [
                             'basic' => [
-                                'duration' => '2 Days',
+                                'duration' => '2',
                                 'frequency' => '1 Concept',
                                 'price' => 35.00,
                                 'description' => 'Simple text logo design with 2x revisions.'
                             ],
                             'standard' => [
-                                'duration' => '4 Days',
+                                'duration' => '4',
                                 'frequency' => '3 Concepts',
                                 'price' => 90.00,
                                 'description' => 'Iconic logo with 5x revisions and source files.'
                             ],
                             'premium' => [
-                                'duration' => '1 Week',
+                                'duration' => '1',
                                 'frequency' => 'Full Branding',
                                 'price' => 250.00,
                                 'description' => 'Logo, business cards, and brand usage guide.'
@@ -221,24 +223,24 @@ class DatabaseSeeder extends Seeder
                 'services' => [
                     [
                         'title' => 'Laundry & Ironing Helper',
-                        'image_path' => 'service_housechores.jpg',
+                        'image_path' => 'laundry_service.jpg',
                         'description' => 'Washing and ironing assistance in the campus area.', 
                         'category' => 'Housechores',
                         'packages' => [
                             'basic' => [
-                                'duration' => '2 Hours',
+                                'duration' => '2',
                                 'frequency' => 'One Session',
                                 'price' => 30.00,
                                 'description' => 'Washing and folding clothes (max 10kg).'
                             ],
                             'standard' => [
-                                'duration' => '3 Hours',
+                                'duration' => '3',
                                 'frequency' => 'One Session',
                                 'price' => 45.00,
                                 'description' => 'Washing, folding, and ironing (max 10kg).'
                             ],
                             'premium' => [
-                                'duration' => '3 Hours',
+                                'duration' => '3',
                                 'frequency' => 'Weekly',
                                 'price' => 160.00,
                                 'description' => 'Weekly ironing and folding service for one month.'
@@ -254,24 +256,24 @@ class DatabaseSeeder extends Seeder
                 'services' => [
                     [
                         'title' => 'Runner & Parcel Pickup',
-                        'image_path' => 'service_runner.jpg',
+                        'image_path' => 'runner_service.jpg',
                         'description' => 'Help pick up parcels, buy food/items, or run errands around Tanjong Malim.', 
                         'category' => 'Runner & Errands',
                         'packages' => [
                             'basic' => [
-                                'duration' => '30 Minutes',
+                                'duration' => '30',
                                 'frequency' => '1 Location',
                                 'price' => 10.00,
                                 'description' => 'Parcel pickup from the nearest Post Office.'
                             ],
                             'standard' => [
-                                'duration' => '1 Hour',
+                                'duration' => '1',
                                 'frequency' => '2 Locations',
                                 'price' => 25.00,
                                 'description' => 'Buying food/items from 2 different locations.'
                             ],
                             'premium' => [
-                                'duration' => '2 Hours',
+                                'duration' => '2',
                                 'frequency' => 'Unlimited (Local)',
                                 'price' => 40.00,
                                 'description' => 'All local errands within a 2-hour limit.'

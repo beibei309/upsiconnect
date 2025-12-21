@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="min-h-screen bg-gray-50 py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-<br><br>
+            <br><br>
             {{-- 1. PROFILE HEADER SECTION --}}
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-8">
                 <div class="h-32 bg-gradient-to-r from-slate-800 to-slate-900"></div>
@@ -82,90 +82,82 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 
                 {{-- LEFT SIDEBAR (Info, Skills, Education, Exp) --}}
-                {{-- LEFT SIDEBAR (Info, Skills, Education, Exp) --}}
-<div class="space-y-8">
+                <div class="space-y-8">
+                    @if ($user->skills)
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                            <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                </svg>
+                                Skills
+                            </h3>
+                            <div class="flex flex-wrap gap-2">
+                                @foreach (explode(',', $user->skills) as $skill)
+                                    <span class="px-3 py-1 rounded-lg text-sm font-medium bg-slate-100 text-slate-700 border border-slate-200">
+                                        {{ trim($skill) }}
+                                    </span>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
 
-    @if ($user->skills)
-        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                </svg>
-                Skills
-            </h3>
-            <div class="flex flex-wrap gap-2">
-                @foreach (explode(',', $user->skills) as $skill)
-                    <span
-                        class="px-3 py-1 rounded-lg text-sm font-medium bg-slate-100 text-slate-700 border border-slate-200">
-                        {{ trim($skill) }}
-                    </span>
-                @endforeach
-            </div>
-        </div>
-    @endif
+                    @if ($user->faculty || $user->course)
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                            <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 14l9-5-9-5-9 5 9 5z" />
+                                    <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+                                </svg>
+                                Education (UPSI)
+                            </h3>
+                            <div class="space-y-4">
+                                <div class="relative pl-4 border-l-2 border-indigo-200">
+                                    <h4 class="font-semibold text-gray-900">{{ $user->course ?? 'Course Not Set' }}</h4>
+                                    <p class="text-sm text-gray-600">{{ $user->faculty ?? 'Faculty Not Set' }}</p>
+                                    <p class="text-xs text-gray-400 mt-1">Current Student</p>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
 
-    @if ($user->faculty || $user->course)
-        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 14l9-5-9-5-9 5 9 5z" />
-                    <path
-                        d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
-                </svg>
-                Education (UPSI)
-            </h3>
-            <div class="space-y-4">
-                <div class="relative pl-4 border-l-2 border-indigo-200">
-                    <h4 class="font-semibold text-gray-900">{{ $user->course ?? 'Course Not Set' }}</h4>
-                    <p class="text-sm text-gray-600">{{ $user->faculty ?? 'Faculty Not Set' }}</p>
-                    <p class="text-xs text-gray-400 mt-1">Current Student</p>
+                    @if ($user->work_experience_message || $user->work_experience_file)
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                            <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                </svg>
+                                Experience & Resume
+                            </h3>
+                            
+                            <div class="space-y-4">
+                                {{-- Message --}}
+                                @if ($user->work_experience_message)
+                                    <div class="text-sm text-gray-600 leading-relaxed bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                        {!! nl2br(e($user->work_experience_message)) !!}
+                                    </div>
+                                @endif
+
+                                {{-- Resume File Download --}}
+                                @if ($user->work_experience_file)
+                                    <div class="pt-2">
+                                        <a href="{{ asset('storage/' . $user->work_experience_file) }}" target="_blank"
+                                           class="flex items-center justify-center w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition shadow-sm">
+                                            <svg class="w-4 h-4 mr-2 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
+                                            </svg>
+                                            View Resume / CV
+                                        </a>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
+
+                    <div class="text-center text-sm text-gray-400">
+                        Member since {{ $user->created_at->format('F Y') }}
+                    </div>
                 </div>
-            </div>
-        </div>
-    @endif
-
-    @if ($user->work_experience_message || $user->work_experience_file)
-        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
-                    </path>
-                </svg>
-                Experience & Resume
-            </h3>
-            
-            <div class="space-y-4">
-                {{-- Message --}}
-                @if ($user->work_experience_message)
-                    <div class="text-sm text-gray-600 leading-relaxed bg-gray-50 p-3 rounded-lg border border-gray-100">
-                        {!! nl2br(e($user->work_experience_message)) !!}
-                    </div>
-                @endif
-
-                {{-- Resume File Download --}}
-                @if ($user->work_experience_file)
-                    <div class="pt-2">
-                        <a href="{{ asset('storage/' . $user->work_experience_file) }}" target="_blank"
-                            class="flex items-center justify-center w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition shadow-sm">
-                            <svg class="w-4 h-4 mr-2 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
-                            </svg>
-                            View Resume / CV
-                        </a>
-                    </div>
-                @endif
-            </div>
-        </div>
-    @endif
-
-    <div class="text-center text-sm text-gray-400">
-        Member since {{ $user->created_at->format('F Y') }}
-    </div>
-</div>
 
                 {{-- RIGHT CONTENT (Services & Reviews) --}}
                 <div class="lg:col-span-2 space-y-8">
@@ -255,10 +247,16 @@
                                                     </div>
                                                 </div>
                                                 
-                                                {{-- CONTEXT: Review for which service? --}}
+                                                {{-- CONTEXT: Review for which service (UPDATED with Tag Badge) --}}
                                                 @if($review->service)
-                                                    <div class="mt-1 text-xs text-gray-500 bg-gray-50 inline-block px-2 py-1 rounded">
-                                                        Review for: <a href="{{ route('student-services.show', $review->service->id) }}" class="text-indigo-600 hover:underline font-medium">{{ $review->service->title }}</a>
+                                                    <div class="mt-2 mb-1">
+                                                        <a href="{{ route('student-services.show', $review->service->id) }}" 
+                                                           class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition-colors group">
+                                                            <svg class="w-3 h-3 mr-1.5 opacity-70 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                                                            </svg>
+                                                            {{ $review->service->title }}
+                                                        </a>
                                                     </div>
                                                 @endif
 

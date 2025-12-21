@@ -17,6 +17,7 @@ use App\Http\Controllers\VerificationController;
 use App\Http\Controllers\StudentServiceController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ServiceRequestController;
+use App\Http\Controllers\Admin\SuperAdminController;
 use App\Http\Controllers\Admin\ReportAdminController;
 use App\Http\Controllers\Admin\UserAdminController;
 use App\Http\Controllers\Pages\SearchPageController;
@@ -33,11 +34,10 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminStudentStatusController;
 use App\Http\Controllers\Admin\VerificationController as AdminVerificationController;
 
-
+// -- PUBLIC ROUTES --
 Route::get('/', [HomeController::class, 'home'])->name('home');
 Route::get('/about', function () { return view('about'); })->name('about');
 Route::get('/help', function () {return view('help');})->name('help');
-
 
 // Display the form to join as a part-timer
 Route::get('/students/create', [ProfileController::class, 'create'])->name('students.create');
@@ -48,30 +48,30 @@ Route::get('/students/edit-profile', [StudentsController::class, 'edit'])->name(
 Route::patch('/students/edit-profile', [StudentsController::class, 'update'])->name('students.update');
 
 
-// ... kod route lain ...
-
+// -- AUTHENTICATED ROUTES --
 Route::middleware(['auth'])->group(function () {
     
     // Route untuk paparkan page verification
     Route::get('/onboarding/students', [VerificationController::class, 'index'])
         ->name('onboarding.students');
 
-    // Route untuk Upload Profile Photo (INI YANG MISSING DALAM ERROR ANDA)
+    // Route untuk Upload Profile Photo
     Route::post('/verification/upload-photo', [VerificationController::class, 'uploadPhoto'])
         ->name('students_verification.upload');
 
-    // Route untuk Upload Live Selfie (Untuk fungsi kamera nanti)
+    // Route untuk Upload Live Selfie
     Route::post('/verification/upload-selfie', [VerificationController::class, 'uploadSelfie'])
         ->name('students_verification.upload_selfie');
 
 });
-// services
+
+// -- SERVICES ROUTES --
 Route::get('/services', [StudentServiceController::class, 'index'])->name('services.index');
 Route::get('/services/manage', [StudentServiceController::class, 'manage'])->middleware(['auth'])->name('services.manage');
 Route::get('/services/create', [StudentServiceController::class, 'create'])->middleware(['auth'])->name('services.create');
 Route::post('/services/create', [StudentServiceController::class, 'store'])->middleware(['auth'])->name('services.store');
 Route::post('/student-services', [StudentServiceController::class, 'store']);
-// Route::put('/student-services/{service}', [StudentServiceController::class, 'update']);
+
 Route::delete('/services/manage/{service}', [StudentServiceController::class, 'destroy'])
     ->middleware(['auth'])
     ->name('services.destroy');
@@ -81,8 +81,6 @@ Route::put('/services/manage/{service}', [StudentServiceController::class, 'upda
 Route::get('/services/{service}/edit', [StudentServiceController::class, 'edit'])
     ->middleware(['auth'])
     ->name('services.edit');
-
-
 
 Route::get('/student-services/{service}', [StudentServiceController::class, 'show'])->name('student-services.show');
 
@@ -112,16 +110,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/service-requests/{serviceRequest}/mark-completed', [ServiceRequestController::class, 'markCompleted'])->name('service-requests.mark-completed');
     Route::post('/service-requests/{serviceRequest}/cancel', [ServiceRequestController::class, 'cancel'])->name('service-requests.cancel');
 });
+
 Route::get('/services/{id}', [StudentServiceController::class, 'details'])->name('services.details');
-
-
 
 Route::post('/service-requests', [ServiceRequestController::class, 'store'])
     ->name('service-requests.store')
-    ->middleware('auth'); // pastikan user logged in
-
-
-
+    ->middleware('auth'); 
 
 // When a guest clicks “Request Service”
 Route::get('/guest/request/{id}', function () {
@@ -152,8 +146,6 @@ Route::middleware('auth')->group(function () {
 Route::get('/students/{user}/profile', [StudentsController::class, 'profile'])->name('students.profile');
 Route::get('/search', [SearchPageController::class, 'index'])->middleware(['auth'])->name('search.index');
 
-
-
 // Mockup flows (public for preview)
 Route::get('/onboarding', fn() => view('onboarding.register'))->name('onboarding.register');
 Route::get('/onboarding/community', fn() => view('onboarding.community_verification'))->name('onboarding.community.verify');
@@ -170,7 +162,7 @@ Route::get('/admin/verifications', [AdminPageController::class, 'verifications']
 // Authenticated JSON endpoints
 Route::middleware(['auth'])->group(function () {
     Route::post('/availability/toggle', [AvailabilityController::class, 'toggle'])->name('availability.toggle');
-Route::post('/availability/update-settings', [AvailabilityController::class, 'updateSettings'])->name('availability.updateSettings');
+    Route::post('/availability/update-settings', [AvailabilityController::class, 'updateSettings'])->name('availability.updateSettings');
 
     Route::post('/chat-requests', [ChatRequestController::class, 'store'])->name('chat-requests.store');
     Route::post('/chat-requests/{chatRequest}/accept', [ChatRequestController::class, 'accept']);
@@ -182,18 +174,13 @@ Route::post('/availability/update-settings', [AvailabilityController::class, 'up
     Route::post('/service-applications/{application}/decline', [ServiceApplicationController::class, 'declineFromChat'])->name('service-applications.decline');
     Route::post('/service-applications/{application}/complete', [ServiceApplicationController::class, 'markCompleted'])->name('service-applications.complete');
 
-    // Interest system endpoints for open applications
+    // Interest system endpoints
     Route::post('/services/applications/{application}/interest', [ServiceApplicationController::class, 'expressInterest'])->name('services.applications.interest');
-// Withdraw interest removed by product decision
-// Route::delete('/services/applications/{application}/interest', [ServiceApplicationController::class, 'withdrawInterest'])->name('services.applications.interest.withdraw');
-Route::post('/services/applications/{application}/interests/confirm', [ServiceApplicationController::class, 'confirmSelected'])->name('services.applications.interests.confirm');
+    Route::post('/services/applications/{application}/interests/confirm', [ServiceApplicationController::class, 'confirmSelected'])->name('services.applications.interests.confirm');
     Route::post('/services/applications/{application}/interests/{interest}/select', [ServiceApplicationController::class, 'selectInterest'])->name('services.applications.interests.select');
     Route::post('/services/applications/{application}/interests/{interest}/decline', [ServiceApplicationController::class, 'declineInterest'])->name('services.applications.interests.decline');
 
     Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
-
- 
-
     Route::post('/reports', [ReportController::class, 'store']);
 
     // Favorites routes
@@ -203,15 +190,10 @@ Route::post('/services/applications/{application}/interests/confirm', [ServiceAp
     Route::post('/favorites/toggle', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
     Route::get('/favorites/{user}/check', [FavoriteController::class, 'check'])->name('favorites.check');
     // Service
-    Route::post('/favourites/service/toggle', [FavoriteController::class, 'toggleService'])
-    ->name('favorites.service.toggle')
-    ->middleware('auth');
-    Route::get('/favourites/service/check/{id}', [FavoriteController::class, 'checkService'])
-    ->name('favorites.service.check')
-    ->middleware('auth');
+    Route::post('/favourites/service/toggle', [FavoriteController::class, 'toggleService'])->name('favorites.service.toggle')->middleware('auth');
+    Route::get('/favourites/service/check/{id}', [FavoriteController::class, 'checkService'])->name('favorites.service.check')->middleware('auth');
 
-
-    // Admin moderation endpoints
+    // Admin moderation endpoints (API)
     Route::post('/admin/verifications/{user}/approve', [AdminVerificationController::class, 'approve']);
     Route::post('/admin/verifications/{user}/reject', [AdminVerificationController::class, 'reject']);
 
@@ -221,62 +203,43 @@ Route::post('/services/applications/{application}/interests/confirm', [ServiceAp
     Route::post('/admin/users/{user}/unsuspend', [UserAdminController::class, 'unsuspend']);
 });
 
-
-// Admin service management routes
-    Route::get('admin/services', [AdminServicesController::class, 'index'])->name('admin.services.index');
-    Route::patch('admin/services/{service}/approve', [AdminServicesController::class, 'approve'])->name('admin.services.approve');
-    Route::patch('admin/services/{service}/reject', [AdminServicesController::class, 'reject'])->name('admin.services.reject');
-
+// Admin service management routes (Placed outside middleware group based on your original file, but generally should be protected)
+Route::get('admin/services', [AdminServicesController::class, 'index'])->name('admin.services.index');
+Route::patch('admin/services/{service}/approve', [AdminServicesController::class, 'approve'])->name('admin.services.approve');
+Route::patch('admin/services/{service}/reject', [AdminServicesController::class, 'reject'])->name('admin.services.reject');
+// ✅ Route Warning ada di sini:
+Route::post('admin/services/{id}/warning', [AdminServicesController::class, 'storeWarning'])->name('admin.services.warn');
 
 
 // Public JSON endpoints
 Route::get('/students/{user}', [StudentServiceController::class, 'storefront']);
 Route::get('/search/services', [SearchController::class, 'services']);
-require __DIR__.'/auth.php';
 
-Route::get('/help', function () {
-    return view('help');
-})->name('help');
+require __DIR__.'/auth.php';
 
 
 /// Admin Login (public)
-Route::get('/admin/login', [AdminAuthController::class, 'showLogin'])
-    ->name('admin.login');
+Route::get('/admin/login', [AdminAuthController::class, 'showLogin'])->name('admin.login');
+Route::post('/admin/login', [AdminAuthController::class, 'login'])->name('admin.login.submit');
+    
+// Protected Admin Routes
+Route::middleware(['auth:admin', 'prevent-back-history'])->prefix('admin')->group(function () {
 
-Route::post('/admin/login', [AdminAuthController::class, 'login'])
-    ->name('admin.login.submit');
-    
-    // Protected Admin Routes
-    Route::middleware(['auth:admin', 'prevent-back-history'])->prefix('admin')->group(function () {
-    
     // Dashboard
-    Route::get('/dashboard', [AdminDashboardController::class, 'index'])
-        ->name('admin.dashboard');
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
 
     // Student Management
-     // Student List
     Route::get('/students', [AdminStudentController::class, 'index'])->name('admin.students.index');
-
-    //view student(admin)
     Route::get('/students/view/{id}', [AdminStudentController::class, 'view'])->name('admin.students.view');
-
-    // Edit Student
     Route::get('/students/{id}/edit', [AdminStudentController::class, 'edit'])->name('admin.students.edit');
     Route::put('/students/{id}/update', [AdminStudentController::class, 'update'])->name('admin.students.update');
-
-    // NEW: Delete Student
     Route::delete('/students/{id}', [AdminStudentController::class, 'destroy'])->name('admin.students.delete');
-
-    // NEW: Ban Student
     Route::post('/students/{id}/ban', [AdminStudentController::class, 'ban'])->name('admin.students.ban');
-
-    // NEW: Unban Student
     Route::post('/students/{id}/unban', [AdminStudentController::class, 'unban'])->name('admin.students.unban');
 
-    // Manage Service Requests (Skrin Monitor User Request)
+    // Manage Service Requests
     Route::get('/requests', [AdminRequestController::class, 'index'])->name('admin.requests.index');
-    Route::delete('/requests/{serviceRequest}', [AdminRequestController::class, 'destroy'])->    
-         name('admin.requests.destroy');
+    Route::delete('/requests/{serviceRequest}', [AdminRequestController::class, 'destroy'])->name('admin.requests.destroy');
 
     // Route for Reports (Feedback & Complaints)
     Route::get('/feedback', [AdminFeedbackController::class, 'index'])->name('admin.feedback.index');
@@ -293,25 +256,25 @@ Route::post('/admin/login', [AdminAuthController::class, 'login'])
     Route::get('/admins/create', [SuperAdminController::class, 'create'])
     ->name('admin.super.admins.create');
 
-Route::post('/admins/store', [SuperAdminController::class, 'store'])
-    ->name('admin.super.admins.store');
+    Route::post('/admins/store', [SuperAdminController::class, 'store'])
+        ->name('admin.super.admins.store');
 
-Route::get('/admins/{id}/edit', [SuperAdminController::class, 'edit'])
-    ->name('admin.super.admins.edit');
+    Route::get('/admins/{id}/edit', [SuperAdminController::class, 'edit'])
+        ->name('admin.super.admins.edit');
 
-Route::post('/admins/{id}/update', [SuperAdminController::class, 'update'])
-    ->name('admin.super.admins.update');
+    Route::post('/admins/{id}/update', [SuperAdminController::class, 'update'])
+        ->name('admin.super.admins.update');
 
-Route::delete('/admins/{id}', [SuperAdminController::class, 'destroy'])
-    ->name('admin.super.admins.delete');
+    Route::delete('/admins/{id}', [SuperAdminController::class, 'destroy'])
+        ->name('admin.super.admins.delete');
+    
 
-}); //end admin manage admin part
+}); // end admin middleware group
 
-//admin-community part
+// Admin Community Part
 Route::get('/community', [AdminCommunityController::class, 'index'])->name('admin.community.index');
 
 Route::prefix('community')->group(function () {
-
     Route::get('/', [AdminCommunityController::class, 'index'])->name('admin.community.index');
     Route::get('/view/{id}', [AdminCommunityController::class, 'view'])->name('admin.community.view');
     Route::get('/edit/{id}', [AdminCommunityController::class, 'edit'])->name('admin.community.edit');
@@ -324,7 +287,6 @@ Route::prefix('community')->group(function () {
     // Delete
     Route::delete('/delete/{id}', [AdminCommunityController::class, 'delete'])->name('admin.community.delete');
 });
-//end admin community aprt
 
 Route::prefix('admin/student-status')->name('admin.student_status.')->group(function () {
     Route::get('/', [AdminStudentStatusController::class, 'index'])->name('index');
@@ -336,4 +298,4 @@ Route::prefix('admin/student-status')->name('admin.student_status.')->group(func
 });
 
 Route::post('/admin/logout', [AdminAuthController::class, 'logout'])
-    ->name('admin.logout');   
+    ->name('admin.logout');
