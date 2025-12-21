@@ -75,11 +75,6 @@
                         <ul id="pageMenu"
                             class="pl-11 mt-1 space-y-1 {{ request()->routeIs('admin.pages.*') ? '' : 'hidden' }}">
                             <li>
-                                <a href="#"
-                                    class="block px-4 py-2 text-sm rounded-lg hover:bg-blue-50 hover:text-blue-600 text-gray-600">About
-                                    page</a>
-                            </li>
-                            <li>
                                 <a href="{{ route('admin.faqs.index') }}"
                                     class="block px-4 py-2 text-sm rounded-lg hover:bg-blue-50 hover:text-blue-600 text-gray-600">Help
                                     page</a>

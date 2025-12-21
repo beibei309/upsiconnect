@@ -259,7 +259,7 @@ Route::post('/favorites/services/toggle', [FavoriteController::class, 'toggleSer
     Route::patch('admin/services/{service}/approve', [AdminServicesController::class, 'approve'])->name('admin.services.approve');
     Route::patch('admin/services/{service}/reject', [AdminServicesController::class, 'reject'])->name('admin.services.reject');
 
-// Admin page management
+
 // Help
 Route::get('/faqs', [AdminFaqsController::class, 'index'])->name('admin.faqs.index');
 Route::get('/faqs/create', [AdminFaqsController::class, 'create'])->name('admin.faqs.create');
