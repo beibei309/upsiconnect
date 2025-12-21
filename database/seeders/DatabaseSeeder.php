@@ -2,9 +2,12 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\AboutSeeder;
+use Database\Seeders\FaqSeeder;
 use App\Models\User;
 use App\Models\Category;
 use App\Models\StudentService;
+use App\Models\Review;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -279,6 +282,90 @@ class DatabaseSeeder extends Seeder
                     ],
                 ]
             ],
-  ];
+        ];
+
+        foreach ($students as $studentData) {
+            $student = User::create([
+                'name' => $studentData['name'],
+                'email' => $studentData['email'],
+                'password' => Hash::make('password'),
+                'role' => 'student',
+                'phone' => '0123456789',
+                'student_id' => $studentData['student_id'],
+                'staff_email' => $studentData['email'],
+                'verification_status' => 'approved',
+                'staff_verified_at' => now(),
+                'is_available' => rand(0, 1) == 1, 
+            ]);
+
+            foreach ($studentData['services'] as $serviceData) {
+                $category = Category::where('name', $serviceData['category'])->first();
+                
+                StudentService::create([
+                    'user_id' => $student->id,
+                    'category_id' => $category->id,
+                    'title' => $serviceData['title'],
+                    'image_path' => $serviceData['image_path'],
+                    'description' => $serviceData['description'],
+                    'suggested_price' => $serviceData['price'],
+                    'is_active' => true,
+                ]);
+            }
+        }
+               $allServices = \App\Models\StudentService::all();
+               $requester = $communityUser; 
+
+               foreach ($allServices->random(3) as $service) {
+                \App\Models\ServiceRequest::create([
+                    'student_service_id' => $service->id,      
+                    'requester_id'       => $requester->id,    
+                    'provider_id'        => $service->user_id, 
+                    'status'             => 'pending',
+                    'message'            => 'Hi, I need help with this!',
+                    'offered_price'      => $service->suggested_price,
+                    'created_at'         => now(),
+               ]);
+            }
+ 
+        $ahmad = User::where('email', 'ahmad@siswa.upsi.edu.my')->first();
+        $siti = User::where('email', 'siti@siswa.upsi.edu.my')->first();
+        $requester = $communityUser; 
+
+        $completedRequest = \App\Models\ServiceRequest::first(); 
+
+
+	if ($ahmad && $siti && $requester && $completedRequest) {
+
+    Review::create([
+        'reviewer_id' => $requester->id,
+        'reviewee_id' => $ahmad->id,
+        'service_request_id' => $completedRequest->id,
+        'conversation_id' => null,
+        'rating' => 1, 
+        'comment' => 'Service was extremely poor and slow. Need improvement.',
+    ]);
+
+    Review::create([
+        'reviewer_id' => $requester->id,
+        'reviewee_id' => $ahmad->id,
+        'service_request_id' => $completedRequest->id,
+        'conversation_id' => null,
+        'rating' => 1, 
+        'comment' => 'Second time using, still disappointing.',
+    ]);
+
+    Review::create([
+        'reviewer_id' => $requester->id,
+        'reviewee_id' => $siti->id,
+        'service_request_id' => $completedRequest->id,
+        'conversation_id' => null,
+        'rating' => 5,
+        'comment' => 'Excellent service, highly recommended!',
+    ]);
 }
+
+        //admin 
+        $this->call(AdminSeeder::class);
+
+    }
 }

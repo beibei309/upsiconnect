@@ -93,72 +93,27 @@
                     </select>
                 </div>
 
-                {{-- Submit --}}
-                <button class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
-                    Search
-                </button>
-            </form>
-        </div>
-
-
-        <div class="bg-white shadow-lg rounded-lg overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead class="bg-gray-50 border-b">
-                        <tr>
-                            <th class="py-4 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider w-64">Service Details</th>
-                            <th class="py-4 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Seller</th>
-                            <th class="py-4 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Pricing</th>
-                            <th class="py-4 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Availability</th>
-                            <th class="py-4 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Avg Rating</th>
-                            <th class="py-4 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Reviews</th>
-                            <th class="py-4 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Warning</th>
-                            <th class="py-4 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Status</th>
-                            <th class="py-4 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200">
-                        @forelse($services as $service)
-                            <tr class="hover:bg-gray-50 transition-colors">
-
-                                <td class="py-4 px-4">
-                                    <div class="flex items-start gap-3">
-                                        <div class="flex-shrink-0 h-12 w-12 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
-                                            @if ($service->image_path)
-                                                <img src="{{ asset('storage/' . $service->image_path) }}" class="h-full w-full object-cover">
-                                            @else
-                                                <div class="h-full w-full flex items-center justify-center text-gray-400 text-xs">No Img</div>
-                                            @endif
-                                        </div>
-                                        <div>
-                                            <div class="text-sm font-bold text-gray-900 line-clamp-1" title="{{ $service->title }}">{{ $service->title }}</div>
-                                            @if ($service->category)
-                                                <span class="inline-flex mt-1 items-center px-2 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600">
-                                                    {{ $service->category->name }}
-                                                </span>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </td>
-
-                                <td class="py-4 px-4">
-                                    <div class="text-sm font-medium text-gray-900">{{ $service->user->name ?? 'Unknown' }}</div>
-                                    <div class="text-xs text-gray-500">ID: {{ $service->user_id }}</div>
-                                </td>
-
-                                <td class="py-4 px-4">
-                                    <div class="text-sm text-gray-700 whitespace-nowrap">
-                                        @php
-                                            $prices = array_filter([
-                                                $service->basic_price,
-                                                $service->standard_price,
-                                                $service->premium_price,
-                                            ]);
-                                            $min = !empty($prices) ? min($prices) : 0;
-                                            $max = !empty($prices) ? max($prices) : 0;
-                                        @endphp
-                                        @if ($min > 0)
-                                            {{ $min == $max ? 'RM ' . number_format($min) : 'RM ' . number_format($min) . ' - ' . number_format($max) }}
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-gray-50 border-b">
+                    <tr>
+                        <th class="py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Service Details</th>
+                        <th class="py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Provider</th>
+                        <th class="py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Pricing</th>
+                        <th class="py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Status</th>
+                        <th class="py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Warnings</th>
+                        <th class="py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    @forelse($services as $service)
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="py-4 px-6">
+                                <div class="flex items-center gap-4">
+                                    <div class="flex-shrink-0 h-16 w-16 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
+                                        @if($service->image_path)
+                                            <img src="{{ asset('storage/' . $service->image_path) }}" class="h-full w-full object-cover">
                                         @else
                                             <span class="text-gray-400 italic">Not set</span>
                                         @endif
@@ -220,41 +175,79 @@
                                     @else
                                         <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
                                     @endif
-                                </td>
+                                </div>
+                            </td>
 
-                                <td class="py-4 px-4 text-right">
-                                    <div class="flex justify-end items-center gap-1">
-                                        <div class="tooltip">
-                                            <button onclick="openServiceModal({{ json_encode($service) }}, '{{ $service->user->name ?? 'Unknown' }}', '{{ $service->category->name ?? 'N/A' }}')" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                </svg>
-                                            </button>
-                                            <span class="tooltip-text">View</span>
-                                        </div>
+                            <td class="py-4 px-6 text-center">
+                                @if($service->approval_status === 'approved')
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Approved</span>
+                                @elseif($service->approval_status === 'rejected')
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Rejected</span>
+                                @elseif($service->approval_status === 'suspended')
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-800 text-white">Suspended</span>
+                                @else
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
+                                @endif
+                                
+                                <div class="mt-1">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $service->is_active ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800' }}">
+                                        {{ $service->is_active ? 'Online' : 'Offline' }}
+                                    </span>
+                                </div>
+                            </td>
 
-                                        @if ($service->approval_status === 'pending' || $service->approval_status === 'rejected')
-                                            <div class="tooltip">
-                                                <button onclick="confirmAction('{{ route('admin.services.approve', $service->id) }}', 'approve')" class="p-1.5 text-green-600 hover:bg-green-50 rounded-md transition">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                                    </svg>
-                                                </button>
-                                                <span class="tooltip-text">Approve</span>
-                                            </div>
-                                        @endif
+                            <td class="py-4 px-6 text-center">
+                                @if($service->warning_count > 0)
+                                    <span class="px-2 py-1 inline-flex text-xs font-bold rounded-full bg-orange-100 text-orange-800 border border-orange-200">
+                                        {{ $service->warning_count }} / 3
+                                    </span>
+                                @else
+                                    <span class="text-xs text-gray-400">-</span>
+                                @endif
+                            </td>
 
-                                        @if ($service->approval_status === 'pending' || $service->approval_status === 'approved')
-                                            <div class="tooltip">
-                                                <button onclick="confirmAction('{{ route('admin.services.reject', $service->id) }}', 'reject')" class="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                                    </svg>
-                                                </button>
-                                                <span class="tooltip-text">Reject</span>
-                                            </div>
-                                        @endif
+                            <td class="py-4 px-6 text-right">
+                                <div class="flex justify-end items-center gap-2">
+                                    <button type="button" 
+                                            onclick="openServiceModal({{ json_encode($service) }}, '{{ $service->user->name ?? 'Unknown' }}', '{{ $service->category->name ?? 'N/A' }}')"
+                                            class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-md text-xs font-medium transition">
+                                        View
+                                    </button>
+
+                                    @if($service->approval_status !== 'rejected')
+                                    <button type="button" 
+                                            onclick="openWarningModal('{{ route('admin.services.warn', $service->id) }}')"
+                                            class="text-orange-600 hover:text-orange-900 bg-orange-50 hover:bg-orange-100 px-3 py-1 rounded-md text-xs font-medium transition">
+                                        Warning
+                                    </button>
+                                    @endif
+
+                                    @if($service->approval_status === 'pending')
+                                        <button onclick="confirmAction('{{ route('admin.services.approve', $service->id) }}', 'approve')" 
+                                                class="text-green-600 hover:text-green-900 bg-green-50 hover:bg-green-100 px-3 py-1 rounded-md text-xs font-medium transition">
+                                            Approve
+                                        </button>
+                                        <button onclick="confirmAction('{{ route('admin.services.reject', $service->id) }}', 'reject')" 
+                                                class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-1 rounded-md text-xs font-medium transition">
+                                            Reject
+                                        </button>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="px-6 py-10 text-center text-gray-500">
+                                <div class="flex flex-col items-center">
+                                    <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
+                                    <p>No services found matching your criteria.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
 
                                         <div class="tooltip">
                                             <button onclick="sendWarning({{ $service->id }}, '{{ $service->title }}')" class="p-1.5 text-orange-500 hover:bg-orange-50 rounded-md transition">
@@ -282,34 +275,44 @@
             @endif
         </div>
     </div>
+</div>
 
-    <form id="action-form" method="POST" style="display: none;">@csrf</form>
+<div id="serviceModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeServiceModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
-    <div id="serviceModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeServiceModal()"></div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
-                <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                    <div>
-                        <h3 class="text-xl leading-6 font-bold text-gray-900" id="modal-title"></h3>
-                        <p class="text-sm text-gray-500 mt-1" id="modal-category"></p>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <span id="modal-status-badge" class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800"></span>
-                        <button type="button" class="text-gray-400 hover:text-gray-500 focus:outline-none" onclick="closeServiceModal()">
-                            <span class="sr-only">Close</span>
-                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-                <div class="px-6 py-6">
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <div class="lg:col-span-1 space-y-6">
-                            <div class="w-full aspect-video bg-gray-100 rounded-lg overflow-hidden border border-gray-200 shadow-sm">
-                                <img id="modal-image" src="" class="w-full h-full object-cover" alt="Service Image">
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title"></h3>
+                                <p class="text-sm text-gray-500" id="modal-category"></p>
+                            </div>
+                            <span id="modal-status-badge" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800"></span>
+                        </div>
+                        <div class="w-full h-48 bg-gray-100 rounded-lg overflow-hidden mb-4 border border-gray-200">
+                            <img id="modal-image" src="" class="w-full h-full object-cover" alt="Service Image">
+                        </div>
+                        <div class="mb-6">
+                            <h4 class="text-sm font-bold text-gray-700 uppercase tracking-wide mb-2">Description</h4>
+                            <p class="text-sm text-gray-600 bg-gray-50 p-3 rounded-md border border-gray-100" id="modal-description"></p>
+                        </div>
+                        <h4 class="text-sm font-bold text-gray-700 uppercase tracking-wide mb-2">Packages</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                            <div class="border rounded-lg p-3 bg-blue-50 border-blue-100" id="pkg-basic">
+                                <div class="text-xs font-bold text-blue-700 uppercase mb-1">Basic</div>
+                                <div class="text-lg font-bold text-gray-900" id="modal-basic-price"></div>
+                                <div class="text-xs text-gray-500 mt-1" id="modal-basic-desc"></div>
+                                <div class="text-xs font-semibold text-gray-600 mt-2" id="modal-basic-duration"></div>
+                            </div>
+                            <div class="border rounded-lg p-3 bg-yellow-50 border-yellow-100" id="pkg-standard">
+                                <div class="text-xs font-bold text-yellow-700 uppercase mb-1">Standard</div>
+                                <div class="text-lg font-bold text-gray-900" id="modal-std-price"></div>
+                                <div class="text-xs text-gray-500 mt-1" id="modal-std-desc"></div>
+                                <div class="text-xs font-semibold text-gray-600 mt-2" id="modal-std-duration"></div>
                             </div>
                             <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
                                 <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Provider Details</h4>
@@ -324,264 +327,173 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="lg:col-span-2 flex flex-col h-full">
-                            <div class="mb-8">
-                                <h4 class="text-sm font-bold text-gray-900 uppercase tracking-wide mb-3 flex items-center gap-2">
-                                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path>
-                                    </svg>
-                                    About this Service
-                                </h4>
-                                <div class="text-sm text-gray-700 leading-relaxed rich-text bg-white" id="modal-description"></div>
-                            </div>
-                            <div class="mt-auto">
-                                <h4 class="text-sm font-bold text-gray-900 uppercase tracking-wide mb-3 flex items-center gap-2">
-                                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                    Pricing Packages
-                                </h4>
-                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                    <div class="border rounded-xl p-4 bg-white hover:border-blue-300 transition-colors shadow-sm" id="pkg-basic">
-                                        <div class="text-xs font-bold text-blue-600 uppercase mb-2 tracking-wider">Basic</div>
-                                        <div class="text-2xl font-bold text-gray-900" id="modal-basic-price"></div>
-                                        <div class="text-xs font-medium text-gray-500 mt-1 mb-3 flex items-center gap-1">
-                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                            </svg>
-                                            <span id="modal-basic-duration"></span><span id="modal-basic-frequency"></span>
-                                        </div>
-                                        <div class="text-xs text-gray-600 rich-text border-t pt-3 mt-1" id="modal-basic-desc"></div>
-                                    </div>
-                                    <div class="border rounded-xl p-4 bg-white hover:border-yellow-300 transition-colors shadow-sm" id="pkg-standard">
-                                        <div class="text-xs font-bold text-yellow-600 uppercase mb-2 tracking-wider">Standard</div>
-                                        <div class="text-2xl font-bold text-gray-900" id="modal-std-price"></div>
-                                        <div class="text-xs font-medium text-gray-500 mt-1 mb-3 flex items-center gap-1">
-                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                            </svg>
-                                            <span id="modal-std-duration"></span><span id="modal-std-frequency"></span>
-                                        </div>
-                                        <div class="text-xs text-gray-600 rich-text border-t pt-3 mt-1" id="modal-std-desc"></div>
-                                    </div>
-                                    <div class="border rounded-xl p-4 bg-white hover:border-purple-300 transition-colors shadow-sm" id="pkg-premium">
-                                        <div class="text-xs font-bold text-purple-600 uppercase mb-2 tracking-wider">Premium</div>
-                                        <div class="text-2xl font-bold text-gray-900" id="modal-prem-price"></div>
-                                        <div class="text-xs font-medium text-gray-500 mt-1 mb-3 flex items-center gap-1">
-                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                            </svg>
-                                            <span id="modal-prem-duration"></span><span id="modal-prem-frequency"></span>
-                                        </div>
-                                        <div class="text-xs text-gray-600 rich-text border-t pt-3 mt-1" id="modal-prem-desc"></div>
-                                    </div>
-                                </div>
+                        <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center text-xs text-gray-500">
+                            <div>Provider: <span class="font-bold text-gray-700" id="modal-provider"></span></div>
+                            <div>Created: <span id="modal-date"></span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm" onclick="closeServiceModal()">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="warningModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeWarningModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <form id="warningForm" method="POST" action="">
+                @csrf
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-orange-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <svg class="h-6 w-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900">
+                                Issue Warning
+                            </h3>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-500 mb-4">
+                                    Please state the reason for this warning. This will be emailed to the student.
+                                </p>
+                                <textarea name="reason" rows="4" class="w-full shadow-sm focus:ring-orange-500 focus:border-orange-500 mt-1 block sm:text-sm border border-gray-300 rounded-md p-2" placeholder="Example: Inappropriate service description..." required></textarea>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="bg-gray-50 px-6 py-4 flex flex-row-reverse border-t border-gray-200">
-                    <button type="button" class="w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm" onclick="closeServiceModal()">
-                        Close
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
+                    <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-orange-600 text-base font-medium text-white hover:bg-orange-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                        Send Warning
+                    </button>
+                    <button type="button" onclick="closeWarningModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Cancel
                     </button>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    // --- Javascript Baru untuk Warning Modal ---
+    function openWarningModal(url) {
+        document.getElementById('warningForm').action = url;
+        document.getElementById('warningModal').classList.remove('hidden');
+    }
 
-    {{-- ADDED: SWEETALERT FLASH MESSAGE HANDLER --}}
-    @if (session('success'))
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                Swal.fire({
-                    title: 'Success!',
-                    text: "{{ session('success') }}",
-                    icon: 'success',
-                    confirmButtonColor: '#3085d6',
-                    confirmButtonText: 'OK'
-                });
-            });
-        </script>
-    @endif
+    function closeWarningModal() {
+        document.getElementById('warningModal').classList.add('hidden');
+    }
 
-    @if (session('error'))
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                Swal.fire({
-                    title: 'Error!',
-                    text: "{{ session('error') }}",
-                    icon: 'error',
-                    confirmButtonColor: '#d33',
-                    confirmButtonText: 'Close'
-                });
-            });
-        </script>
-    @endif
-
-    <script>
-        // Modal Logic
-        function openServiceModal(service, providerName, categoryName) {
-            document.getElementById('modal-title').textContent = service.title;
-            document.getElementById('modal-category').textContent = categoryName;
-            document.getElementById('modal-provider').textContent = providerName;
-            document.getElementById('modal-provider-initial').textContent = providerName.charAt(0).toUpperCase();
-            document.getElementById('modal-description').innerHTML = service.description;
-
-            const badge = document.getElementById('modal-status-badge');
-            badge.textContent = service.approval_status.charAt(0).toUpperCase() + service.approval_status.slice(1);
-            badge.className = `px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                service.approval_status === 'approved' ? 'bg-green-100 text-green-800' : 
-                (service.approval_status === 'rejected' ? 'bg-red-100 text-red-800' : 
-                (service.approval_status === 'blocked' ? 'bg-gray-800 text-white' : 'bg-yellow-100 text-yellow-800'))
-            }`;
-
-            const date = new Date(service.created_at);
-            document.getElementById('modal-date').textContent = date.toLocaleDateString();
-
-            const img = document.getElementById('modal-image');
-            if (service.image_path) {
-                img.src = '/storage/' + service.image_path;
-                img.classList.remove('hidden');
-            } else {
-                img.src = 'https://via.placeholder.com/600x400?text=No+Image';
-            }
-
-            // Packages logic
-            if (service.basic_price) {
-                document.getElementById('pkg-basic').classList.remove('hidden');
-                document.getElementById('modal-basic-price').textContent = 'RM ' + service.basic_price;
-                document.getElementById('modal-basic-desc').innerHTML = service.basic_description || 'No description';
-                document.getElementById('modal-basic-duration').textContent = (service.basic_duration || 0) + ' Hours';
-                document.getElementById('modal-basic-frequency').textContent = service.basic_frequency || 'Session';
-            } else {
-                document.getElementById('pkg-basic').classList.add('hidden');
-            }
-
-            if (service.standard_price) {
-                document.getElementById('pkg-standard').classList.remove('hidden');
-                document.getElementById('modal-std-price').textContent = 'RM ' + service.standard_price;
-                document.getElementById('modal-std-desc').innerHTML = service.standard_description || 'No description';
-                document.getElementById('modal-std-duration').textContent = (service.standard_duration || 0) + ' Hours';
-                document.getElementById('modal-std-frequency').textContent = service.standard_frequency || 'Session';
-            } else {
-                document.getElementById('pkg-standard').classList.add('hidden');
-            }
-
-            if (service.premium_price) {
-                document.getElementById('pkg-premium').classList.remove('hidden');
-                document.getElementById('modal-prem-price').textContent = 'RM ' + service.premium_price;
-                document.getElementById('modal-prem-desc').innerHTML = service.premium_description || 'No description';
-                document.getElementById('modal-prem-duration').textContent = (service.premium_duration || 0) + ' Hours';
-                document.getElementById('modal-prem-frequency').textContent = service.premium_frequency || 'Session';
-            } else {
-                document.getElementById('pkg-premium').classList.add('hidden');
-            }
-
-            document.getElementById('serviceModal').classList.remove('hidden');
+    // --- Javascript Asal (Service Detail Modal) ---
+    function openServiceModal(service, providerName, categoryName) {
+        document.getElementById('modal-title').textContent = service.title;
+        document.getElementById('modal-category').textContent = categoryName;
+        document.getElementById('modal-provider').textContent = providerName;
+        document.getElementById('modal-description').textContent = service.description;
+        
+        const badge = document.getElementById('modal-status-badge');
+        
+        // --- LOGIC BARU (HANDLE SUSPENDED) ---
+        let badgeClass = 'bg-yellow-100 text-yellow-800'; // Default Pending
+        if (service.approval_status === 'approved') {
+            badgeClass = 'bg-green-100 text-green-800';
+        } else if (service.approval_status === 'rejected') {
+            badgeClass = 'bg-red-100 text-red-800';
+        } else if (service.approval_status === 'suspended') {
+            badgeClass = 'bg-gray-800 text-white'; // Style untuk Suspended
         }
 
-        function closeServiceModal() {
-            document.getElementById('serviceModal').classList.add('hidden');
+        badge.className = `px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${badgeClass}`;
+        badge.textContent = service.approval_status.charAt(0).toUpperCase() + service.approval_status.slice(1);
+
+        const date = new Date(service.created_at);
+        document.getElementById('modal-date').textContent = date.toLocaleDateString();
+
+        const img = document.getElementById('modal-image');
+        if (service.image_path) {
+            img.src = '/storage/' + service.image_path; 
+            img.classList.remove('hidden');
+        } else {
+            img.src = 'https://via.placeholder.com/600x400?text=No+Image+Provided';
         }
 
-        // Action Confirmation Logic
-        function confirmAction(url, action) {
-            let title = 'Are you sure?';
-            let text = '';
-            let confirmBtnColor = '#3085d6';
-
-            switch (action) {
-                case 'approve':
-                    title = 'Approve Service?';
-                    text = 'This service will become visible to the public.';
-                    confirmBtnColor = '#10B981';
-                    break;
-                case 'reject':
-                    title = 'Reject Service?';
-                    text = 'This service will be rejected and hidden.';
-                    confirmBtnColor = '#EF4444';
-                    break;
-                case 'block':
-                    title = 'Block Service?';
-                    text = 'This service will be permanently blocked.';
-                    confirmBtnColor = '#1F2937';
-                    break;
-            }
-
-            Swal.fire({
-                title: title,
-                text: text,
-                icon: action === 'approve' ? 'question' : 'warning',
-                showCancelButton: true,
-                confirmButtonColor: confirmBtnColor,
-                cancelButtonColor: '#6B7280',
-                confirmButtonText: 'Yes, ' + action + ' it!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    submitForm(url, 'PATCH');
-                }
-            });
+        // Logic Harga Basic
+        if(service.basic_price) {
+            document.getElementById('pkg-basic').classList.remove('hidden');
+            document.getElementById('modal-basic-price').textContent = 'RM ' + service.basic_price;
+            document.getElementById('modal-basic-desc').textContent = service.basic_description || 'No description';
+            document.getElementById('modal-basic-duration').textContent = (service.basic_duration || 0) + ' hrs';
+        } else {
+            document.getElementById('pkg-basic').classList.add('hidden');
         }
 
-        // Warning Logic
-        function sendWarning(serviceId, serviceTitle) {
-            Swal.fire({
-                title: 'Send Warning',
-                text: `Issue a warning for "${serviceTitle}"? The student will be notified via email.`,
-                icon: 'warning',
-                input: 'textarea',
-                inputLabel: 'Reason for warning',
-                inputPlaceholder: 'Type your reason here...',
-                showCancelButton: true,
-                confirmButtonColor: '#F59E0B',
-                confirmButtonText: 'Send Warning & Email',
-                showLoaderOnConfirm: true,
-                preConfirm: (reason) => {
-                    if (!reason) {
-                        Swal.showValidationMessage('You need to write a reason!')
-                    }
-                    return reason;
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    let url = `/admin/services/${serviceId}/warning`;
-                    const form = document.createElement('form');
-                    form.action = url;
-                    form.method = 'POST';
-                    form.style.display = 'none';
-
-                    const csrfInput = document.createElement('input');
-                    csrfInput.type = 'hidden';
-                    csrfInput.name = '_token';
-                    csrfInput.value = '{{ csrf_token() }}';
-                    form.appendChild(csrfInput);
-
-                    const reasonInput = document.createElement('input');
-                    reasonInput.type = 'hidden';
-                    reasonInput.name = 'reason';
-                    reasonInput.value = result.value;
-                    form.appendChild(reasonInput);
-
-                    document.body.appendChild(form);
-                    form.submit();
-                }
-            });
+        // Logic Harga Standard
+        if(service.standard_price) {
+            document.getElementById('pkg-standard').classList.remove('hidden');
+            document.getElementById('modal-std-price').textContent = 'RM ' + service.standard_price;
+            document.getElementById('modal-std-desc').textContent = service.standard_description || 'No description';
+            document.getElementById('modal-std-duration').textContent = (service.standard_duration || 0) + ' hrs';
+        } else {
+            document.getElementById('pkg-standard').classList.add('hidden');
         }
 
-        function submitForm(url, method) {
-            const form = document.createElement('form');
-            form.action = url;
-            form.method = 'POST';
+        // Logic Harga Premium
+        if(service.premium_price) {
+            document.getElementById('pkg-premium').classList.remove('hidden');
+            document.getElementById('modal-prem-price').textContent = 'RM ' + service.premium_price;
+            document.getElementById('modal-prem-desc').textContent = service.premium_description || 'No description';
+            document.getElementById('modal-prem-duration').textContent = (service.premium_duration || 0) + ' hrs';
+        } else {
+            document.getElementById('pkg-premium').classList.add('hidden');
+        }
 
-            const csrfToken = document.createElement('input');
-            csrfToken.type = 'hidden';
-            csrfToken.name = '_token';
-            csrfToken.value = '{{ csrf_token() }}';
-            form.appendChild(csrfToken);
+        document.getElementById('serviceModal').classList.remove('hidden');
+    }
 
-            if (method !== 'POST') {
+    function closeServiceModal() {
+        document.getElementById('serviceModal').classList.add('hidden');
+    }
+
+    // --- Action Logic (Approve/Reject) ---
+   function confirmAction(url, action) {
+        const title = action === 'approve' ? 'Approve Service?' : 'Reject Service?';
+        const text = action === 'approve' 
+            ? "This service will become visible to the public." 
+            : "This service will be rejected.";
+        const confirmBtnColor = action === 'approve' ? '#10B981' : '#EF4444';
+
+        Swal.fire({
+            title: title,
+            text: text,
+            icon: action === 'approve' ? 'question' : 'warning',
+            showCancelButton: true,
+            confirmButtonColor: confirmBtnColor,
+            cancelButtonColor: '#6B7280',
+            confirmButtonText: 'Yes, ' + action + ' it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.createElement('form');
+                form.action = url;
+                form.method = 'POST'; 
+                
+                const csrfToken = document.createElement('input');
+                csrfToken.type = 'hidden';
+                csrfToken.name = '_token';
+                csrfToken.value = '{{ csrf_token() }}';
+                form.appendChild(csrfToken);
+
                 const methodField = document.createElement('input');
                 methodField.type = 'hidden';
                 methodField.name = '_method';

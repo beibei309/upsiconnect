@@ -15,6 +15,7 @@ class Review extends Model
         'service_application_id',
         'reviewer_id',
         'reviewee_id',
+        'service_id', // <--- Aku tambah ni, pastikan column ni wujud kat DB
         'rating',
         'comment',
     ];
@@ -34,6 +35,14 @@ class Review extends Model
         return $this->belongsTo(ServiceApplication::class);
     }
 
+    // 👇 Ini function service yang betul
+    // PENTING: Pastikan nama column dalam database reviews ialah 'service_id'
+    // Kalau dalam database nama dia 'student_service_id', tukar kat bawah ni.
+    public function service()
+    {
+        return $this->belongsTo(StudentService::class, 'service_id');
+    }
+
     public function reviewer()
     {
         return $this->belongsTo(User::class, 'reviewer_id');
@@ -43,12 +52,4 @@ class Review extends Model
     {
         return $this->belongsTo(User::class, 'reviewee_id');
     }
-
-    public function service()
-    {
-        return $this->belongsTo(StudentService::class, 'student_service_id');
-        
-    }
-
-    
 }

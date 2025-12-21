@@ -10,15 +10,15 @@ use Illuminate\Http\Request;
 
 class ReportAdminController extends Controller
 {
-    public function index(): JsonResponse
+    public function index()
     {
         $reports = Report::query()
             ->where('status', 'open')
             ->with(['reporter:id,name', 'target:id,name,is_blacklisted'])
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(15);
 
-        return response()->json(['reports' => $reports]);
+        return view('admin.reports.index', compact('reports'));
     }
 
     public function resolve(Request $request, Report $report): JsonResponse

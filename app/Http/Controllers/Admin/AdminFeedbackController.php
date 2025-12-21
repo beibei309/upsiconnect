@@ -70,9 +70,6 @@ class AdminFeedbackController extends Controller
             $message = "Warning sent to {$user->name}. Current warning count: {$user->warning_count}.";
         }
 
-        // Send Notification
-        $user->notify(new \App\Notifications\AdminWarningNotification($user->warning_count, $message));
-
         return back()->with('success', $message);
     }
 

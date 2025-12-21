@@ -12,10 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('student_services', function (Blueprint $table) {
-            // Kita tambah column suggested_price (decimal atau float)
-            $table->decimal('suggested_price', 8, 2)->nullable()->after('description');
-            
-            // Decimal(8, 2) bermakna 8 digit, dengan 2 digit di belakang perpuluhan (contoh: 999,999.99)
+            //
         });
     }
 
@@ -25,8 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('student_services', function (Blueprint $table) {
-            // Kalau roll back, kita buang column tu
-            $table->dropColumn('suggested_price');
+            //
         });
     }
 };
