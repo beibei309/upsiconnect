@@ -303,10 +303,10 @@
                                                     <img src="{{ $service->user->profile_photo_path ? asset('storage/' . $service->user->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode($service->user->name) . '&background=random' }}"
                                                         class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm group-hover/user:border-indigo-100 transition 
              
-             {{-- 👇 PERBAIKAN 1: Tambahkan class blur jika pengguna adalah guest --}}
-             @guest
-blur-md @endguest
-             ">
+                                            {{-- 👇 PERBAIKAN 1: Tambahkan class blur jika pengguna adalah guest --}}
+                                            @guest
+                                            blur-md @endguest
+                                                        ">
 
                                                     {{-- Optional: Overlay dan Icon Kunci jika guest (memberi tahu gambar dikunci) --}}
                                                     @guest

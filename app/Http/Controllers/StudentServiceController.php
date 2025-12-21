@@ -36,8 +36,7 @@ class StudentServiceController extends Controller
         $query->where('user_id', '!=', $currentUserId);
     }
 
-    // --- 3. Available/Busy Filter (DIKEMASKINI) ---
-    // Kita guna column 'status' pada StudentService (berdasarkan kod update sebelum ini)
+    
     if ($available_only === '1') {
         // Jika user nak cari yang Available sahaja
         $query->where('status', 'available');

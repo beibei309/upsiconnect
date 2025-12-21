@@ -92,7 +92,6 @@ Route::get('/services/{service}/edit', [StudentServiceController::class, 'edit']
     ->name('services.edit');
 
 
-
 Route::get('/student-services/{service}', [StudentServiceController::class, 'show'])->name('student-services.show');
 
 Route::get('/services/apply', function () {
