@@ -110,7 +110,7 @@
                             class="pl-11 mt-1 space-y-1 {{ request()->routeIs('admin.students.*') || request()->routeIs('admin.student_status.*') ? '' : 'hidden' }}">
                             <li>
                                 <a href="{{ route('admin.students.index') }}"
-                                    class="block px-4 py-2 text-sm rounded-lg hover:bg-blue-50 hover:text-blue-600 {{ request()->routeIs('admin.students.index') ? 'text-blue-600 font-semibold' : 'text-gray-600' }}">All
+                                    class="block px-4 py-2 text-sm rounded-lg hover:bg-blue-50 hover:text-blue-600 {{ request()->routeIs('admin.students.index') ? 'text-blue-600 font-semibold' : 'text-gray-600' }}">View
                                     Students</a>
                             </li>
                             <li>
@@ -120,7 +120,7 @@
                             </li>
                         </ul>
                     </li>
-                     <li>
+                    <li>
                         <a href="{{ route('admin.community.index') }}"
                             class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
                            {{ request()->routeIs('admin.community.*') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-gray-600 hover:bg-gray-100 hover:text-blue-600' }}">
@@ -147,7 +147,8 @@
                             <svg id="serviceArrow"
                                 class="w-4 h-4 transition-transform {{ request()->routeIs('admin.services.*') || request()->routeIs('admin.services.*') ? 'rotate-90' : '' }}"
                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 5l7 7-7 7">
                                 </path>
                             </svg>
                         </button>

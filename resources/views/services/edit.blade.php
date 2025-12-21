@@ -267,15 +267,8 @@
                             </div>
                             <div>
                                 <label class="text-xs font-bold text-gray-500 uppercase">Frequency</label>
-                                <select name="packages[0][frequency]" class="w-full mt-1 border-gray-300 rounded-md">
-                                    <option value="Per Session"
-                                        {{ $service->basic_frequency == 'Per Session' ? 'selected' : '' }}>Per Session
-                                    </option>
-                                    <option value="Weekly" {{ $service->basic_frequency == 'Weekly' ? 'selected' : '' }}>
-                                        Weekly</option>
-                                    <option value="Monthly"
-                                        {{ $service->basic_frequency == 'Monthly' ? 'selected' : '' }}>Monthly</option>
-                                </select>
+                                <input type="text" name="packages[0][frequency]" placeholder="e.g. per session"
+                                    class="w-full mt-1 border-gray-300 rounded-md">
                             </div>
                         </div>
                         <div>
@@ -318,17 +311,8 @@
                                     </select>
                                 </div>
                                 <div><label class="text-xs font-bold text-blue-600 uppercase">Frequency</label>
-                                    <select name="packages[1][frequency]" class="w-full mt-1 border-blue-200 rounded-md">
-                                        <option value="Per Session"
-                                            {{ $service->standard_frequency == 'Per Session' ? 'selected' : '' }}>Per
-                                            Session</option>
-                                        <option value="Weekly"
-                                            {{ $service->standard_frequency == 'Weekly' ? 'selected' : '' }}>Weekly
-                                        </option>
-                                        <option value="Monthly"
-                                            {{ $service->standard_frequency == 'Monthly' ? 'selected' : '' }}>Monthly
-                                        </option>
-                                    </select>
+                                    <input type="text" name="packages[1][frequency]" placeholder="e.g. per session"
+                                    class="w-full mt-1 border-blue-300 rounded-md">
                                 </div>
                             </div>
                             <div class="bg-white rounded-md border border-blue-200 overflow-hidden">
@@ -356,17 +340,8 @@
                                     </select>
                                 </div>
                                 <div><label class="text-xs font-bold text-purple-600 uppercase">Frequency</label>
-                                    <select name="packages[2][frequency]"
-                                        class="w-full mt-1 border-purple-200 rounded-md">
-                                        <option value="Per Session"
-                                            {{ $service->premium_frequency == 'Per Session' ? 'selected' : '' }}>Per
-                                            Session</option>
-                                        <option value="Weekly"
-                                            {{ $service->premium_frequency == 'Weekly' ? 'selected' : '' }}>Weekly</option>
-                                        <option value="Monthly"
-                                            {{ $service->premium_frequency == 'Monthly' ? 'selected' : '' }}>Monthly
-                                        </option>
-                                    </select>
+                                     <input type="text" name="packages[2][frequency]" placeholder="e.g. per session"
+                                    class="w-full mt-1 border-purple-300 rounded-md">
                                 </div>
                             </div>
                             <div class="bg-white rounded-md border border-purple-200 overflow-hidden">

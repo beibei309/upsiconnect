@@ -307,7 +307,7 @@
                                         type="text" name="packages[2][duration]" placeholder="e.g. Full Day"
                                         class="w-full mt-1 border-purple-200 rounded-md"></div>
                                 <div>
-                                    <label class="text-xs font-bold text-purple-600 uppercase">Frequency</label>
+                                <label class="text-xs font-bold text-purple-600 uppercase">Frequency</label>
                                    <input type="text" name="packages[2][frequency]" placeholder="e.g. per session"
                                         class="w-full mt-1 border-purple-300 rounded-md">
                                 </div>

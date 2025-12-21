@@ -6,10 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\StudentService;
 use App\Models\Category;
+use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use App\Mail\WarningMail;
+use App\Mail\ServiceSuspendedMail;
 use App\Mail\ServiceApprovedMail; 
 use App\Mail\ServiceRejectedMail; 
 
@@ -19,13 +21,19 @@ use App\Notifications\ServiceStatusNotification;
 
 class AdminServicesController extends Controller
 {
-   public function index(Request $request)
+ public function index(Request $request)
 {
     $search     = $request->query('search');
     $categoryId = $request->query('category');
     $studentId  = $request->query('student');
+    $status = $request->query('status');
 
     $services = StudentService::with(['user', 'category'])
+        ->withAvg('reviews', 'rating')
+        ->withCount('reviews')
+        ->when($status, function ($query, $status) {
+            $query->where('approval_status', $status);
+        })
         ->when($search, function ($query, $search) {
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
@@ -35,18 +43,17 @@ class AdminServicesController extends Controller
                   });
             });
         })
-        ->when($categoryId, function ($query, $categoryId) {
-            $query->where('category_id', $categoryId);
-        })
-        ->when($studentId, function ($query, $studentId) {
-            $query->where('user_id', $studentId);
-        })
+        ->when($categoryId, fn($q) => $q->where('category_id', $categoryId))
+        ->when($studentId, fn($q) => $q->where('user_id', $studentId))
         ->latest()
         ->paginate(10)
         ->withQueryString();
+        
 
     $categories = Category::orderBy('name')->get();
-    $students   = User::where('role', 'student')->orderBy('name')->get();
+    $students   = User::where('role', 'helper')->orderBy('name')->get();
+    $status     = $request->query('status');
+
 
     return view('admin.services.index', compact(
         'services',
@@ -54,6 +61,7 @@ class AdminServicesController extends Controller
         'students'
     ));
 }
+
 
 
     // Approve a service
@@ -102,52 +110,100 @@ class AdminServicesController extends Controller
 
     // 👇 INI FUNCTION BARU UNTUK WARNING (Copy bahagian ini)
     public function storeWarning(Request $request, $id)
-    {
-        // 1. Validasi Input
-        $request->validate([
-            'reason' => 'required|string|max:255',
-        ]);
+{
+    // 1. Validasi Input
+    $request->validate([
+        'reason' => 'required|string|max:255',
+    ]);
 
-        // 2. Cari Servis
-        $service = StudentService::findOrFail($id);
-        $student = $service->user; // Owner servis
+    // 2. Cari Servis
+    $service = StudentService::findOrFail($id);
+    $student = $service->user;
 
-        // 3. UPDATE DATA (Ikut migration member kau: warning_count & warning_reason)
-        $service->warning_count = $service->warning_count + 1;
-        $service->warning_reason = $request->reason;
-        
-        // Logic 3 Strike = Suspend
-        // Kalau dah kena 3 kali warning, status tukar jadi 'suspended'
-        if ($service->warning_count >= 3) {
-            $service->approval_status = 'suspended'; // Tukar status approval
-            // $service->is_active = false; // Boleh uncomment kalau nak matikan servis terus
-        }
-        
-        $service->save(); // Simpan perubahan
+    // 3. Update Warning
+    $service->warning_count = $service->warning_count + 1;
+    $service->warning_reason = $request->reason;
 
-        // 4. Hantar Email ke Student
-        try {
-            // Data untuk dihantar ke dalam email
-            $emailData = [
-                'student_name' => $student->name,
-                'service_name' => $service->title,
-                'reason' => $request->reason,
-                'count' => $service->warning_count
-            ];
+    // ❌ REMOVE AUTO SUSPEND
+    // if ($service->warning_count >= 3) {
+    //     $service->approval_status = 'suspended';
+    // }
 
-            // Hantar email guna WarningMail
-            Mail::to($student->email)->send(new WarningMail($emailData));
-            
-        } catch (\Exception $e) {
-            // Kalau email error, kita log error tu tapi tak stopkan sistem
-            Log::error('Email warning gagal dihantar: ' . $e->getMessage());
-        }
+    $service->save();
 
-        // 5. Mesej Balas (Feedback)
-        if ($service->approval_status == 'suspended') {
-            return back()->with('error', 'Amaran ke-3! Servis ini telah digantung (suspended).');
-        }
+    // 4. Hantar Email
+    try {
+        $emailData = [
+            'student_name' => $student->name,
+            'service_name' => $service->title,
+            'reason'       => $request->reason,
+            'count'        => $service->warning_count
+        ];
 
-        return back()->with('success', 'Warning berjaya dihantar. Jumlah warning: ' . $service->warning_count);
+        Mail::to($student->email)->send(new WarningMail($emailData));
+
+    } catch (\Exception $e) {
+        Log::error('Email warning gagal dihantar: ' . $e->getMessage());
     }
+
+    // 5. Response UI
+    if ($service->warning_count >= 3) {
+        return back()->with('warning', 'Student telah mencapai 3/3 warning. Sila suspend jika perlu.');
+    }
+
+    return back()->with('success', 'Warning berjaya dihantar. Jumlah warning: ' . $service->warning_count);
+}
+
+public function suspend(StudentService $service)
+{
+    $service->approval_status = 'suspended';
+    $service->save();
+
+    // Hantar Email
+    if ($service->user && $service->user->email) {
+        Mail::to($service->user->email)->send(new ServiceSuspendedMail($service));
+    }
+
+    return back()->with('error', 'Service has been suspended and email notification sent.');
+}
+
+
+    public function reviews($id)
+    {
+        $service = StudentService::with('user')->findOrFail($id);
+
+        $reviews = Review::where('student_service_id', $id)
+            ->with('reviewer')
+            ->latest()
+            ->paginate(10);
+
+        return view('admin.services.reviews', compact('service', 'reviews'));
+    }
+
+    public function show($id)
+    {
+        $service = StudentService::with(['user', 'category'])
+            ->withAvg('reviews', 'rating')
+            ->withCount('reviews')
+            ->findOrFail($id);
+
+        return view('admin.services.show', compact('service'));
+    }
+
+    // UNBLOCK Service
+    public function unblock(StudentService $service)
+    {
+        $service->approval_status = 'approved';
+        $service->warning_count = 0; // optional kalau nak reset warning
+        $service->save();
+
+        // Notify user (optional kalau nak)
+        if ($service->user) {
+            $service->user->notify(new ServiceStatusNotification('unblocked', $service));
+        }
+
+        return back()->with('success', 'Service has been unblocked and approved again.');
+    }
+
+
 }

@@ -250,13 +250,32 @@ Route::post('/favorites/services/toggle', [FavoriteController::class, 'toggleSer
     // Route for Reports (Feedback & Complaints)
     Route::get('/feedback', [AdminFeedbackController::class, 'index'])->name('admin.feedback.index');
     Route::post('/feedback/{user}/warning', [AdminFeedbackController::class, 'sendWarning'])->name('admin.feedback.warning');
-    Route::post('/feedback/{user}/block', [AdminFeedbackController::class, 'blockUser'])->name('admin.feedback.block');   
+    Route::post('/feedback/{user}/block', [AdminFeedbackController::class, 'blockUser'])->name('admin.feedback.block'); 
+      
 Route::post('admin/services/{id}/warning', [AdminServicesController::class, 'storeWarning'])->name('admin.services.warn');
 
 // Admin service management routes
     Route::get('admin/services', [AdminServicesController::class, 'index'])->name('admin.services.index');
     Route::patch('admin/services/{service}/approve', [AdminServicesController::class, 'approve'])->name('admin.services.approve');
     Route::patch('admin/services/{service}/reject', [AdminServicesController::class, 'reject'])->name('admin.services.reject');
+    Route::patch('/services/{service}/suspend',
+    [AdminServicesController::class, 'suspend']
+)->name('admin.services.suspend');
+
+Route::patch('/services/{service}/unblock', 
+    [AdminServicesController::class, 'unblock']
+)->name('admin.services.unblock');
+
+// Admin reviews
+Route::get('/admin/services/{service}/reviews', [
+    App\Http\Controllers\Admin\AdminServicesController::class,
+    'reviews'
+])->name('admin.services.reviews');
+
+Route::get('/admin/services/{service}', [
+    App\Http\Controllers\Admin\AdminServicesController::class,
+    'show'
+])->name('admin.services.show');
 
 
 // Help
