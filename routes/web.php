@@ -59,6 +59,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/onboarding/students', [VerificationController::class, 'index'])
         ->name('onboarding.students');
 
+        
+
     // Route untuk Upload Profile Photo
     Route::post('/verification/upload-photo', [VerificationController::class, 'uploadPhoto'])
         ->name('students_verification.upload');

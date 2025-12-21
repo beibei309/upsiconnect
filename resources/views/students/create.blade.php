@@ -2,7 +2,7 @@
     <div class="bg-gray-50 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
         
         <div class="max-w-3xl mx-auto text-center mb-10">
-            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">Become a Student Helper</h1>
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">Become a Student Seller</h1>
             <p class="mt-2 text-gray-600">Share your skills and earn extra income by helping others in the UPSI community.</p>
         </div>
 

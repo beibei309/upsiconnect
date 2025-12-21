@@ -195,16 +195,33 @@
                                         </button>
                                         @endif
 
-                                        @if($service->approval_status === 'pending')
-                                            <button onclick="confirmAction('{{ route('admin.services.approve', $service->id) }}', 'approve')" 
-                                                    class="text-green-600 hover:text-green-900 bg-green-50 hover:bg-green-100 px-3 py-1 rounded-md text-xs font-medium transition">
-                                                Approve
-                                            </button>
-                                            <button onclick="confirmAction('{{ route('admin.services.reject', $service->id) }}', 'reject')" 
-                                                    class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-1 rounded-md text-xs font-medium transition">
-                                                Reject
-                                            </button>
-                                        @endif
+                                   @if($service->approval_status === 'pending')
+    <div class="flex items-center gap-2">
+        {{-- APPROVE FORM --}}
+        <form action="{{ route('admin.services.approve', $service->id) }}" method="POST" 
+              onsubmit="return confirm('Are you sure you want to approve this service?');">
+            @csrf
+            @method('PATCH') {{-- This fixes the error --}}
+            
+            <button type="submit" 
+                    class="text-green-600 hover:text-green-900 bg-green-50 hover:bg-green-100 px-3 py-1 rounded-md text-xs font-medium transition">
+                Approve
+            </button>
+        </form>
+
+        {{-- REJECT FORM --}}
+        <form action="{{ route('admin.services.reject', $service->id) }}" method="POST" 
+              onsubmit="return confirm('Are you sure you want to reject this service?');">
+            @csrf
+            @method('PATCH') {{-- This fixes the error --}}
+            
+            <button type="submit" 
+                    class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-1 rounded-md text-xs font-medium transition">
+                Reject
+            </button>
+        </form>
+    </div>
+@endif
                                     </div>
                                 </td>
                             </tr>

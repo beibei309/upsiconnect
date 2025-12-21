@@ -8,16 +8,86 @@ use Illuminate\Support\Str;
 
 class VerificationController extends Controller
 {
-    public function index() {
-        $user = auth()->user();
-        
-        // Redirect helpers to dashboard - they're already verified
-        if ($user->role === 'helper') {
-            return redirect()->route('dashboard')->with('info', 'You are already a verified helper!');
-        }
-        
-        return view('onboarding.students_verification'); 
+   public function index() {
+    $user = auth()->user();
+    
+    // 1. Redirect if already helper
+    if ($user->role === 'helper') {
+        return redirect()->route('dashboard')->with('info', 'You are already a verified helper!');
     }
+    
+    // 2. Fetch Real Student Status from DB
+    $studentStatus = \DB::table('student_statuses')
+                        ->where('student_id', $user->id)
+                        ->latest()
+                        ->first();
+
+    // 3. Initialize Status Variables
+    $isEligible = false;
+    $statusMessage = 'Checking...';
+    $statusColor = 'gray';
+    $reason = '';
+    $matricNo = $user->student_id ?? 'N/A'; // Fallback if no matric no
+    $gradDateDisplay = 'N/A';
+
+    // 4. Run Eligibility Logic
+    if ($studentStatus) {
+        $matricNo = $studentStatus->matric_no;
+        $today = \Carbon\Carbon::now();
+        $gradDate = $studentStatus->graduation_date ? \Carbon\Carbon::parse($studentStatus->graduation_date) : null;
+        $gradDateDisplay = $gradDate ? $gradDate->format('d M Y') : 'Not Set';
+        
+        // Rule A: Status must be Active (case-insensitive)
+        $isActive = strtolower($studentStatus->status) === 'active';
+        
+        // Rule B: Graduation must be > 3 months away
+        $isNotGraduatingSoon = true;
+        if ($gradDate) {
+            // Returns float (e.g., 2.5 months)
+            $monthsUntilGrad = $today->floatDiffInMonths($gradDate, false);
+            
+            // IF date is in past OR less than 3 months in future -> Block
+            if ($monthsUntilGrad < 3) {
+                $isNotGraduatingSoon = false;
+            }
+        }
+
+        if (!$isActive) {
+            $isEligible = false;
+            $statusMessage = 'Inactive (' . $studentStatus->status . ')';
+            $statusColor = 'red';
+            $reason = 'Your student status is currently set to ' . $studentStatus->status . '. Please contact admin.';
+        } elseif (!$isNotGraduatingSoon) {
+            $isEligible = false;
+            $statusMessage = 'Graduating Soon';
+            $statusColor = 'orange';
+            $reason = "You are too close to graduation ($gradDateDisplay). You must have at least 3 months remaining to register as a helper.";
+        } else {
+            // PASS
+            $isEligible = true;
+            $statusMessage = 'Active Student';
+            $statusColor = 'green';
+        }
+    } else {
+        // --- NO RECORD FOUND SCENARIO ---
+        // For development/testing, you might want to allow this.
+        // Change $isEligible to true if you want to allow users without status records.
+        $isEligible = true; 
+        $statusMessage = 'Active (No Record)'; 
+        $statusColor = 'green';
+        $reason = 'No specific status record found, assuming active.';
+    }
+
+    // 5. Pass variables to the view
+    return view('onboarding.students_verification', compact(
+        'isEligible', 
+        'statusMessage', 
+        'statusColor', 
+        'reason', 
+        'matricNo',
+        'gradDateDisplay'
+    )); 
+}
 
     public function uploadPhoto(Request $request)
     {

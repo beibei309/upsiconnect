@@ -149,83 +149,114 @@
                     <div class="prose prose-slate max-w-none text-gray-600 rich-text">{!! $service->description !!}</div>
                 </section>
 
-                {{-- Helper Profile Section --}}
-                {{-- Helper Profile Section --}}
-                <section
-                    class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100 relative overflow-hidden">
-                    <div class="flex flex-col md:flex-row gap-8 items-start">
+              {{-- Helper Profile Section --}}
+<section class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100 relative overflow-hidden">
+    <div class="flex flex-col md:flex-row gap-8 items-start">
 
-                        {{-- Left: Profile Image & Badge --}}
-                        <div class="relative mx-auto md:mx-0 flex-shrink-0">
-                            @if ($service->user->profile_photo_path)
-                                <img src="{{ asset('storage/' . $service->user->profile_photo_path) }}"
-                                    class="w-24 h-24 md:w-28 md:h-28 rounded-full object-cover border-4 border-white shadow-lg">
-                            @else
-                                <div
-                                    class="w-24 h-24 md:w-28 md:h-28 rounded-full bg-indigo-600 flex items-center justify-center text-3xl md:text-4xl text-white font-bold border-4 border-white shadow-lg">
-                                    {{ strtoupper(substr($service->user->name, 0, 1)) }}
-                                </div>
-                            @endif
+        {{-- Left: Profile Image & Badge --}}
+        <div class="relative mx-auto md:mx-0 flex-shrink-0 group">
+            
+            {{-- 1. WRAPPER FOR BLUR LOGIC --}}
+            <div class="relative">
+                @if ($service->user->profile_photo_path)
+                    <img src="{{ asset('storage/' . $service->user->profile_photo_path) }}"
+                        class="w-24 h-24 md:w-28 md:h-28 rounded-full object-cover border-4 border-white shadow-lg transition-all duration-300 
+                        {{-- BLUR IF GUEST --}}
+                        @guest blur-md brightness-90 @endguest">
+                @else
+                    <div
+                        class="w-24 h-24 md:w-28 md:h-28 rounded-full bg-indigo-600 flex items-center justify-center text-3xl md:text-4xl text-white font-bold border-4 border-white shadow-lg 
+                        {{-- BLUR IF GUEST --}}
+                        @guest blur-md brightness-90 @endguest">
+                        {{ strtoupper(substr($service->user->name, 0, 1)) }}
+                    </div>
+                @endif
 
-                            {{-- Verified Badge --}}
-                            @if ($service->user->trust_badge ?? false)
-                                <div class="absolute bottom-1 right-1 bg-blue-500 text-white w-7 h-7 flex items-center justify-center rounded-full border-2 border-white shadow-sm"
-                                    title="Verified Student">
-                                    <i class="fas fa-check text-xs"></i>
-                                </div>
-                            @endif
-                        </div>
-
-                        {{-- Right: Info & Stats --}}
-                        <div class="flex-1 w-full text-center md:text-left">
-                            <div class="mb-4">
-                                <h3 class="text-xl font-bold text-slate-900 mb-1">{{ $service->user->name }}</h3>
-                                <div class="flex flex-wrap items-center justify-center md:justify-start gap-2 text-sm">
-                                    <span
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full font-medium bg-indigo-50 text-indigo-700">
-                                        <i class="fa-solid fa-graduation-cap mr-1.5 text-xs"></i>
-                                        {{ $service->user->faculty ?? 'Faculty of Computing' }}
-                                    </span>
-                                    <span class="text-gray-400 hidden sm:inline">•</span>
-                                    <span class="text-gray-500">Member since
-                                        {{ $service->user->created_at->format('M Y') }}</span>
-                                </div>
-                            </div>
-
-                            {{-- Bio Box --}}
-                            <div class="bg-slate-50 rounded-xl p-4 border border-slate-100 text-left relative">
-                                <i
-                                    class="fa-solid fa-quote-left text-slate-200 text-2xl absolute top-3 left-3 -z-0"></i>
-                                <p class="text-gray-600 italic text-sm relative z-10 pl-6">
-                                    "{{ $service->user->bio ?? 'Hi! I am a dedicated student at UPSI looking to help the community. I ensure all tasks are completed with care and punctuality.' }}"
-                                </p>
-                            </div>
-
-                            {{-- Quick Stats Row --}}
-                            <div class="grid grid-cols-2 gap-4 mt-5 pt-5 border-t border-gray-100">
-
-                            </div>
-
-                            <div class="mt-5 text-center md:text-left">
-                                <a href="{{ route('students.profile', $service->user) }}"
-                                    class="text-sm font-bold text-indigo-600 hover:text-indigo-800 hover:underline transition-colors">
-                                    View Full Profile <i class="fa-solid fa-arrow-right ml-1 text-xs"></i>
-                                </a>
-                            </div>
+                {{-- LOCK ICON OVERLAY FOR GUESTS --}}
+                @guest
+                    <div class="absolute inset-0 flex items-center justify-center z-10">
+                        <div class="bg-black/30 p-2 rounded-full">
+                            <i class="fas fa-lock text-white text-lg"></i>
                         </div>
                     </div>
-                </section>
+                @endguest
+            </div>
+
+            {{-- Verified Badge (Only show if logged in, or keep visible but on top of blur) --}}
+            @if ($service->user->trust_badge ?? false)
+                <div class="absolute bottom-1 right-1 bg-blue-500 text-white w-7 h-7 flex items-center justify-center rounded-full border-2 border-white shadow-sm z-20"
+                    title="Verified Student">
+                    <i class="fas fa-check text-xs"></i>
+                </div>
+            @endif
+        </div>
+
+        {{-- Right: Info & Stats --}}
+        <div class="flex-1 w-full text-center md:text-left">
+            <div class="mb-4">
+                <h3 class="text-xl font-bold text-slate-900 mb-1">
+                    {{-- Optional: Mask name for guests if you want extra privacy --}}
+                    @guest
+                        {{ Str::mask($service->user->name, '*', 3) }}
+                    @else
+                        {{ $service->user->name }}
+                    @endguest
+                </h3>
+                <div class="flex flex-wrap items-center justify-center md:justify-start gap-2 text-sm">
+                    <span
+                        class="inline-flex items-center px-2.5 py-0.5 rounded-full font-medium bg-indigo-50 text-indigo-700">
+                        <i class="fa-solid fa-graduation-cap mr-1.5 text-xs"></i>
+                        {{ $service->user->faculty ?? 'Faculty of Computing' }}
+                    </span>
+                    <span class="text-gray-400 hidden sm:inline">•</span>
+                    <span class="text-gray-500">Member since
+                        {{ $service->user->created_at->format('M Y') }}</span>
+                </div>
+            </div>
+
+            {{-- Bio Box --}}
+            <div class="bg-slate-50 rounded-xl p-4 border border-slate-100 text-left relative">
+                <i class="fa-solid fa-quote-left text-slate-200 text-2xl absolute top-3 left-3 -z-0"></i>
+                <p class="text-gray-600 italic text-sm relative z-10 pl-6">
+                    "{{ $service->user->bio ?? 'Hi! I am a dedicated student at UPSI looking to help the community. I ensure all tasks are completed with care and punctuality.' }}"
+                </p>
+            </div>
+
+            {{-- Quick Stats Row --}}
+            <div class="grid grid-cols-2 gap-4 mt-5 pt-5 border-t border-gray-100">
+                {{-- Stats content here --}}
+            </div>
+
+            <div class="mt-5 text-center md:text-left">
+                {{-- 2. LOGIC FOR VIEW PROFILE LINK --}}
+                @auth
+                    {{-- User IS logged in --}}
+                    <a href="{{ route('students.profile', $service->user) }}"
+                        class="text-sm font-bold text-indigo-600 hover:text-indigo-800 hover:underline transition-colors">
+                        View Full Profile <i class="fa-solid fa-arrow-right ml-1 text-xs"></i>
+                    </a>
+                @else
+                    {{-- User is GUEST (Redirect to login) --}}
+                    <a href="{{ route('login') }}" 
+                       onclick="return confirm('Please sign in to view the full profile details.')"
+                        class="text-sm font-bold text-gray-500 hover:text-indigo-600 hover:underline transition-colors cursor-pointer">
+                        <i class="fas fa-lock mr-1 text-xs"></i> Sign in to view profile
+                    </a>
+                @endauth
+            </div>
+        </div>
+    </div>
+</section>
 
                 {{-- Reviews Section --}}
-               {{-- Reviews Section --}}
-<section class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100">
+               <section class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100">
     <div class="flex items-center justify-between mb-6">
         <h2 class="text-xl font-bold text-slate-900">
             Reviews ({{ $reviews->count() }})
         </h2>
-        
+
         {{-- Show Service Rating Summary --}}
-        @if($reviews->count() > 0)
+        @if ($reviews->count() > 0)
             <div class="flex items-center gap-2 bg-yellow-50 px-3 py-1 rounded-lg border border-yellow-100">
                 <i class="fas fa-star text-yellow-500"></i>
                 <span class="font-bold text-slate-800">{{ number_format($service->rating, 1) }}</span>
@@ -238,7 +269,7 @@
         <div class="space-y-6">
             @foreach ($reviews as $review)
                 <div class="border-b border-gray-50 pb-6 last:border-0 last:pb-0">
-                    
+
                     {{-- 1. Client Review --}}
                     <div class="flex items-start gap-3">
                         {{-- Avatar Client --}}
@@ -250,12 +281,21 @@
 
                         <div class="flex-1">
                             <div class="flex justify-between items-start">
-                                <span class="font-bold text-slate-900 text-sm">{{ $review->reviewer->name ?? 'User' }}</span>
+                                <span class="font-bold text-slate-900 text-sm">
+                                    {{-- LOGIC: CENSOR NAME IF NOT SIGNED IN --}}
+                                    @auth
+                                        {{-- User is signed in: Show full name --}}
+                                        {{ $review->reviewer->name ?? 'User' }}
+                                    @else
+                                        {{-- User is NOT signed in: Show First Letter + Stars (e.g. A****) --}}
+                                        {{ substr($review->reviewer->name ?? 'User', 0, 1) . '****' }}
+                                    @endauth
+                                </span>
                                 <span class="text-xs text-gray-400">{{ $review->created_at->diffForHumans() }}</span>
                             </div>
-                            
+
                             <div class="flex text-yellow-400 text-xs my-1">
-                                @for($i=1; $i<=5; $i++)
+                                @for ($i = 1; $i <= 5; $i++)
                                     <i class="{{ $i <= $review->rating ? 'fas' : 'far' }} fa-star"></i>
                                 @endfor
                             </div>
@@ -265,24 +305,23 @@
                     </div>
 
                     {{-- 2. Helper Reply (Display only if reply exists) --}}
-                    @if($review->reply)
+                    @if ($review->reply)
                         <div class="mt-4 ml-2 pl-8 border-l-2 border-indigo-100 relative">
-                            {{-- Visual line connector is handled by border-l --}}
-                            
                             <div class="bg-slate-50 p-4 rounded-r-xl rounded-bl-xl">
                                 <div class="flex items-center gap-2 mb-2">
                                     <span class="text-xs font-bold text-gray-700 flex items-center gap-1">
                                         Reply from seller: {{ $service->user->name }}
-                                        @if($service->user->trust_badge)
+                                        @if ($service->user->trust_badge)
                                             <i class="fas fa-check-circle text-[10px]"></i>
                                         @endif
                                     </span>
-                                    
-                                    @if($review->replied_at)
-                                        <span class="text-[10px] text-gray-400">• {{ \Carbon\Carbon::parse($review->replied_at)->diffForHumans() }}</span>
+
+                                    @if ($review->replied_at)
+                                        <span class="text-[10px] text-gray-400">•
+                                            {{ \Carbon\Carbon::parse($review->replied_at)->diffForHumans() }}</span>
                                     @endif
                                 </div>
-                                
+
                                 <p class="text-sm text-gray-600 italic">"{{ $review->reply }}"</p>
                             </div>
                         </div>

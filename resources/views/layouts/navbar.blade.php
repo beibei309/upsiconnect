@@ -1,4 +1,5 @@
 <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
     /* Custom utility for active link indication */
@@ -24,7 +25,40 @@
     }
 @endphp
 
-<nav x-data="{ mobileMenuOpen: false, userOpen: false }" class="bg-white shadow-sm fixed w-full top-0 z-50 border-b border-gray-100">
+<div class="w-full bg-gray-100 border-b border-gray-200">
+    <div class="max-w-7xl mx-auto h-20 flex items-center justify-between px-4">
+
+        {{-- CENTER LOGO --}}
+        <div class="absolute left-1/2 transform -translate-x-1/2">
+            <img src="{{ asset('images/upsilogo.png') }}" class="h-20" alt="Logo">
+        </div>
+
+        {{-- SOCIAL ICONS RIGHT --}}
+        <div class="ml-auto flex items-center gap-2">
+
+            <a href="https://www.facebook.com/UPSIMalaysia/" target="_blank"
+               class="w-8 h-8 flex items-center justify-center rounded bg-gray-400 hover:bg-blue-600 text-white transition">
+                <i class="fa-brands fa-facebook-f text-sm"></i>
+            </a>
+
+            <a href="https://x.com/UPSI_Malaysia" target="_blank"
+               class="w-8 h-8 flex items-center justify-center rounded bg-gray-400 hover:bg-sky-500 text-white transition">
+                <i class="fa-brands fa-twitter text-sm"></i>
+            </a>
+
+            <a href="https://www.instagram.com/upsi_malaysia" target="_blank"
+               class="w-8 h-8 flex items-center justify-center rounded bg-gray-400 hover:bg-pink-500 text-white transition">
+                <i class="fa-brands fa-instagram text-sm"></i>
+            </a>
+
+        </div>
+    </div>
+</div>
+
+
+<nav x-data="{ mobileMenuOpen: false, userOpen: false }"
+     class="bg-white shadow-sm sticky top-0 w-full z-50 border-b border-gray-100">
+
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16 md:h-20">
 

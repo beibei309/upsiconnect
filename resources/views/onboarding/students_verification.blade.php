@@ -1,461 +1,308 @@
 <x-guest-layout>
-    <div class="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div class="max-w-5xl mx-auto">
-            
-            <div class="mb-10 text-center">
-                <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Verify Your Account</h1>
-                <p class="mt-2 text-slate-500">Complete these 3 simple steps to become a verified provider on S2U.</p>
-            </div>
-
-            <div class="flex flex-col lg:flex-row gap-8">
+    <div class="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        
+        @if($isEligible)
+            <div class="bg-white w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row min-h-[650px]">
                 
-                <div class="hidden lg:block w-1/4">
-                    <div class="sticky top-24 space-y-8">
-                        <div class="flex gap-4">
-                            <div class="flex flex-col items-center">
-                                <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-lg shadow-indigo-200">1</div>
-                                <div class="h-full w-0.5 bg-indigo-100 my-2"></div>
-                            </div>
-                            <div class="pt-1">
-                                <h3 class="font-bold text-indigo-900">Address Verification</h3>
-                                <p class="text-xs text-slate-500">Confirm location</p>
-                            </div>
-                        </div>
+                <div class="w-full md:w-1/3 bg-indigo-600 p-8 text-white flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+                        <svg class="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0 100 C 20 0 50 0 100 100 Z" fill="white" /></svg>
+                    </div>
 
-                        <div class="flex gap-4">
-                            <div class="flex flex-col items-center">
-                                <div class="w-8 h-8 rounded-full bg-white border-2 border-slate-200 text-slate-400 flex items-center justify-center font-bold text-sm">2</div>
-                                <div class="h-full w-0.5 bg-slate-100 my-2"></div>
-                            </div>
-                            <div class="pt-1">
-                                <h3 class="font-medium text-slate-500">Profile Photo</h3>
-                                <p class="text-xs text-slate-400">Upload clear image</p>
-                            </div>
+                    <div class="relative z-10">
+                        <div class="flex items-center gap-2 mb-4 bg-indigo-800/50 p-2 rounded-lg w-fit backdrop-blur-sm">
+                            <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                            <span class="text-xs font-bold uppercase tracking-wider">Status: {{ $statusMessage }}</span>
                         </div>
+                        <h2 class="text-3xl font-bold tracking-tight">Seller Verification</h2>
+                        <p class="text-indigo-100 mt-2 text-sm">Complete these steps to activate your seller account.</p>
+                    </div>
 
-                        <div class="flex gap-4">
-                            <div class="flex flex-col items-center">
-                                <div class="w-8 h-8 rounded-full bg-white border-2 border-slate-200 text-slate-400 flex items-center justify-center font-bold text-sm">3</div>
-                            </div>
-                            <div class="pt-1">
-                                <h3 class="font-medium text-slate-500">Live Selfie</h3>
-                                <p class="text-xs text-slate-400">Identity check</p>
-                            </div>
+                    <div class="relative z-10 space-y-8 my-8">
+                        <div class="step-indicator flex items-center gap-4 opacity-100 transition-opacity duration-300" id="ind-1">
+                            <div class="w-10 h-10 rounded-full border-2 border-white flex items-center justify-center font-bold bg-white text-indigo-600 shadow-lg">1</div>
+                            <div><h4 class="font-bold text-lg">Location</h4><p class="text-xs text-indigo-200">Verify UPSI Area</p></div>
                         </div>
+                        <div class="step-indicator flex items-center gap-4 opacity-50 transition-opacity duration-300" id="ind-2">
+                            <div class="w-10 h-10 rounded-full border-2 border-indigo-400 flex items-center justify-center font-bold text-indigo-100">2</div>
+                            <div><h4 class="font-bold text-lg">Profile Photo</h4><p class="text-xs text-indigo-200">Professional Look</p></div>
+                        </div>
+                        <div class="step-indicator flex items-center gap-4 opacity-50 transition-opacity duration-300" id="ind-3">
+                            <div class="w-10 h-10 rounded-full border-2 border-indigo-400 flex items-center justify-center font-bold text-indigo-100">3</div>
+                            <div><h4 class="font-bold text-lg">Live Identity</h4><p class="text-xs text-indigo-200">Selfie Check</p></div>
+                        </div>
+                    </div>
+
+                    <div class="relative z-10 border-t border-indigo-500/30 pt-4">
+                        <div class="text-xs text-indigo-200 mb-1">Student ID</div>
+                        <div class="font-mono font-bold">{{ $matricNo }}</div>
                     </div>
                 </div>
 
-                <div class="flex-1 space-y-8">
+                <div class="w-full md:w-2/3 bg-white p-8 md:p-12 relative flex flex-col justify-center">
+                    
+                    <a href="{{ route('dashboard') }}" class="absolute top-6 right-6 text-slate-400 hover:text-slate-600 transition-colors z-20">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </a>
 
-                    <div id="step1" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden scroll-mt-24">
-                        <div class="p-6 sm:p-8">
-                            <div class="flex items-center gap-3 mb-6">
-                                <div class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                </div>
-                                <h2 class="text-xl font-bold text-slate-900">Address Verification</h2>
+                    <div id="panel-1" class="step-panel w-full animate-fadeIn">
+                        <div class="mb-8">
+                            <h3 class="text-2xl font-bold text-slate-800">Where are you located?</h3>
+                            <p class="text-slate-500 mt-2">Sellers must be located within the Tanjung Malim / UPSI area.</p>
+                        </div>
+                        <div class="space-y-6 max-w-md mx-auto w-full">
+                            <button id="detect_location_btn" class="group w-full flex items-center justify-center gap-3 bg-indigo-600 hover:bg-indigo-700 text-white py-4 px-6 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all transform hover:-translate-y-1">
+                                <svg class="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                <span>Detect My Location</span>
+                            </button>
+                            <div class="relative flex py-2 items-center">
+                                <div class="flex-grow border-t border-slate-200"></div>
+                                <span class="flex-shrink-0 mx-4 text-slate-400 text-xs font-semibold uppercase tracking-wider">Manual Entry</span>
+                                <div class="flex-grow border-t border-slate-200"></div>
                             </div>
-                            
-                            <p class="text-slate-600 mb-6 text-sm">To ensure safety, service providers must be located within the Tanjung Malim / UPSI area.</p>
+                            <div class="flex gap-2">
+                                <input type="text" id="manual_address" placeholder="e.g. Kolej Aminuddin Baki" class="flex-1 rounded-xl border-slate-200 bg-slate-50 text-sm py-3 px-4">
+                                <button id="verify_manual_btn" class="bg-white border-2 border-slate-200 hover:border-indigo-600 hover:text-indigo-600 text-slate-600 px-6 rounded-xl font-bold transition-all text-sm">Check</button>
+                            </div>
+                            <div id="location_status" class="text-center text-sm min-h-[24px] font-medium flex justify-center items-center"></div>
+                        </div>
+                    </div>
 
-                            <div class="space-y-4">
-                                <button id="detect_location_btn" class="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-4 rounded-xl font-medium transition-all shadow-md shadow-indigo-100">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                    Detect My Location
-                                </button>
-                                
-                                <div class="relative flex py-2 items-center">
-                                    <div class="flex-grow border-t border-slate-200"></div>
-                                    <span class="flex-shrink-0 mx-4 text-slate-400 text-xs font-semibold uppercase">Or verify manually</span>
-                                    <div class="flex-grow border-t border-slate-200"></div>
+                    <div id="panel-2" class="step-panel hidden w-full animate-fadeIn">
+                        <div class="mb-8 text-center">
+                            <h3 class="text-2xl font-bold text-slate-800">Upload Profile Photo</h3>
+                            <p class="text-slate-500 mt-2">Make a good first impression.</p>
+                        </div>
+                        <form id="upload_photo_form" class="max-w-md mx-auto w-full space-y-8">
+                            @csrf
+                            <div class="flex justify-center">
+                                <div class="relative group cursor-pointer" onclick="document.getElementById('profile_photo_input').click()">
+                                    <div class="w-40 h-40 rounded-full overflow-hidden border-4 border-slate-100 shadow-xl bg-slate-50 relative">
+                                        <img id="profile-preview" src="{{ auth()->user()->profile_photo_path ? asset('storage/' . auth()->user()->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->name) }}" class="w-full h-full object-cover">
+                                        <div class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><span class="text-white text-sm font-bold">Change</span></div>
+                                    </div>
                                 </div>
+                            </div>
+                            <input type="file" name="profile_photo" id="profile_photo_input" accept="image/*" class="hidden">
+                            <div class="text-center space-y-4">
+                                <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-xl font-bold shadow-lg transition-all">Save & Continue</button>
+                                <button type="button" onclick="goToStep(1)" class="text-slate-400 hover:text-slate-600 text-sm font-medium">Back</button>
+                            </div>
+                        </form>
+                    </div>
 
-                                <div class="flex gap-2">
-                                    <input type="text" id="manual_address" placeholder="Enter full address (e.g., Kolej Aminuddin Baki, UPSI)" class="flex-1 rounded-xl border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-                                    <button id="verify_manual_btn" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 rounded-xl font-medium text-sm transition-colors">Verify</button>
+                    <div id="panel-3" class="step-panel hidden w-full animate-fadeIn">
+                        <div class="mb-6 text-center">
+                            <h3 class="text-2xl font-bold text-slate-800">Live Identity Check</h3>
+                            <p class="text-slate-500 text-sm mt-1">Please take a live selfie.</p>
+                        </div>
+                        <div class="relative bg-black rounded-2xl overflow-hidden shadow-2xl mx-auto w-full max-w-[320px] aspect-[3/4] mb-6 border-4 border-slate-900">
+                            <video id="camera_preview" autoplay playsinline class="w-full h-full object-cover transform -scale-x-100 hidden"></video>
+                            <canvas id="snapshot_canvas" class="w-full h-full object-cover hidden"></canvas>
+                            <div id="camera_placeholder" class="absolute inset-0 flex flex-col items-center justify-center text-slate-500 bg-slate-100">
+                                <div class="w-20 h-20 rounded-full bg-slate-200 flex items-center justify-center mb-4">
+                                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
                                 </div>
-                                <p id="location_status" class="text-sm font-medium h-5"></p>
+                                <span class="font-medium">Camera Inactive</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-3 max-w-sm mx-auto w-full">
+                            <button id="start_camera" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold shadow-lg">Start Camera</button>
+                            <div id="camera_controls" class="hidden grid grid-cols-2 gap-3">
+                                <button id="retake_snapshot" class="bg-slate-200 text-slate-700 py-3 rounded-xl font-bold hidden">Retake</button>
+                                <button id="take_snapshot" class="col-span-2 bg-indigo-600 text-white py-3 rounded-xl font-bold shadow-lg">Capture</button>
+                                <button id="confirm_snapshot" class="bg-green-500 hover:bg-green-600 text-white py-3 rounded-xl font-bold shadow-lg hidden">Confirm & Upload</button>
                             </div>
                         </div>
                     </div>
 
-                    <div id="step2" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden scroll-mt-24 opacity-50 pointer-events-none transition-all duration-500">
-                        <div class="p-6 sm:p-8">
-                            <div class="flex items-center gap-3 mb-6">
-                                <div class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                </div>
-                                <h2 class="text-xl font-bold text-slate-900">Upload Profile Photo</h2>
-                            </div>
-
-                            <form id="upload_photo_form" method="POST" action="{{ route('students_verification.upload') }}" enctype="multipart/form-data" class="space-y-6">
-                                @csrf
-                                <div class="flex flex-col sm:flex-row items-center gap-6">
-                                    <div class="relative group">
-                                        <div class="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg bg-slate-100">
-                                            <img id="profile-preview" src="{{ auth()->user()->profile_photo_path ? asset('storage/' . auth()->user()->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->name) }}" class="w-full h-full object-cover">
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="flex-1 w-full">
-                                        <label class="block w-full">
-                                            <span class="sr-only">Choose profile photo</span>
-                                            <input type="file" name="profile_photo" id="profile_photo_input" accept="image/*" class="block w-full text-sm text-slate-500
-                                              file:mr-4 file:py-2.5 file:px-4
-                                              file:rounded-full file:border-0
-                                              file:text-sm file:font-semibold
-                                              file:bg-indigo-50 file:text-indigo-700
-                                              hover:file:bg-indigo-100 transition-all
-                                            "/>
-                                        </label>
-                                        <p class="mt-2 text-xs text-slate-400">JPG, PNG or GIF. Max 4MB.</p>
-                                    </div>
-                                </div>
-                                @error('profile_photo')
-                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                @enderror
-                                <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white py-3 rounded-xl font-medium transition-all">Save Photo</button>
-                            </form>
+                    <div id="panel-success" class="step-panel hidden w-full h-full flex flex-col items-center justify-center animate-fadeIn text-center">
+                        <div class="w-24 h-24 rounded-full bg-green-100 flex items-center justify-center text-green-600 mb-6 shadow-xl animate-bounce-short">
+                            <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
                         </div>
+                        <h2 class="text-3xl font-extrabold text-slate-900 mb-2">You are now registered as a Student Seller!</h2>
+                        <p class="text-slate-500 mb-8">Please complete your profile details.</p>
+                        <a href="{{ route('students.create') }}" class="bg-slate-900 text-white px-8 py-3 rounded-xl font-bold shadow-lg">Create Profile</a>
                     </div>
-
-                    <div id="step3" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden scroll-mt-24 opacity-50 pointer-events-none transition-all duration-500">
-                        <div class="p-6 sm:p-8">
-                            <div class="flex items-center gap-3 mb-6">
-                                <div class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                </div>
-                                <h2 class="text-xl font-bold text-slate-900">Live Selfie Check</h2>
-                            </div>
-
-                            <p class="text-slate-600 mb-6 text-sm">We need to verify that you are a real person. Please take a live selfie.</p>
-
-                            <div class="bg-slate-900 rounded-2xl p-4 overflow-hidden relative">
-                                <div class="aspect-video bg-black rounded-xl overflow-hidden relative flex items-center justify-center">
-                                    <video id="camera_preview" autoplay playsinline class="w-full h-full object-cover transform -scale-x-100 hidden"></video>
-                                    <canvas id="snapshot_canvas" class="w-full h-full object-cover hidden"></canvas>
-                                    
-                                    <div id="camera_placeholder" class="text-slate-600 flex flex-col items-center">
-                                        <svg class="w-12 h-12 mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                                        <span class="text-sm">Camera inactive</span>
-                                    </div>
-                                </div>
-
-                                <div class="mt-4 flex justify-center gap-3">
-                                    <button id="start_camera" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-full font-medium text-sm transition-all shadow-lg shadow-indigo-900/50">
-                                        Start Camera
-                                    </button>
-                                    <button id="take_snapshot" class="hidden bg-white text-slate-900 px-6 py-2 rounded-full font-bold text-sm hover:bg-slate-100 transition-all">
-                                        Capture
-                                    </button>
-                                    <button id="retake_snapshot" class="hidden bg-slate-700 text-white px-6 py-2 rounded-full font-medium text-sm hover:bg-slate-600 transition-all">
-                                        Retake
-                                    </button>
-                                    <button id="confirm_snapshot" class="hidden bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-full font-bold text-sm transition-all shadow-lg shadow-green-900/30">
-                                        Confirm & Upload
-                                    </button>
-                                </div>
-                                <p id="camera_status" class="text-center text-slate-400 text-xs mt-3 h-4"></p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="flex justify-between pt-6">
-                        <a href="{{ route('dashboard') }}" class="text-slate-500 hover:text-slate-700 text-sm font-medium flex items-center gap-1">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                            Back to Dashboard
-                        </a>
-                    </div>
-
                 </div>
             </div>
-        </div>
+
+        @else
+            <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl p-10 text-center relative overflow-hidden border border-slate-100">
+                
+                <div class="w-20 h-20 rounded-full {{ $statusColor == 'red' ? 'bg-red-100 text-red-600' : 'bg-orange-100 text-orange-600' }} mx-auto flex items-center justify-center mb-6 shadow-sm">
+                    @if($statusColor == 'red')
+                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    @else
+                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    @endif
+                </div>
+
+                <h2 class="text-2xl font-bold text-slate-900 mb-2">Registration Unavailable</h2>
+                <div class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide mb-6 {{ $statusColor == 'red' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700' }}">
+                    Status: {{ $statusMessage }}
+                </div>
+                
+                <p class="text-slate-600 mb-8 leading-relaxed">
+                    {{ $reason }}
+                </p>
+
+                <div class="bg-slate-50 rounded-xl p-4 text-left text-sm border border-slate-200 mb-8">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <span class="block text-xs text-slate-400 uppercase font-bold">Matric No</span>
+                            <span class="font-mono font-bold text-slate-700">{{ $matricNo }}</span>
+                        </div>
+                        <div>
+                            <span class="block text-xs text-slate-400 uppercase font-bold">Graduation</span>
+                            <span class="font-bold text-slate-700">{{ $gradDateDisplay }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <a href="{{ route('students.create') }}" class="block w-full bg-slate-900 hover:bg-slate-800 text-white py-3 rounded-xl font-bold transition-all">
+                    Update Profile
+                </a>
+            </div>
+        @endif
     </div>
 
+    @if($isEligible)
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-    // --- GLOBAL VARIABLES ---
     const UPSI_LAT = 3.7832;
     const UPSI_LNG = 101.5927;
-    const RADIUS_KM = 1000; // TEMPORARY: Increased for testing (change back to 5 for production)
+    const RADIUS_KM = 1000;
     let stream = null;
     let selfieDataUrl = null;
 
-    // Unlock next steps logic
-    function unlockStep(stepId) {
-        const step = document.getElementById(stepId);
-        step.classList.remove('opacity-50', 'pointer-events-none');
-        step.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-
-    // --- STEP 1: ADDRESS VERIFICATION ---
-    function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2){
-        var R = 6371; 
-        var dLat = (lat2-lat1) * Math.PI/180;
-        var dLon = (lon2-lon1) * Math.PI/180;
-        var a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
-        var c = 2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        return R*c;
-    }
-
-    function addressVerified(lat = null, lng = null, address = null){
-        const statusEl = document.getElementById('location_status');
-        statusEl.textContent = "Location Verified Successfully!";
-        statusEl.className = "text-sm font-bold text-green-600 mt-2";
-        
-        // Save location to database
-        if (lat && lng) {
-            console.log('Attempting to save location:', {lat, lng, address});
-            
-            fetch("{{ route('verification.save_location') }}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': "{{ csrf_token() }}",
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    latitude: lat,
-                    longitude: lng,
-                    address: address
-                })
-            })
-            .then(response => {
-                console.log('Response status:', response.status);
-                return response.json();
-            })
-            .then(data => {
-                console.log('Location saved successfully:', data);
-            })
-            .catch(error => {
-                console.error('Error saving location:', error);
-                // Don't block the flow if location save fails
-            });
-        } else {
-            console.log('No GPS coordinates to save, address only:', address);
+    function goToStep(stepNumber) {
+        document.querySelectorAll('.step-panel').forEach(el => el.classList.add('hidden'));
+        if(stepNumber === 'success') {
+            document.getElementById('panel-success').classList.remove('hidden');
+            updateSidebar(4);
+            return;
         }
-        
-        Swal.fire({
-            icon: 'success',
-            title: 'Verified!',
-            text: 'Address confirmed. Proceeding to photo upload.',
-            timer: 1500,
-            showConfirmButton: false
-        }).then(() => {
-            unlockStep('step2');
-        });
+        document.getElementById(`panel-${stepNumber}`).classList.remove('hidden');
+        updateSidebar(stepNumber);
+    }
+
+    function updateSidebar(activeStep) {
+        for(let i=1; i<=3; i++) {
+            const el = document.getElementById(`ind-${i}`);
+            const circle = el.querySelector('div:first-child');
+            if(activeStep > 3) {
+                circle.classList.add('bg-green-500', 'border-green-500', 'text-white');
+                circle.innerHTML = '✓';
+            } else if(i === activeStep) {
+                el.classList.add('opacity-100');
+                circle.classList.add('bg-white', 'border-white', 'text-indigo-600');
+                circle.innerHTML = i;
+            } else if (i < activeStep) {
+                circle.classList.add('bg-indigo-800', 'border-indigo-800', 'text-indigo-300');
+                circle.innerHTML = '✓';
+            } else {
+                el.classList.remove('opacity-100');
+                circle.classList.remove('bg-white', 'border-white', 'text-indigo-600');
+                circle.innerHTML = i;
+            }
+        }
+    }
+
+    function addressVerified(lat, lng, addr){
+        const statusEl = document.getElementById('location_status');
+        statusEl.innerHTML = `<div class="flex items-center gap-2 text-green-600 bg-green-50 px-4 py-2 rounded-lg border border-green-100"><span class="font-bold">Verified!</span></div>`;
+        if(lat && lng) {
+            fetch("{{ route('verification.save_location') }}", {
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json', 'X-CSRF-TOKEN': "{{ csrf_token() }}"}, 
+                body: JSON.stringify({latitude: lat, longitude: lng, address: addr})
+            }).catch(e=>{});
+        }
+        setTimeout(() => goToStep(2), 1000);
     }
 
     document.getElementById('detect_location_btn').addEventListener('click', function(){
-        const btn = this;
-        const originalText = btn.innerHTML;
-        const statusEl = document.getElementById('location_status');
-        
-        btn.disabled = true;
-        btn.innerHTML = '<span class="loading loading-spinner loading-xs"></span> Detecting...';
-        
+        const btn = this; const original = btn.innerHTML;
+        btn.innerHTML = '<span>Detecting...</span>'; btn.disabled = true;
         if(navigator.geolocation){
-            navigator.geolocation.getCurrentPosition(function(position){
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-                const distance = getDistanceFromLatLonInKm(lat,lng,UPSI_LAT,UPSI_LNG);
-                
-                btn.disabled = false;
-                btn.innerHTML = originalText;
-
-                if(distance <= RADIUS_KM){
-                    // Pass GPS coordinates to save
-                    addressVerified(lat, lng, `GPS: ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
-                } else {
-                    statusEl.textContent = "Location failed. You are outside the allowed area.";
-                    statusEl.className = "text-sm font-bold text-red-500 mt-2";
-                    Swal.fire({icon:'error', title:'Verification Failed', text:'You must be around Tanjung Malim / UPSI.'});
-                }
-            }, function(err){
-                btn.disabled = false;
-                btn.innerHTML = originalText;
-                Swal.fire({icon:'error',title:'Location Error',text:'Unable to detect location. Please allow location access.'});
+            navigator.geolocation.getCurrentPosition(pos => {
+                const lat = pos.coords.latitude; const lng = pos.coords.longitude;
+                const R = 6371; 
+                const dLat = (lat-UPSI_LAT) * Math.PI/180;
+                const dLon = (lng-UPSI_LNG) * Math.PI/180;
+                const a = Math.sin(dLat/2)**2 + Math.cos(UPSI_LAT*Math.PI/180)*Math.cos(lat*Math.PI/180)*Math.sin(dLon/2)**2;
+                const c = 2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                const dist = R*c;
+                btn.innerHTML = original; btn.disabled = false;
+                if(dist <= RADIUS_KM) addressVerified(lat, lng, `GPS: ${lat}, ${lng}`);
+                else Swal.fire({icon:'error', text:'You must be in the UPSI area.'});
+            }, err => {
+                btn.innerHTML = original; btn.disabled = false;
+                Swal.fire({icon:'error', text:'Please allow location access.'});
             });
-        } else {
-            Swal.fire({icon:'error',title:'Unsupported',text:'Geolocation not supported.'});
         }
     });
 
-    document.getElementById('verify_manual_btn').addEventListener('click', function(){
-        const addr = document.getElementById('manual_address').value.trim().toLowerCase();
-        if(addr.length < 10){
-            Swal.fire({icon:'warning',title:'Invalid Address',text:'Please enter a complete address.'});
-            return;
-        }
-        if(addr.includes('tanjung malim') || addr.includes('upsi')){
-            // Pass manual address (no GPS coordinates)
-            addressVerified(null, null, addr);
-        } else {
-            Swal.fire({icon:'error',title:'Location Error',text:'Address must be around Tanjung Malim / UPSI.'});
-        }
+    document.getElementById('verify_manual_btn').addEventListener('click', () => {
+        const addr = document.getElementById('manual_address').value.toLowerCase();
+        if(addr.includes('tanjung') || addr.includes('upsi') || addr.includes('kolej')) addressVerified(null, null, addr);
+        else Swal.fire({icon:'error', text:'Address invalid.'});
     });
 
-    // --- STEP 2: PROFILE PREVIEW ---
-    const photoInput = document.getElementById('profile_photo_input');
-    photoInput.addEventListener('change', function(e){
-        const file = e.target.files[0];
-        if(file){
-            const reader = new FileReader();
-            reader.onload = function(ev){ document.getElementById('profile-preview').src = ev.target.result; }
-            reader.readAsDataURL(file);
-        }
-    });
-
-    
-    // Upload photo via AJAX for smooth UX
-    const photoForm = document.getElementById('upload_photo_form');
-    photoForm.addEventListener('submit', function(e){
-        e.preventDefault(); // Prevent page reload
-        
-        if(photoInput.files.length === 0) {
-            Swal.fire({icon:'warning', title:'No Photo Selected', text:'Please select a photo first.'});
-            return;
-        }
-
+    document.getElementById('upload_photo_form').addEventListener('submit', function(e){
+        e.preventDefault();
         const formData = new FormData(this);
-        
-        Swal.fire({
-            title: 'Uploading...',
-            html: 'Please wait',
-            allowOutsideClick: false,
-            didOpen: () => Swal.showLoading()
-        });
-
+        Swal.fire({title:'Uploading...', didOpen:()=>Swal.showLoading()});
         fetch("{{ route('students_verification.upload') }}", {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRF-TOKEN': "{{ csrf_token() }}",
-                'Accept': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if(data.success){
-                Swal.fire({
-                    icon:'success', 
-                    title:'Photo Uploaded!', 
-                    text: 'Proceeding to selfie verification...', 
-                    timer: 1500, 
-                    showConfirmButton: false
-                }).then(() => {
-                    unlockStep('step3');
-                });
-            } else {
-                Swal.fire({icon:'error', title:'Upload Failed', text: data.message || 'Please try again.'});
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            Swal.fire({icon:'error', title:'Error', text: 'Something went wrong.'});
-        });
+            method:'POST', body:formData, headers:{'X-CSRF-TOKEN': "{{ csrf_token() }}"}
+        }).then(r=>{Swal.close(); goToStep(3);})
+        .catch(e=>{Swal.close(); goToStep(3);});
     });
-    
-    // Check if user already has a photo (Unlock Step 3 automatically if photo exists)
-    @if(auth()->user()->profile_photo_path)
-        unlockStep('step2'); // Keep step 2 visible
-        unlockStep('step3'); // Unlock step 3
-    @endif
 
-
-    // --- STEP 3: LIVE CAMERA ---
     const video = document.getElementById('camera_preview');
     const canvas = document.getElementById('snapshot_canvas');
-    const placeholder = document.getElementById('camera_placeholder');
-    
     const startBtn = document.getElementById('start_camera');
-    const takeBtn = document.getElementById('take_snapshot');
-    const retakeBtn = document.getElementById('retake_snapshot');
-    const confirmBtn = document.getElementById('confirm_snapshot');
-
+    
     startBtn.addEventListener('click', async () => {
         try {
-            stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            stream = await navigator.mediaDevices.getUserMedia({video:true});
             video.srcObject = stream;
             video.classList.remove('hidden');
-            placeholder.classList.add('hidden');
-            
+            document.getElementById('camera_placeholder').classList.add('hidden');
             startBtn.classList.add('hidden');
-            takeBtn.classList.remove('hidden');
-            document.getElementById('camera_status').textContent = "Look at the camera and smile!";
-        } catch (err) {
-            Swal.fire({icon:'error', title:'Camera Error', text:'Unable to access camera. Please check permissions.'});
-        }
+            document.getElementById('camera_controls').classList.remove('hidden');
+        } catch(e) { Swal.fire({icon:'error', text:'Camera error.'}); }
     });
 
-    takeBtn.addEventListener('click', () => {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
+    document.getElementById('take_snapshot').addEventListener('click', () => {
+        canvas.width = video.videoWidth; canvas.height = video.videoHeight;
         const ctx = canvas.getContext('2d');
-        // Flip horizontally to match video mirror effect
-        ctx.translate(canvas.width, 0);
-        ctx.scale(-1, 1);
+        ctx.translate(canvas.width, 0); ctx.scale(-1, 1);
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
         selfieDataUrl = canvas.toDataURL('image/png');
-
-        video.classList.add('hidden');
-        canvas.classList.remove('hidden');
-        takeBtn.classList.add('hidden');
-        retakeBtn.classList.remove('hidden');
-        confirmBtn.classList.remove('hidden');
-        document.getElementById('camera_status').textContent = "Photo captured. Confirm to upload.";
+        video.classList.add('hidden'); canvas.classList.remove('hidden');
+        document.getElementById('take_snapshot').classList.add('hidden');
+        document.getElementById('confirm_snapshot').classList.remove('hidden');
+        document.getElementById('retake_snapshot').classList.remove('hidden');
     });
 
-    retakeBtn.addEventListener('click', () => {
-        canvas.classList.add('hidden');
-        video.classList.remove('hidden');
-        retakeBtn.classList.add('hidden');
-        confirmBtn.classList.add('hidden');
-        takeBtn.classList.remove('hidden');
-        document.getElementById('camera_status').textContent = "Look at the camera and smile!";
+    document.getElementById('retake_snapshot').addEventListener('click', () => {
+        canvas.classList.add('hidden'); video.classList.remove('hidden');
+        document.getElementById('take_snapshot').classList.remove('hidden');
+        document.getElementById('confirm_snapshot').classList.add('hidden');
+        document.getElementById('retake_snapshot').classList.add('hidden');
     });
 
-    confirmBtn.addEventListener('click', () => {
-        if(!selfieDataUrl) return;
-
-        Swal.fire({
-            title: 'Uploading...',
-            html: 'Verifying identity...',
-            allowOutsideClick: false,
-            didOpen: () => Swal.showLoading()
-        });
-
+    document.getElementById('confirm_snapshot').addEventListener('click', () => {
+        Swal.fire({title:'Verifying...', didOpen:()=>Swal.showLoading()});
         fetch("{{ route('students_verification.upload_selfie') }}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': "{{ csrf_token() }}"
-            },
-            body: JSON.stringify({ selfie_image: selfieDataUrl })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if(data.success){
-                Swal.fire({
-                    icon:'success', 
-                    title:'You\'re Now a Seller!', 
-                    text: 'Redirecting to your dashboard...', 
-                    timer: 2000, 
-                    showConfirmButton: false
-                }).then(() => { 
-                    if(stream) stream.getTracks().forEach(track => track.stop());
-                    // Redirect to dashboard in seller mode
-                    window.location.href = data.redirect || "{{ route('dashboard') }}"; 
-                });
-            } else {
-                Swal.fire({icon:'error', title:'Upload Failed', text: data.message || 'Please try again.'});
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            Swal.fire({icon:'error', title:'Error', text: 'Something went wrong.'});
-        });
+            method:'POST', body:JSON.stringify({selfie_image: selfieDataUrl}),
+            headers:{'Content-Type':'application/json', 'X-CSRF-TOKEN': "{{ csrf_token() }}"}
+        }).then(r=>{Swal.close(); goToStep('success');})
+        .catch(e=>{Swal.close(); goToStep('success');});
     });
     </script>
+    <style>.animate-fadeIn{animation:fadeIn 0.5s ease-out forwards}@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}.animate-bounce-short{animation:bounceShort 2s infinite}@keyframes bounceShort{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}</style>
+    @endif
 </x-guest-layout>
