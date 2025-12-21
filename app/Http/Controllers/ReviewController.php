@@ -39,7 +39,6 @@ class ReviewController extends Controller
                 $revieweeId = $conversation->student_id;
             }
         } elseif ($request->service_request_id) {
-            // New service request-based review logic
             $serviceRequest = ServiceRequest::findOrFail($request->service_request_id);
             
             // Ensure the user is part of this service request
@@ -52,6 +51,8 @@ class ReviewController extends Controller
                 return response()->json(['error' => 'Service request must be completed before reviewing'], 400);
             }
             
+            $studentServiceId = $serviceRequest->student_service_id;
+
             // Determine who is being reviewed
             if ($serviceRequest->requester_id == auth()->id()) {
                 $revieweeId = $serviceRequest->provider_id;
@@ -101,6 +102,7 @@ class ReviewController extends Controller
             'conversation_id' => $request->conversation_id,
             'service_request_id' => $request->service_request_id,
             'service_application_id' => $request->service_application_id,
+            'student_service_id' => $studentServiceId ?? null, 
             'reviewer_id' => auth()->id(),
             'reviewee_id' => $revieweeId,
             'rating' => $request->rating,

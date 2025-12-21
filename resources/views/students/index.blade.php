@@ -1,456 +1,527 @@
 @extends('layouts.helper')
 
 @section('content')
+    {{-- Google Fonts for a more premium look --}}
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Welcome Header -->
-        <br>
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">Welcome back, {{ Auth::user()->name }}!</h1>
-            @php
-                $roleMessage = match (Auth::user()->role) {
-                    'helper' => 'Manage your services and connect with the community',
-                    'community' => 'Discover talented UPSI students and their services',
-                    default => 'Manage your profile and platform activities',
-                };
-            @endphp
-            <p class="text-gray-600 mt-2">{{ $roleMessage }}</p>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+    </style>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" x-data="availabilityComponent()">
+
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Dashboard</h1>
+                <p class="text-slate-500 mt-1">Welcome back, {{ Auth::user()->name }}! Here's what's happening today.</p>
+            </div>
+
+            <div class="bg-white p-2 pr-4 rounded-full shadow-sm border border-gray-200 flex items-center gap-3">
+                <div class="h-10 w-10 rounded-full flex items-center justify-center transition-colors duration-300"
+                    :class="isAvailable ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'">
+                    <i class="fa-solid fa-power-off text-lg"></i>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Status</span>
+                    <span class="text-sm font-bold" :class="isAvailable ? 'text-green-600' : 'text-red-600'"
+                        x-text="isAvailable ? 'Accepting Orders' : 'Currently Unavailable'">
+                    </span>
+                </div>
+                <div class="h-8 w-px bg-gray-200 mx-2"></div>
+                <button @click="openModal()"
+                    class="text-sm font-semibold text-indigo-600 hover:text-indigo-800 hover:underline">
+                    Settings
+                </button>
+            </div>
         </div>
 
-        @if (Auth::user()->role === 'helper')
-            <!-- HELPER DASHBOARD: Quick Stats -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <!-- Availability Status -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <div class="flex items-center justify-between">
-                        <div
-                            class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 h-full flex flex-col justify-between">
-                            <div x-data="availabilityComponent()">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div
+                class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between group hover:border-indigo-100 transition-all">
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Active Services</p>
+                    <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ Auth::user()->studentServices()->count() }}</h3>
+                </div>
+                <div
+                    class="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                    <i class="fa-solid fa-briefcase text-xl"></i>
+                </div>
+            </div>
 
-                                <div class="mb-4">
-                                    <h3 class="text-lg font-bold text-gray-900 mb-4">Availability</h3>
+            <div
+                class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between group hover:border-orange-100 transition-all">
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Pending Requests</p>
+                    <h3 class="text-2xl font-bold text-slate-900 mt-1">
+                        {{ Auth::user()->chatRequestsReceived()->where('status', 'pending')->count() }}</h3>
+                </div>
+                <div
+                    class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center text-orange-600 group-hover:bg-orange-500 group-hover:text-white transition-colors">
+                    <i class="fa-regular fa-comment-dots text-xl"></i>
+                </div>
+            </div>
 
-                                    <div class="flex items-start gap-3 text-sm text-gray-600">
-                                        <i class="fa-regular fa-calendar text-lg mt-0.5"></i>
-                                        <div>
-                                            <p class="font-medium text-gray-900 mb-1">Scheduled unavailability:</p>
+            <div
+                class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between group hover:border-emerald-100 transition-all">
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Total Revenue</p>
+                    <h3 class="text-2xl font-bold text-slate-900 mt-1">RM{{ number_format(array_sum($sales ?? []), 2) }}
+                    </h3>
+                </div>
+                <div
+                    class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                    <i class="fa-solid fa-coins text-xl"></i>
+                </div>
+            </div>
 
-                                            <template x-if="!isAvailable && startDate && endDate">
-                                                <p class="text-gray-700 font-medium">
-                                                    From <span x-text="formatDate(startDate)"></span> to <span
-                                                        x-text="formatDate(endDate)"></span>
-                                                </p>
-                                            </template>
-
-                                            <template x-if="isAvailable">
-                                                <p class="text-gray-500 italic">You are currently available for new orders.
-                                                </p>
-                                            </template>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <button @click="openModal()"
-                                    class="w-full mt-4 py-2 px-4 bg-white border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors shadow-sm text-center">
-                                    Edit
-                                </button>
-
-                                <div x-show="showModal" class="fixed inset-0 flex items-center justify-center z-50 px-4"
-                                    style="display: none;">
-
-                                    <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
-                                        @click="closeModal()"></div>
-
-                                    <div
-                                        class="bg-white rounded-xl shadow-xl w-full max-w-md z-10 overflow-hidden transform transition-all">
-
-                                        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-                                            <h2 class="text-xl font-bold text-gray-900">Edit your availability</h2>
-                                            <button @click="closeModal()" class="text-gray-400 hover:text-gray-600">
-                                                <i class="fa-solid fa-times text-lg"></i>
-                                            </button>
-                                        </div>
-
-                                        <div class="p-6 space-y-6">
-                                            <p class="text-gray-600 text-sm">
-                                                While unavailable, your Service are hidden and you will not receive new orders.
-                                            </p>
-
-                                            <div class="grid grid-cols-2 gap-4">
-                                                <div>
-                                                    <label class="block text-sm font-medium text-gray-700 mb-1">First
-                                                        day</label>
-                                                    <input type="date" x-model="startDate"
-                                                        class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-                                                </div>
-                                                <div>
-                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Last
-                                                        day</label>
-                                                    <input type="date" x-model="endDate"
-                                                        class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-                                                </div>
-                                            </div>
-
-                                            <div class="flex items-center justify-between pt-4 border-t border-gray-100">
-                                                <span class="text-sm font-medium text-gray-900">I am currently
-                                                    available</span>
-
-                                                <label class="relative inline-flex items-center cursor-pointer">
-                                                    <input type="checkbox" class="sr-only peer" x-model="isAvailable">
-                                                    <div
-                                                        class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-indigo-100 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600">
-                                                    </div>
-                                                </label>
-                                            </div>
-                                        </div>
-
-                                        <div class="px-6 py-4 bg-gray-50 flex justify-between items-center">
-                                            <button @click="deleteDates()" x-show="!isAvailable"
-                                                class="text-red-600 text-sm font-medium hover:underline">
-                                                Delete scheduled dates
-                                            </button>
-                                            <span x-show="isAvailable"></span> <button @click="saveChanges()"
-                                                class="px-6 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition shadow-sm">
-                                                Save changes
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </div>
-
-                        <script>
-                            function availabilityComponent() {
-                                return {
-                                    isAvailable: {{ Auth::user()->is_available ? 'true' : 'false' }},
-                                    showModal: false,
-                                    // Ambil tarikh dari database jika ada, format YYYY-MM-DD
-                                    startDate: '{{ Auth::user()->unavailable_start_date ?? '' }}',
-                                    endDate: '{{ Auth::user()->unavailable_end_date ?? '' }}',
-
-                                    openModal() {
-                                        this.showModal = true;
-                                    },
-
-                                    closeModal() {
-                                        this.showModal = false;
-                                    },
-
-                                    // Fungsi format tarikh (Contoh: Dec 10, 2025)
-                                    formatDate(dateString) {
-                                        if (!dateString) return '';
-                                        const options = {
-                                            year: 'numeric',
-                                            month: 'short',
-                                            day: 'numeric'
-                                        };
-                                        return new Date(dateString).toLocaleDateString('en-US', options);
-                                    },
-
-                                    deleteDates() {
-                                        this.startDate = '';
-                                        this.endDate = '';
-                                        this.isAvailable = true;
-                                        // Opsional: Terus save atau biar user tekan Save Changes
-                                    },
-
-                                   saveChanges() {
-    let finalStartDate = this.startDate;
-    let finalEndDate = this.endDate;
-
-    // --- 1. Client-Side Validation and Data Prep ---
-    
-    if (this.isAvailable) {
-        finalStartDate = null;
-        finalEndDate = null;
-    } else {
-        if (!finalStartDate || !finalEndDate || finalStartDate === '' || finalEndDate === '') {
-            // Use SweetAlert for validation error
-            Swal.fire({
-                icon: 'warning',
-                title: 'Date Required',
-                text: 'Please select both a start date and an end date for your unavailability.',
-                confirmButtonColor: '#3085d6'
-            });
-            return;
-        }
-        if (new Date(finalStartDate) > new Date(finalEndDate)) {
-             Swal.fire({
-                icon: 'error',
-                title: 'Invalid Dates',
-                text: 'Start date cannot be after the end date.',
-                confirmButtonColor: '#d33'
-            });
-            return;
-        }
-    }
-
-    // --- 2. AJAX Fetch Request ---
-    fetch('/availability/update-settings', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content'),
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-            is_available: this.isAvailable, 
-            start_date: finalStartDate, 
-            end_date: finalEndDate
-        })
-    })
-    .then(res => {
-        if (!res.ok) {
-            return res.json().then(errorData => { throw new Error(errorData.message || 'Server error.'); });
-        }
-        return res.json();
-    })
-    .then(data => {
-        // Success: Update local Alpine state with confirmed saved data
-        this.isAvailable = data.is_available; 
-        this.startDate = data.start_date || ''; 
-        this.endDate = data.end_date || '';
-        
-        this.closeModal();
-        
-        // Use SweetAlert for success notification
-        Swal.fire({
-            icon: 'success',
-            title: 'Updated!',
-            text: 'Your availability has been set successfully.',
-            showConfirmButton: false,
-            timer: 2000
-        });
-    })
-    .catch(err => {
-        console.error('Save Error:', err);
-        // Use SweetAlert for general error display
-        Swal.fire({
-            icon: 'error',
-            title: 'Oops...',
-            text: 'Failed to save changes: ' + err.message,
-            confirmButtonColor: '#d33'
-        });
-    });
-}
-                                }
-                            }
-                        </script>
-
-                    </div>
-                    <div class="mt-4">
-                        <span
-                            class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {{ Auth::user()->is_available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                            <div
-                                class="w-2 h-2 rounded-full {{ Auth::user()->is_available ? 'bg-green-400' : 'bg-red-400' }} mr-2">
-                            </div>
-                            {{ Auth::user()->is_available ? 'Available' : 'Busy' }}
-                        </span>
+            <div
+                class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between group hover:border-yellow-100 transition-all">
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Average Rating</p>
+                    <div class="flex items-center gap-2 mt-1">
+                        <h3 class="text-2xl font-bold text-slate-900">4.9</h3>
+                        <i class="fa-solid fa-star text-yellow-400 text-sm"></i>
                     </div>
                 </div>
-
-                <!-- My Services -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-900">My Services</h3>
-                            <p class="text-sm text-gray-600 mt-1">Services you're offering</p>
-                        </div>
-                        <div class="text-2xl font-bold text-indigo-600">{{ Auth::user()->studentServices()->count() }}</div>
-                    </div>
-                    <div class="mt-4">
-                        <a href="{{ route('services.manage') }}"
-                            class="text-sm text-indigo-600 hover:text-indigo-500 font-medium">
-                            Manage Services →
-                        </a>
-                    </div>
+                <div
+                    class="w-12 h-12 bg-yellow-50 rounded-xl flex items-center justify-center text-yellow-600 group-hover:bg-yellow-500 group-hover:text-white transition-colors">
+                    <i class="fa-solid fa-trophy text-xl"></i>
                 </div>
+            </div>
+        </div>
 
-                <!-- Recent Activity -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <div class="flex items-center justify-between">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 h-full">
+                    <div class="flex items-center justify-between mb-6">
                         <div>
-                            <h3 class="text-lg font-semibold text-gray-900">Recent Activity</h3>
-                            <p class="text-sm text-gray-600 mt-1">Your latest interactions</p>
+                            <h2 class="text-lg font-bold text-slate-900">Performance Overview</h2>
+                            <p class="text-sm text-gray-500">Track your earnings and order volume</p>
                         </div>
-                        <div class="text-2xl font-bold text-green-600">
-                            {{ Auth::user()->chatRequestsReceived()->where('status', 'pending')->count() }}</div>
+                        <form method="GET">
+                            <select name="range" onchange="this.form.submit()"
+                                class="bg-gray-50 border-0 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2.5 font-medium">
+                                <option value="30days" {{ ($range ?? '30days') === '30days' ? 'selected' : '' }}>Last 30
+                                    Days</option>
+                                <option value="3months" {{ ($range ?? '') === '3months' ? 'selected' : '' }}>Last 3 Months
+                                </option>
+                                <option value="yearly" {{ ($range ?? '') === 'yearly' ? 'selected' : '' }}>Yearly</option>
+                            </select>
+                        </form>
                     </div>
-                    <div class="mt-4">
-                        <p class="text-sm text-gray-500">Pending chat requests</p>
+
+                    <div class="relative h-[300px] w-full">
+                        <canvas id="overviewChart"></canvas>
                     </div>
                 </div>
             </div>
 
-            <!-- Helper Quick Actions -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                @php
-                    $actions = [
-                        [
-                            'title' => 'Add Service',
-                            'desc' => 'Create a new service',
-                            'icon' => 'M12 6v6m0 0v6m0-6h6m-6 0H6',
-                            'bg' => 'bg-indigo-100',
-                            'hover' => 'group-hover:bg-indigo-200',
-                            'route' => route('services.create'),
-                        ],
-                        [
-                            'title' => 'Manage Services',
-                            'desc' => 'Edit existing services',
-                            'icon' =>
-                                'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10',
-                            'bg' => 'bg-green-100',
-                            'hover' => 'group-hover:bg-green-200',
-                            'route' => route('services.manage'),
-                        ],
-                        [
-                            'title' => 'Messages',
-                            'desc' => 'Chat with community',
-                            'icon' =>
-                                'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z',
-                            'bg' => 'bg-blue-100',
-                            'hover' => 'group-hover:bg-blue-200',
-                            'route' => route('chat.index'),
-                        ],
-                        [
-                            'title' => 'My Profile',
-                            'desc' => 'Update information',
-                            'icon' => 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
-                            'bg' => 'bg-yellow-100',
-                            'hover' => 'group-hover:bg-yellow-200',
-                            'route' => route('students.edit'),
-                        ],
-                    ];
-                @endphp
+            <div class="lg:col-span-1 space-y-6">
 
-                @foreach ($actions as $action)
-                    <a href="{{ $action['route'] }}"
-                        class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow group">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                    <h2 class="text-lg font-bold text-slate-900 mb-4">Quick Actions</h2>
+                    <div class="space-y-3">
+                        @php
+                            $actions = [
+                                [
+                                    'title' => 'Create New Service',
+                                    'icon' => 'fa-plus',
+                                    'color' => 'text-indigo-600',
+                                    'bg' => 'bg-indigo-50',
+                                    'route' => route('services.create'),
+                                ],
+                                [
+                                    'title' => 'Manage Services',
+                                    'icon' => 'fa-list-check',
+                                    'color' => 'text-blue-600',
+                                    'bg' => 'bg-blue-50',
+                                    'route' => route('services.manage'),
+                                ],
+                                [
+                                    'title' => 'Message Requests',
+                                    'icon' => 'fa-envelope',
+                                    'color' => 'text-purple-600',
+                                    'bg' => 'bg-purple-50',
+                                    'route' => route('chat.index'),
+                                ],
+                                [
+                                    'title' => 'Edit Profile',
+                                    'icon' => 'fa-user-pen',
+                                    'color' => 'text-gray-600',
+                                    'bg' => 'bg-gray-50',
+                                    'route' => route('students.edit'),
+                                ],
+                            ];
+                        @endphp
+
+                        @foreach ($actions as $action)
+                            <a href="{{ $action['route'] }}"
+                                class="flex items-center p-3 rounded-xl hover:bg-gray-50 border border-transparent hover:border-gray-200 transition-all group">
                                 <div
-                                    class="w-10 h-10 {{ $action['bg'] }} rounded-lg flex items-center justify-center {{ $action['hover'] }} transition-colors">
-                                    <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="{{ $action['icon'] }}"></path>
-                                    </svg>
+                                    class="w-10 h-10 {{ $action['bg'] }} {{ $action['color'] }} rounded-lg flex items-center justify-center mr-3 group-hover:scale-110 transition-transform">
+                                    <i class="fa-solid {{ $action['icon'] }}"></i>
                                 </div>
-                            </div>
-                            <div class="ml-4">
-                                <h3 class="text-sm font-medium text-gray-900">{{ $action['title'] }}</h3>
-                                <p class="text-sm text-gray-500">{{ $action['desc'] }}</p>
-                            </div>
+                                <span
+                                    class="font-medium text-gray-700 group-hover:text-gray-900">{{ $action['title'] }}</span>
+                                <i
+                                    class="fa-solid fa-chevron-right ml-auto text-gray-300 group-hover:text-gray-500 text-xs"></i>
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+
+                <div x-show="!isAvailable && startDate && endDate" x-cloak
+                    class="bg-amber-50 rounded-2xl p-6 border border-amber-100">
+                    <div class="flex items-start gap-3">
+                        <i class="fa-regular fa-calendar-xmark text-amber-600 text-xl mt-1"></i>
+                        <div>
+                            <h3 class="font-bold text-amber-900">Scheduled Time Off</h3>
+                            <p class="text-sm text-amber-700 mt-1">
+                                You are set to be unavailable from
+                                <span class="font-bold" x-text="formatDate(startDate)"></span> to
+                                <span class="font-bold" x-text="formatDate(endDate)"></span>.
+                            </p>
                         </div>
-                    </a>
-                @endforeach
-            </div>
-        @endif
-
-        <!-- Dropdown range -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mt-4">
-
-            <div class="flex items-center justify-between mb-4">
-
-                <h2 class="text-xl font-semibold text-gray-900">Overview</h2>
-
-                <form method="GET">
-                    <select name="range" onchange="this.form.submit()"
-                        class="border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-custom-teal focus:border-custom-teal">
-                        <option value="30days" {{ ($range ?? '30days') === '30days' ? 'selected' : '' }}>Last 30 days
-                        </option>
-                        <option value="3months" {{ ($range ?? '') === '3months' ? 'selected' : '' }}>Last 3 months
-                        </option>
-                        <option value="yearly" {{ ($range ?? '') === 'yearly' ? 'selected' : '' }}>Yearly</option>
-                    </select>
-                </form>
-
-            </div>
-
-            <div style="width: 100%; height: 260px;">
-                <canvas id="overviewChart"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
 
 
+        <div x-show="showModal" class="fixed inset-0 flex items-center justify-center z-50 px-4" style="display: none;"
+            x-cloak>
+            <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" @click="closeModal()"></div>
 
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script>
-            const labels = @json($labels ?? []);
-            const sales = @json($sales ?? []);
-            const cancelled = @json($cancelled ?? []);
-            const completed = @json($completedDaily ?? []);
-            const newOrders = @json($newOrders ?? []);
+            <div
+                class="bg-white rounded-2xl shadow-2xl w-full max-w-md z-10 overflow-hidden transform transition-all scale-100">
+                <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                    <h2 class="text-lg font-bold text-gray-900">Availability Settings</h2>
+                    <button @click="closeModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <i class="fa-solid fa-times text-lg"></i>
+                    </button>
+                </div>
 
-            const ctx = document.getElementById('overviewChart').getContext('2d');
+                <div class="p-6 space-y-6">
+                    <div class="flex items-center justify-between p-4 bg-indigo-50 rounded-xl border border-indigo-100">
+                        <div>
+                            <span class="block text-sm font-bold text-indigo-900">Accepting Orders</span>
+                            <span class="text-xs text-indigo-700">Toggle to pause all services</span>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" class="sr-only peer" x-model="isAvailable">
+                            <div
+                                class="w-11 h-6 bg-gray-300 rounded-full peer peer-focus:ring-4 peer-focus:ring-indigo-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600">
+                            </div>
+                        </label>
+                    </div>
 
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                            label: 'Sales ($)',
-                            data: sales,
-                            borderWidth: 2,
-                            borderColor: '#5ADBE8',
-                            pointBackgroundColor: '#5ADBE8',
-                            fill: false,
-                            tension: 0.3
-                        },
-                        {
-                            label: 'Cancelled ($)',
-                            data: cancelled,
-                            borderWidth: 2,
-                            borderColor: '#B0B0B0',
-                            pointBackgroundColor: '#B0B0B0',
-                            fill: false,
-                            tension: 0.3
-                        },
-                        {
-                            label: 'Completed',
-                            data: completed,
-                            borderWidth: 2,
-                            borderColor: '#0A1A5C',
-                            pointBackgroundColor: '#0A1A5C',
-                            fill: false,
-                            tension: 0.3
-                        },
-                        {
-                            label: 'New Orders',
-                            data: newOrders,
-                            borderWidth: 2,
-                            borderColor: '#2ECC71',
-                            pointBackgroundColor: '#2ECC71',
-                            fill: false,
-                            tension: 0.3
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false
-                        },
-                        legend: {
-                            labels: {
-                                usePointStyle: true
+                    <div x-show="!isAvailable" x-transition class="space-y-4">
+                        <p class="text-sm text-gray-500">Please select the dates you will be away. Your services will be
+                            hidden during this period.</p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Start Date</label>
+                                <input type="date" x-model="startDate"
+                                    class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-2.5">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase text-gray-500 mb-1">End Date</label>
+                                <input type="date" x-model="endDate"
+                                    class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-2.5">
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 pt-2">
+                            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider mr-1">Quick
+                                Add:</span>
+                            <button @click="addDuration(7, 0)"
+                                class="px-3 py-1.5 bg-gray-100 hover:bg-indigo-50 text-gray-600 hover:text-indigo-600 rounded-lg text-xs font-medium transition border border-gray-200 hover:border-indigo-200">
+                                +1 Week
+                            </button>
+                            <button @click="addDuration(0, 1)"
+                                class="px-3 py-1.5 bg-gray-100 hover:bg-indigo-50 text-gray-600 hover:text-indigo-600 rounded-lg text-xs font-medium transition border border-gray-200 hover:border-indigo-200">
+                                +1 Month
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="px-6 py-4 bg-gray-50 flex justify-between items-center">
+                    <button @click="deleteDates()" x-show="!isAvailable"
+                        class="text-red-600 text-sm font-semibold hover:text-red-800 transition">Clear Dates</button>
+                    <span x-show="isAvailable"></span>
+                    <button @click="saveChanges()"
+                        class="px-6 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700 transition shadow-md shadow-indigo-200">
+                        Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const labels = @json($labels ?? []);
+        const sales = @json($sales ?? []);
+        const cancelled = @json($cancelled ?? []);
+        const completed = @json($completedDaily ?? []);
+        const newOrders = @json($newOrders ?? []);
+
+        const ctx = document.getElementById('overviewChart').getContext('2d');
+
+        // Create a gradient for the primary line
+        const gradientSales = ctx.createLinearGradient(0, 0, 0, 300);
+        gradientSales.addColorStop(0, 'rgba(90, 219, 232, 0.2)');
+        gradientSales.addColorStop(1, 'rgba(90, 219, 232, 0)');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                        label: 'Sales ($)',
+                        data: sales,
+                        borderWidth: 3,
+                        borderColor: '#0EA5E9', // Sky Blue
+                        backgroundColor: gradientSales,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#0EA5E9',
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'New Orders',
+                        data: newOrders,
+                        borderWidth: 2,
+                        borderColor: '#10B981', // Emerald
+                        pointBackgroundColor: '#10B981',
+                        borderDash: [5, 5],
+                        fill: false,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Completed',
+                        data: completed,
+                        borderWidth: 2,
+                        borderColor: '#6366F1', // Indigo
+                        pointBackgroundColor: '#6366F1',
+                        fill: false,
+                        tension: 0.4,
+                        hidden: true // Hidden by default to reduce clutter
+                    },
+                    {
+                        label: 'Cancelled',
+                        data: cancelled,
+                        borderWidth: 2,
+                        borderColor: '#EF4444', // Red
+                        pointBackgroundColor: '#EF4444',
+                        fill: false,
+                        tension: 0.4,
+                        hidden: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        align: 'end',
+                        labels: {
+                            usePointStyle: true,
+                            boxWidth: 8,
+                            padding: 20,
+                            font: {
+                                family: "'Plus Jakarta Sans', sans-serif",
+                                size: 12
                             }
                         }
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true
+                    tooltip: {
+                        backgroundColor: '#1e293b',
+                        padding: 12,
+                        titleFont: {
+                            family: "'Plus Jakarta Sans', sans-serif",
+                            size: 13
+                        },
+                        bodyFont: {
+                            family: "'Plus Jakarta Sans', sans-serif",
+                            size: 12
+                        },
+                        cornerRadius: 8,
+                        displayColors: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#f1f5f9',
+                            borderDash: [4, 4]
+                        },
+                        ticks: {
+                            font: {
+                                family: "'Plus Jakarta Sans', sans-serif"
+                            },
+                            color: '#64748b'
+                        },
+                        border: {
+                            display: false
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: {
+                                family: "'Plus Jakarta Sans', sans-serif"
+                            },
+                            color: '#64748b'
+                        },
+                        border: {
+                            display: false
                         }
                     }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index',
+                },
+            }
+        });
+
+        // Alpine Logic (Preserved from original but cleaned up)
+        function availabilityComponent() {
+            return {
+                isAvailable: {{ Auth::user()->is_available ? 'true' : 'false' }},
+                showModal: false,
+                startDate: '{{ Auth::user()->unavailable_start_date ?? '' }}',
+                endDate: '{{ Auth::user()->unavailable_end_date ?? '' }}',
+
+                openModal() {
+                    this.showModal = true;
+                },
+
+                closeModal() {
+                    this.showModal = false;
+                },
+
+                formatDate(dateString) {
+                    if (!dateString) return '';
+                    return new Date(dateString).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                    });
+                },
+
+                // LOGIC: Add 1 Week or 1 Month
+                addDuration(daysToAdd, monthsToAdd) {
+                    // 1. If Start Date is empty, set it to Today
+                    if (!this.startDate) {
+                        this.startDate = new Date().toISOString().split('T')[0];
+                    }
+
+                    // 2. Determine base date (Start from existing EndDate if present, otherwise StartDate)
+                    let baseString = this.endDate ? this.endDate : this.startDate;
+
+                    // Add T12:00:00 to avoid timezone rolling the date back
+                    let dateObj = new Date(baseString + 'T12:00:00');
+
+                    // 3. Add duration
+                    if (daysToAdd > 0) dateObj.setDate(dateObj.getDate() + daysToAdd);
+                    if (monthsToAdd > 0) dateObj.setMonth(dateObj.getMonth() + monthsToAdd);
+
+                    // 4. Update End Date
+                    this.endDate = dateObj.toISOString().split('T')[0];
+                },
+
+                deleteDates() {
+                    this.startDate = '';
+                    this.endDate = '';
+                    this.isAvailable = true;
+                },
+
+                saveChanges() {
+                    let finalStartDate = this.startDate;
+                    let finalEndDate = this.endDate;
+
+                    // Validation
+                    if (!this.isAvailable) {
+                        if (!finalStartDate || !finalEndDate) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Date Required',
+                                text: 'Please select both start and end dates.',
+                                confirmButtonColor: '#3085d6'
+                            });
+                            return;
+                        }
+                        if (new Date(finalStartDate) > new Date(finalEndDate)) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Invalid Dates',
+                                text: 'Start date cannot be after end date.',
+                                confirmButtonColor: '#d33'
+                            });
+                            return;
+                        }
+                    } else {
+                        // If available, we clear dates in the backend logic usually, 
+                        // but we send null here to be sure.
+                        finalStartDate = null;
+                        finalEndDate = null;
+                    }
+
+                    // API Request
+                    fetch('/availability/update-settings', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content'),
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                is_available: this.isAvailable,
+                                start_date: finalStartDate,
+                                end_date: finalEndDate
+                            })
+                        })
+                        .then(res => res.ok ? res.json() : res.json().then(e => {
+                            throw new Error(e.message)
+                        }))
+                        .then(data => {
+                            this.isAvailable = data.is_available;
+                            this.startDate = data.start_date || '';
+                            this.endDate = data.end_date || '';
+                            this.closeModal();
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Updated!',
+                                text: 'Availability set successfully.',
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+                        })
+                        .catch(err => {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: err.message,
+                                confirmButtonColor: '#d33'
+                            });
+                        });
                 }
-            });
-        </script>
-
-
-    </div>
-    </div>
+            }
+        }
+    </script>
 @endsection

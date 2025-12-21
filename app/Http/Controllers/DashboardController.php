@@ -138,4 +138,27 @@ public function index(Request $request)
     return response()->json(['services' => $result], 200);
 }
 
+public function switchMode(Request $request)
+{
+    $user = Auth::user();
+
+    // Only helpers can switch modes
+    if ($user->role !== 'helper') {
+        return back()->with('error', 'Unauthorized action.');
+    }
+
+    // Get current mode (default to 'seller' for helpers if not set)
+    $currentMode = session('view_mode', 'seller');
+
+    if ($currentMode === 'seller') {
+        // Switch to Buying Mode
+        session(['view_mode' => 'buyer']);
+        return redirect()->route('dashboard'); // Redirect to Browse Services/Home
+    } else {
+        // Switch to Selling Mode
+        session(['view_mode' => 'seller']);
+        return redirect()->route('students.index'); // Redirect to Helper Dashboard
+    }
+}
+
 }

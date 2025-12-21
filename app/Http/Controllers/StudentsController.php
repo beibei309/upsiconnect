@@ -231,32 +231,27 @@ class StudentsController extends Controller
             ->with('success', 'Profile updated successfully!');
     }
 
-    public function profile(User $user)
-    {
-     
-        $user->load([
-            'reviewsReceived.reviewer', // Supaya boleh tunjuk gambar/nama orang yang review
-            'reviewsReceived.service'   // Supaya boleh tunjuk review tu untuk service apa
-        ]);
-        
+   public function profile(User $user)
+{
+    // 1. Load reviews for the user
+    $user->load([
+        'reviewsReceived.reviewer', 
+        'reviewsReceived.service'   
+    ]);
+    
+    // 2. Fetch Services that are BOTH Active AND Approved
+    $services = $user->services()
+                     ->where('is_active', true)             // Student is available
+                     ->where('approval_status', 'approved') // Admin approved
+                     ->latest()
+                     ->get();
 
-       
-        $services = $user->services()
-                         ->where('is_active', true) // Hanya tunjuk yang active
-                         ->latest()
-                         ->get();
-
-        $servicesActiveCount = $services->count();
-
-        $reviews = $user->reviewsReceived()->latest()->get();
-
-
-        return view('students.profile', compact(
-            'user',
-            'services',
-            'servicesActiveCount',
-            'reviews'
-        ));
-    }
+    // 3. Pass data to view
+    return view('students.profile', [
+        'user' => $user,
+        'services' => $services, // We will use this variable in the View
+        'reviews' => $user->reviewsReceived()->latest()->get()
+    ]);
+}
 
 }

@@ -12,10 +12,10 @@ class AdminPageController extends Controller
 {
     public function verifications()
     {
-        // Only allow staff/admin roles
-        $user = Auth::user();
-        if (!$user || !in_array($user->role, ['staff', 'admin'])) {
-            abort(Response::HTTP_FORBIDDEN);
+        // Only allow staff/admin roles (Check 'admin' guard)
+        $user = Auth::guard('admin')->user();
+        if (!$user) { // Role check simplified as middleware handles auth, but good to keep double check if needed
+             abort(Response::HTTP_FORBIDDEN);
         }
 
         $pending = User::query()

@@ -14,6 +14,9 @@ class ServiceRequest extends Model
         'requester_id',
         'provider_id',
         'selected_dates',
+        'selected_time',
+        'start_time',
+        'end_time',
         'selected_package',
         'message',
         'offered_price',
@@ -26,8 +29,11 @@ class ServiceRequest extends Model
         'offered_price' => 'decimal:2',
         'accepted_at' => 'datetime',
         'completed_at' => 'datetime',
+        'selected_time' => 'string',        
         'created_at' => 'datetime',
-        'updated_at' => 'datetime'
+        'updated_at' => 'datetime',
+        'selected_dates' => 'datetime', 
+        'selected_package' => 'string',
     ];
 
     /**

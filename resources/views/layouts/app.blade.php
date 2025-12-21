@@ -9,12 +9,14 @@
     <title>S2U - Student to Community</title>
 
     <!-- Fonts -->
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -58,6 +60,65 @@
             background-color: #F0F0F0;
 
         }
+
+        /* --- Rich Text Formatting --- */
+        .rich-text ul {
+            list-style-type: disc;
+            padding-left: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .rich-text ol {
+            list-style-type: decimal;
+            padding-left: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .rich-text p,
+        .rich-text li {
+            margin-bottom: 0.25rem;
+            line-height: 1.5;
+        }
+
+        .rich-text strong {
+            font-weight: 600;
+            color: #111827;
+        }
+
+        /* Gray-900 */
+        .rich-text em {
+            font-style: italic;
+        }
+
+        .rich-text h1,
+        .rich-text h2,
+        .rich-text h3 {
+            font-weight: 700;
+            margin-top: 0.75rem;
+            margin-bottom: 0.25rem;
+            color: #111827;
+        }
+
+        /* --- Modern Thin Scrollbar --- */
+        .modern-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .modern-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .modern-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #D1D5DB;
+            border-radius: 20px;
+        }
+
+        /* Gray-300 */
+        .rich-text:hover .modern-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #9CA3AF;
+        }
+
+        /* Gray-400 on hover */
     </style>
 </head>
 
@@ -83,6 +144,9 @@
 
     </div>
     @stack('scripts')
+
+    {{-- VERIFICATION REMINDER MODAL --}}
+    <x-verification-modal />
 
 </body>
 

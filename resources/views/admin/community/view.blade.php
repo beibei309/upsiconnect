@@ -13,7 +13,7 @@
     <div class="bg-white shadow rounded-lg p-6 flex gap-6 items-center">
         
         <!-- Profile Photo -->
-        <img src="{{ asset($user->profile_photo_path ?? 'uploads/profile/default.png') }}"
+        <img src="{{ $user->profile_photo_path ? asset('storage/' . $user->profile_photo_path) : asset('uploads/profile/default.png') }}"
              class="w-32 h-32 rounded-full object-cover border" />
 
         <div class="flex-1">
@@ -97,6 +97,68 @@
 
     </div>
 
+    <!-- VERIFICATION DOCUMENTS (New Section) -->
+    <div class="bg-white shadow rounded-lg p-6 mt-6">
+        <h2 class="text-xl font-semibold mb-4">Verification Documents</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Live Selfie -->
+            <div>
+                <h3 class="text-sm font-bold text-gray-500 uppercase mb-2">Live Selfie Check</h3>
+                @if($user->selfie_media_path)
+                    <div class="border rounded-lg p-2 inline-block bg-gray-50">
+                        <img src="{{ route('admin.verifications.selfie', $user->id) }}" 
+                             class="h-64 rounded object-cover mb-2 border" 
+                             alt="Live Selfie">
+                        
+                        @if($user->verification_note)
+                            <div class="bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-1 rounded text-center border border-yellow-200">
+                                Challenge: {{ $user->verification_note }}
+                            </div>
+                        @else
+                            <div class="text-gray-500 text-xs text-center">No challenge note recorded</div>
+                        @endif
+                        
+                        <button onclick="openSelfieModal({{ $user->id }})" class="block text-center text-xs text-blue-600 hover:underline mt-2">
+                            View Full Size
+                        </button>
+                    </div>
+                @else
+                    <div class="flex items-center gap-2 text-red-600 bg-red-50 p-4 rounded border border-red-100">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                        <span class="text-sm font-medium">No selfie uploaded</span>
+                    </div>
+                @endif
+            </div>
+
+            <!-- Proof Document -->
+            <div>
+                <h3 class="text-sm font-bold text-gray-500 uppercase mb-2">Proof Document</h3>
+                @if($user->verification_document_path)
+                    <div class="border rounded-lg p-4 bg-blue-50 border-blue-100">
+                        <div class="flex items-center gap-3 mb-3">
+                            <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            <div>
+                                <p class="text-sm font-semibold text-blue-900">Document Submitted</p>
+                                <p class="text-xs text-blue-700">Protected File (Local Storage)</p>
+                            </div>
+                        </div>
+                        
+                        <button onclick="openDocumentModal({{ $user->id }})" 
+                           class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition shadow-sm w-full justify-center">
+                            Open Document
+                        </button>
+                    </div>
+                @else
+                     <div class="flex items-center gap-2 text-red-600 bg-red-50 p-4 rounded border border-red-100">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                        <span class="text-sm font-medium">No document uploaded</span>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+
     <!-- BIO SECTION -->
     <div class="bg-white shadow rounded-lg p-6 mt-6">
         <h2 class="text-xl font-semibold mb-3">About</h2>
@@ -117,5 +179,41 @@
     </div>
 
 </div>
+
+<!-- Selfie Modal -->
+<div id="selfieModal" class="hidden fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4" onclick="closeSelfieModal()">
+    <div class="relative max-w-4xl max-h-full" onclick="event.stopPropagation()">
+        <button onclick="closeSelfieModal()" class="absolute -top-10 right-0 text-white hover:text-gray-300 text-2xl font-bold">&times;</button>
+        <img id="selfieImage" src="" class="max-w-full max-h-[90vh] rounded-lg shadow-2xl" alt="Selfie">
+    </div>
+</div>
+
+<!-- Document Modal -->
+<div id="documentModal" class="hidden fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4" onclick="closeDocumentModal()">
+    <div class="relative max-w-6xl max-h-full w-full" onclick="event.stopPropagation()">
+        <button onclick="closeDocumentModal()" class="absolute -top-10 right-0 text-white hover:text-gray-300 text-2xl font-bold">&times;</button>
+        <iframe id="documentFrame" src="" class="w-full h-[90vh] bg-white rounded-lg shadow-2xl"></iframe>
+    </div>
+</div>
+
+<script>
+function openSelfieModal(userId) {
+    document.getElementById('selfieImage').src = `/admin/verifications/${userId}/selfie`;
+    document.getElementById('selfieModal').classList.remove('hidden');
+}
+
+function closeSelfieModal() {
+    document.getElementById('selfieModal').classList.add('hidden');
+}
+
+function openDocumentModal(userId) {
+    document.getElementById('documentFrame').src = `/admin/verifications/${userId}/document`;
+    document.getElementById('documentModal').classList.remove('hidden');
+}
+
+function closeDocumentModal() {
+    document.getElementById('documentModal').classList.add('hidden');
+}
+</script>
 
 @endsection

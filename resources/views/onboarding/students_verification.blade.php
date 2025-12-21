@@ -177,7 +177,7 @@
     // --- GLOBAL VARIABLES ---
     const UPSI_LAT = 3.7832;
     const UPSI_LNG = 101.5927;
-    const RADIUS_KM = 5;
+    const RADIUS_KM = 1000; // TEMPORARY: Increased for testing (change back to 5 for production)
     let stream = null;
     let selfieDataUrl = null;
 
@@ -198,10 +198,42 @@
         return R*c;
     }
 
-    function addressVerified(){
+    function addressVerified(lat = null, lng = null, address = null){
         const statusEl = document.getElementById('location_status');
         statusEl.textContent = "Location Verified Successfully!";
         statusEl.className = "text-sm font-bold text-green-600 mt-2";
+        
+        // Save location to database
+        if (lat && lng) {
+            console.log('Attempting to save location:', {lat, lng, address});
+            
+            fetch("{{ route('verification.save_location') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': "{{ csrf_token() }}",
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    latitude: lat,
+                    longitude: lng,
+                    address: address
+                })
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Location saved successfully:', data);
+            })
+            .catch(error => {
+                console.error('Error saving location:', error);
+                // Don't block the flow if location save fails
+            });
+        } else {
+            console.log('No GPS coordinates to save, address only:', address);
+        }
         
         Swal.fire({
             icon: 'success',
@@ -232,7 +264,8 @@
                 btn.innerHTML = originalText;
 
                 if(distance <= RADIUS_KM){
-                    addressVerified();
+                    // Pass GPS coordinates to save
+                    addressVerified(lat, lng, `GPS: ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
                 } else {
                     statusEl.textContent = "Location failed. You are outside the allowed area.";
                     statusEl.className = "text-sm font-bold text-red-500 mt-2";
@@ -255,7 +288,8 @@
             return;
         }
         if(addr.includes('tanjung malim') || addr.includes('upsi')){
-            addressVerified();
+            // Pass manual address (no GPS coordinates)
+            addressVerified(null, null, addr);
         } else {
             Swal.fire({icon:'error',title:'Location Error',text:'Address must be around Tanjung Malim / UPSI.'});
         }
@@ -272,19 +306,54 @@
         }
     });
 
-    // Intercept form submit to unlock next step instead of refresh (for demo flow)
-    // Ideally, the server response should redirect back with a success flag.
-    // For now, let's assume the user clicks "Save Photo" and it submits. 
-    // If you want purely JS flow first:
+    
+    // Upload photo via AJAX for smooth UX
     const photoForm = document.getElementById('upload_photo_form');
     photoForm.addEventListener('submit', function(e){
-        // In a real app, this would submit to server. 
-        // If server redirects back, we can check session flash messages to unlock Step 3.
-        // For UX smoothness in this demo, let's assume success if file selected.
-        if(photoInput.files.length > 0) {
-            // Let the form submit naturally. 
-            // NOTE: To make the flow continuous without reload, use AJAX/Fetch here.
+        e.preventDefault(); // Prevent page reload
+        
+        if(photoInput.files.length === 0) {
+            Swal.fire({icon:'warning', title:'No Photo Selected', text:'Please select a photo first.'});
+            return;
         }
+
+        const formData = new FormData(this);
+        
+        Swal.fire({
+            title: 'Uploading...',
+            html: 'Please wait',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        fetch("{{ route('students_verification.upload') }}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': "{{ csrf_token() }}",
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success){
+                Swal.fire({
+                    icon:'success', 
+                    title:'Photo Uploaded!', 
+                    text: 'Proceeding to selfie verification...', 
+                    timer: 1500, 
+                    showConfirmButton: false
+                }).then(() => {
+                    unlockStep('step3');
+                });
+            } else {
+                Swal.fire({icon:'error', title:'Upload Failed', text: data.message || 'Please try again.'});
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({icon:'error', title:'Error', text: 'Something went wrong.'});
+        });
     });
     
     // Check if user already has a photo (Unlock Step 3 automatically if photo exists)
@@ -370,16 +439,17 @@
             if(data.success){
                 Swal.fire({
                     icon:'success', 
-                    title:'Identity Verified!', 
-                    text: 'Redirecting to your profile setup...', 
+                    title:'You\'re Now a Seller!', 
+                    text: 'Redirecting to your dashboard...', 
                     timer: 2000, 
                     showConfirmButton: false
                 }).then(() => { 
                     if(stream) stream.getTracks().forEach(track => track.stop());
-                    window.location.href = "{{ route('students.create') }}"; 
+                    // Redirect to dashboard in seller mode
+                    window.location.href = data.redirect || "{{ route('dashboard') }}"; 
                 });
             } else {
-                Swal.fire({icon:'error', title:'Upload Failed', text: 'Please try again.'});
+                Swal.fire({icon:'error', title:'Upload Failed', text: data.message || 'Please try again.'});
             }
         })
         .catch(error => {

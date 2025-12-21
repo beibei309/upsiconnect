@@ -2,137 +2,220 @@
 
 @section('content')
 
-{{-- Success Toast --}}
-@if(session('success'))
-<div class="mb-4 px-4 py-3 bg-green-100 border-l-4 border-green-600 text-green-700 rounded animate-fade-in">
-    {{ session('success') }}
-</div>
-@endif
+<div class="max-w-4xl mx-auto">
 
-{{-- Validation Errors --}}
-@if ($errors->any())
-<div class="mb-4 px-4 py-3 bg-red-100 border-l-4 border-red-600 text-red-700 rounded">
-    <ul class="list-disc ml-5">
-        @foreach ($errors->all() as $error)
-            <li>{{ $error }}</li>
-        @endforeach
-    </ul>
-</div>
-@endif
-
-
-<div class="max-w-3xl bg-white shadow-lg rounded-xl p-8 border border-gray-200">
-
-    <h1 class="text-3xl font-bold mb-8 text-gray-800">Edit Student</h1>
+    {{-- HEADER --}}
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Edit Student Profile</h1>
+        <a href="{{ route('admin.students.index') }}"
+           class="text-gray-600 hover:text-gray-900 text-sm font-medium">
+            &larr; Back to List
+        </a>
+    </div>
 
     <form action="{{ route('admin.students.update', $student->id) }}" method="POST">
         @csrf
         @method('PUT')
 
-        {{-- Name --}}
-        <div class="mb-5">
-            <label class="font-semibold text-gray-700 mb-1 block">Name</label>
-            <input type="text" name="name" value="{{ old('name', $student->name) }}"
-                class="w-full p-3 border rounded-lg focus:ring-blue-500 focus:border-blue-500">
-        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-        {{-- Email --}}
-        <div class="mb-5">
-            <label class="font-semibold text-gray-700 mb-1 block">Email</label>
-            <input type="email" name="email" value="{{ old('email', $student->email) }}"
-                class="w-full p-3 border rounded-lg focus:ring-blue-500 focus:border-blue-500">
-        </div>
+            {{-- LEFT COLUMN --}}
+            <div class="md:col-span-2 space-y-6">
 
-        {{-- Phone --}}
-        <div class="mb-5">
-            <label class="font-semibold text-gray-700 mb-1 block">Phone</label>
-            <input type="text" name="phone" value="{{ old('phone', $student->phone) }}"
-                class="w-full p-3 border rounded-lg focus:ring-blue-500 focus:border-blue-500">
-        </div>
+                {{-- PERSONAL INFO --}}
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+                        Personal Information
+                    </h2>
 
-        {{-- Student ID --}}
-        <div class="mb-5">
-            <label class="font-semibold text-gray-700 mb-1 block">Student ID</label>
-            <input type="text" name="student_id" value="{{ old('student_id', $student->student_id) }}"
-                class="w-full p-3 border rounded-lg focus:ring-blue-500 focus:border-blue-500">
-        </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-        {{-- Faculty --}}
-        <div class="mb-5">
-            <label class="font-semibold text-gray-700 mb-1 block">Faculty</label>
-            <input type="text" name="faculty" value="{{ old('faculty', $student->faculty) }}"
-                class="w-full p-3 border rounded-lg focus:ring-blue-500 focus:border-blue-500">
-        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Full Name
+                            </label>
+                            <input type="text" name="name"
+                                   value="{{ old('name', $student->name) }}"
+                                   class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            @error('name')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
 
-        {{-- Course --}}
-        <div class="mb-5">
-            <label class="font-semibold text-gray-700 mb-1 block">Course</label>
-            <input type="text" name="course" value="{{ old('course', $student->course) }}"
-                class="w-full p-3 border rounded-lg focus:ring-blue-500 focus:border-blue-500">
-        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Email Address
+                            </label>
+                            <input type="email" name="email"
+                                   value="{{ old('email', $student->email) }}"
+                                   class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            @error('email')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
 
-        {{-- Verification Status --}}
-        <div class="mb-8">
-            <label class="font-semibold text-gray-700 mb-1 block">Verification Status</label>
-            <select name="verification_status"
-                class="w-full p-3 border rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                <option value="pending"  {{ $student->verification_status == 'pending' ? 'selected' : '' }}>Pending</option>
-                <option value="approved" {{ $student->verification_status == 'approved' ? 'selected' : '' }}>Approved</option>
-                <option value="rejected" {{ $student->verification_status == 'rejected' ? 'selected' : '' }}>Rejected</option>
-            </select>
-        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Phone Number
+                            </label>
+                            <input type="text" name="phone"
+                                   value="{{ old('phone', $student->phone) }}"
+                                   class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        </div>
 
-        {{-- Account Status Toggle --}}
-        <div class="mt-8">
-            <label class="font-semibold text-gray-700 block mb-3">Account Status</label>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Matric / Student ID
+                            </label>
+                            <input type="text" name="student_id"
+                                   value="{{ old('student_id', $student->student_id) }}"
+                                   class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        </div>
 
-            <div class="flex items-center gap-4">
+                        <div>
+    <label class="block text-sm font-medium text-gray-700 mb-2">
+        Faculty
+    </label>
 
-                <span class="text-gray-700 font-medium">
-                    {{ $student->is_suspended ? 'Suspended' : 'Active' }}
-                </span>
+    <select name="faculty" class="w-full rounded-lg border-gray-300">
+    <option value="">Select Faculty</option>
 
-                <form action="{{ $student->is_suspended 
-                                ? route('admin.students.unban', $student->id)
-                                : route('admin.students.ban', $student->id) }}"
-                      method="POST">
-                    @csrf
+    <option value="FKMT" {{ old('faculty', $student->faculty)=='FKMT' ? 'selected' : '' }}>FKMT</option>
+    <option value="FPE" {{ old('faculty', $student->faculty)=='FPE' ? 'selected' : '' }}>FPE</option>
+    <option value="FSKIK" {{ old('faculty', $student->faculty)=='FSKIK' ? 'selected' : '' }}>FSKIK</option>
+    <option value="FSK" {{ old('faculty', $student->faculty)=='FSK' ? 'selected' : '' }}>FSK</option>
+    <option value="FSMT" {{ old('faculty', $student->faculty)=='FSMT' ? 'selected' : '' }}>FSMT</option>
+    <option value="FBK" {{ old('faculty', $student->faculty)=='FBK' ? 'selected' : '' }}>FBK</option>
+    <option value="FPM" {{ old('faculty', $student->faculty)=='FPM' ? 'selected' : '' }}>FPM</option>
+    <option value="FMUP" {{ old('faculty', $student->faculty)=='FMUP' ? 'selected' : '' }}>FMUP</option>
+    <option value="FSSKJ" {{ old('faculty', $student->faculty)=='FSSKJ' ? 'selected' : '' }}>FSSKJ</option>
+    <option value="FTV" {{ old('faculty', $student->faculty)=='FTV' ? 'selected' : '' }}>FTV</option>
+</select>
 
-                    {{-- Status Display --}}
-<div class="mb-5">
-    <label class="font-semibold text-gray-700 mb-1 block">Account Status</label>
-
-    @if($student->is_suspended)
-        <span class="px-3 py-1 bg-red-200 text-red-700 rounded-full">Banned</span>
-        <p class="text-sm text-red-600 mt-1">{{ $student->blacklist_reason }}</p>
-    @else
-        <span class="px-3 py-1 bg-green-200 text-green-700 rounded-full">Active</span>
-    @endif
-
-    <p class="text-xs text-gray-500 mt-2">
-        *Ban / Unban can be managed from the main student list.
-    </p>
+    @error('faculty')
+        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+    @enderror
 </div>
 
-                </form>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Course
+                            </label>
+                            <input type="text" name="course"
+                                   value="{{ old('course', $student->course) }}"
+                                   class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                    </div>
+                </div>
+
+                {{-- HELPER PROFILE --}}
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <div class="flex justify-between items-center mb-4 border-b pb-2">
+                        <h2 class="text-lg font-semibold text-gray-800">
+                            Helper Profile
+                        </h2>
+                        <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                            Visible to public
+                        </span>
+                    </div>
+
+                    <div class="space-y-4">
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Skills (comma separated)
+                            </label>
+                            <input type="text" name="skills"
+                                   value="{{ old('skills', $student->skills) }}"
+                                   placeholder="e.g. Tutoring, Graphic Design, Python"
+                                   class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
+                            <p class="text-xs text-gray-500 mt-1">
+                                Skills help identify helpers in the system.
+                            </p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Experience / Description
+                            </label>
+                            <textarea name="work_experience_message" rows="4"
+                                      class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+                                      placeholder="Describe experience or services offered...">{{ old('work_experience_message', $student->work_experience_message) }}</textarea>
+                        </div>
+
+                    </div>
+                </div>
 
             </div>
+
+            {{-- RIGHT COLUMN --}}
+            <div class="md:col-span-1 space-y-6">
+
+                {{-- ACCOUNT STATUS --}}
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h2 class="text-sm font-bold text-gray-500 uppercase tracking-wide mb-4">
+                        Account Status
+                    </h2>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Verification Status
+                        </label>
+                        <select name="verification_status"
+                                class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            <option value="pending" {{ $student->verification_status === 'pending' ? 'selected' : '' }}>
+                                Pending
+                            </option>
+                            <option value="approved" {{ $student->verification_status === 'approved' ? 'selected' : '' }}>
+                                Approved (Verified)
+                            </option>
+                            <option value="rejected" {{ $student->verification_status === 'rejected' ? 'selected' : '' }}>
+                                Rejected
+                            </option>
+                        </select>
+                    </div>
+
+                    <hr class="my-4 border-gray-100">
+
+                    <div>
+                        <span class="block text-sm font-medium text-gray-700 mb-1">
+                            Current Standing
+                        </span>
+
+                        @if($student->is_suspended)
+                            <div class="p-2 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+                                <strong>Banned</strong><br>
+                                <span class="text-xs">
+                                    Reason: {{ $student->blacklist_reason }}
+                                </span>
+                            </div>
+                        @else
+                            <div class="p-2 bg-green-50 border border-green-200 rounded text-green-700 text-sm">
+                                Active
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- ACTION BUTTONS --}}
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 flex flex-col gap-3">
+                    <button type="submit"
+                            class="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded shadow transition">
+                        Save Changes
+                    </button>
+
+                    <a href="{{ route('admin.students.index') }}"
+                       class="w-full py-2 px-4 bg-white border border-gray-300 text-gray-700 font-medium rounded hover:bg-gray-50 text-center transition">
+                        Cancel
+                    </a>
+                </div>
+
+            </div>
+
         </div>
-
-        {{-- Buttons --}}
-        <div class="mt-12 flex items-center gap-6">
-            <button type="submit"
-                class="px-6 py-3 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition">
-                Save Changes
-            </button>
-
-            <a href="{{ route('admin.students.index') }}"
-                class="text-gray-600 hover:text-gray-900 transition">
-                ← Back to List
-            </a>
-        </div>
-
     </form>
+
 </div>
 
 @endsection

@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
@@ -110,25 +111,31 @@
         </div>
 
         {{-- Key Change: Back to flexbox and scrolling classes --}}
-        <div id="scrollContainer" class="flex gap-6 overflow-x-auto hide-scroll-bar pb-4 snap-x snap-mandatory">
-            @foreach ($categories ?? [] as $category)
-                <a href="{{ route('services.index', ['category_id' => $category->id]) }}" 
-                    {{-- Included shrink-0 and w-64 for horizontal scrolling --}}
-                    class="snap-center shrink-0 w-64 p-6 rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center group cursor-pointer"
-                    {{-- Set the background color of the entire card --}}
-                    style="background-color: {{ $category->color }}; border: 1px solid {{ $category->color }};">
-                    
-                    {{-- Icon Container: Set background to white for contrast --}}
-                    <div class="w-16 h-16 rounded-full flex items-center justify-center mb-4 transition-transform group-hover:scale-110 bg-white">
-                        <img src="{{ asset('images/' . $category->image_path) }}" alt="{{ $category->name }}" class="w-8 h-8 object-contain">
-                    </div>
-                    
-                    {{-- Text Colors: Set to white and light gray for readability on the colorful background --}}
-                    <h3 class="text-lg font-bold text-white mb-2">{{ $category->name }}</h3>
-                    <p class="text-sm text-gray-200 line-clamp-2">{{ $category->description }}</p>
-                </a>
-            @endforeach
-        </div>
+       <div id="scrollContainer" class="flex gap-6 overflow-x-auto hide-scroll-bar pb-4 snap-x snap-mandatory">
+    @foreach ($categories ?? [] as $category)
+        <a href="{{ route('services.index', ['category_id' => $category->id]) }}" 
+           {{-- Included shrink-0 and w-64 for horizontal scrolling --}}
+           class="snap-center shrink-0 w-64 p-6 rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center group cursor-pointer"
+           {{-- Set the background color of the entire card --}}
+           style="background-color: {{ $category->color }}; border: 1px solid {{ $category->color }};">
+           
+           {{-- Icon Container: Set background to white for contrast --}}
+           <div class="w-16 h-16 rounded-full flex items-center justify-center mb-4 transition-transform group-hover:scale-110 bg-white">
+               
+               {{-- REPLACED IMAGE WITH ICON --}}
+               {{-- We use the category color for the icon text so it matches the card theme --}}
+               <i class="{{ $category->icon ?? 'fa fa-folder' }} text-3xl" 
+                  style="color: {{ $category->color }};">
+               </i>
+
+           </div>
+           
+           {{-- Text Colors: Set to white and light gray for readability on the colorful background --}}
+           <h3 class="text-lg font-bold text-white mb-2">{{ $category->name }}</h3>
+           <p class="text-sm text-gray-200 line-clamp-2">{{ $category->description }}</p>
+        </a>
+    @endforeach
+</div>
     </div>
 </section>
 

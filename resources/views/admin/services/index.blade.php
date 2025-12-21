@@ -1,23 +1,97 @@
 @extends('admin.layout')
 
 @section('content')
-<div class="px-6 py-4">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-800">Manage Services</h1>
-    </div>
+    <style>
+        .rich-text ul {
+            list-style-type: disc;
+            padding-left: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
 
-    <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
-        <form method="GET" action="{{ route('admin.services.index') }}" class="flex gap-4">
-            <div class="flex-1 relative">
-                <input type="text" name="search" placeholder="Search by title, description or student name..."
-                       class="w-full pl-4 pr-10 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                       value="{{ request('search') }}">
-            </div>
-            <button class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                Search
-            </button>
-        </form>
-    </div>
+        .rich-text ol {
+            list-style-type: decimal;
+            padding-left: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .rich-text p {
+            margin-bottom: 0.5rem;
+        }
+
+        .rich-text strong {
+            font-weight: 600;
+        }
+
+        /* Tooltip container */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 60px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 0;
+            position: absolute;
+            z-index: 50;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -30px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.7rem;
+            pointer-events: none;
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+
+    <div class="px-6 py-4">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">Manage Services</h1>
+        </div>
+
+        <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
+            <form method="GET" action="{{ route('admin.services.index') }}" class="flex flex-wrap gap-4">
+
+                {{-- Search --}}
+                <div class="flex-1 min-w-[250px]">
+                    <input type="text" name="search" placeholder="Search by title, description or student name..."
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                        value="{{ request('search') }}">
+                </div>
+
+                {{-- Category Filter --}}
+                <div>
+                    <select name="category" class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="">All Categories</option>
+                        @foreach ($categories as $category)
+                            <option value="{{ $category->id }}"
+                                {{ request('category') == $category->id ? 'selected' : '' }}>
+                                {{ $category->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Student Seller Filter --}}
+                <div>
+                    <select name="student" class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="">All Students</option>
+                        @foreach ($students as $student)
+                            <option value="{{ $student->id }}" {{ request('student') == $student->id ? 'selected' : '' }}>
+                                {{ $student->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
 
     <div class="bg-white shadow-lg rounded-lg overflow-hidden">
         <div class="overflow-x-auto">
@@ -41,41 +115,65 @@
                                         @if($service->image_path)
                                             <img src="{{ asset('storage/' . $service->image_path) }}" class="h-full w-full object-cover">
                                         @else
-                                            <div class="h-full w-full flex items-center justify-center text-gray-400 text-xs">No Img</div>
+                                            <span class="text-gray-400 italic">Not set</span>
                                         @endif
                                     </div>
-                                    <div>
-                                        <div class="text-sm font-bold text-gray-900">{{ $service->title }}</div>
-                                        <div class="text-xs text-gray-500 mt-1 line-clamp-1">
-                                            {{ Str::limit($service->description, 40) }}
-                                        </div>
-                                        @if($service->category)
-                                            <span class="inline-flex mt-1 items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                                                {{ $service->category->name }}
+                                </td>
+
+                                <td class="py-4 px-4 text-center">
+                                    @if ($service->is_active)
+                                        <span class="text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">Available</span>
+                                    @else
+                                        <span class="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded-full">Unavailable</span>
+                                    @endif
+                                </td>
+
+                                <td class="py-4 px-4 text-center">
+                                    <div class="flex items-center justify-center gap-1">
+                                        <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
+                                        <span class="text-sm font-bold text-gray-800">{{ number_format($service->average_rating ?? 0, 1) }}</span>
+                                    </div>
+                                </td>
+
+                                <td class="py-4 px-4 text-center">
+                                    @if (($service->reviews_count ?? 0) > 0)
+                                        <button onclick="alert('View Reviews Modal Placeholder')" class="text-xs text-blue-600 hover:text-blue-800 hover:underline">
+                                            View all {{ $service->reviews_count ?? 0 }} reviews
+                                        </button>
+                                    @else
+                                        <span class="text-xs text-gray-400">No reviews</span>
+                                    @endif
+                                </td>
+
+                                <td class="py-4 px-4 text-center">
+                                    @php
+                                        $warnings = $service->warning_count ?? 0;
+                                        $latestReason = $service->warning_reason ?? 'No details';
+                                    @endphp
+
+                                    <div class="tooltip">
+                                        <span class="font-mono text-sm font-bold cursor-default {{ $warnings >= 2 ? 'text-red-600' : 'text-gray-600' }}">
+                                            {{ $warnings }}/3
+                                        </span>
+                                        @if ($warnings > 0)
+                                            <span class="tooltip-text" style="width: 150px; margin-left: -75px; bottom: 100%;">
+                                                {{ Str::limit($latestReason, 50) }}
                                             </span>
                                         @endif
                                     </div>
-                                </div>
-                            </td>
+                                </td>
 
-                            <td class="py-4 px-6">
-                                <div class="text-sm font-medium text-gray-900">
-                                    {{ $service->user->name ?? 'Unknown' }}
-                                </div>
-                                <div class="text-xs text-gray-500">ID: {{ $service->user_id }}</div>
-                            </td>
-
-                            <td class="py-4 px-6">
-                                <div class="text-sm text-gray-700">
-                                    @php
-                                        $prices = array_filter([$service->basic_price, $service->standard_price, $service->premium_price]);
-                                        $min = !empty($prices) ? min($prices) : 0;
-                                        $max = !empty($prices) ? max($prices) : 0;
-                                    @endphp
-                                    @if($min > 0)
-                                        {{ $min == $max ? 'RM '.number_format($min) : 'RM '.number_format($min).' - RM '.number_format($max) }}
+                                <td class="py-4 px-4 text-center">
+                                    @if ($service->approval_status === 'approved')
+                                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Approved</span>
+                                    @elseif($service->approval_status === 'rejected')
+                                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Rejected</span>
+                                    @elseif($service->approval_status === 'blocked')
+                                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-800 text-white">Blocked</span>
                                     @else
-                                        <span class="text-gray-400 italic">Not set</span>
+                                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
                                     @endif
                                 </div>
                             </td>
@@ -151,11 +249,31 @@
             </table>
         </div>
 
-        @if($services->hasPages())
-            <div class="bg-white px-6 py-4 border-t border-gray-200">
-                {{ $services->links() }}
+                                        <div class="tooltip">
+                                            <button onclick="sendWarning({{ $service->id }}, '{{ $service->title }}')" class="p-1.5 text-orange-500 hover:bg-orange-50 rounded-md transition">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                                </svg>
+                                            </button>
+                                            <span class="tooltip-text">Warning</span>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="9" class="px-6 py-10 text-center text-gray-500">
+                                    <p>No services found.</p>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
-        @endif
+            @if ($services->hasPages())
+                <div class="bg-white px-6 py-4 border-t border-gray-200">{{ $services->links() }}</div>
+            @endif
+        </div>
     </div>
 </div>
 
@@ -196,11 +314,17 @@
                                 <div class="text-xs text-gray-500 mt-1" id="modal-std-desc"></div>
                                 <div class="text-xs font-semibold text-gray-600 mt-2" id="modal-std-duration"></div>
                             </div>
-                            <div class="border rounded-lg p-3 bg-purple-50 border-purple-100" id="pkg-premium">
-                                <div class="text-xs font-bold text-purple-700 uppercase mb-1">Premium</div>
-                                <div class="text-lg font-bold text-gray-900" id="modal-prem-price"></div>
-                                <div class="text-xs text-gray-500 mt-1" id="modal-prem-desc"></div>
-                                <div class="text-xs font-semibold text-gray-600 mt-2" id="modal-prem-duration"></div>
+                            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Provider Details</h4>
+                                <div class="flex items-center gap-3">
+                                    <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg">
+                                        <span id="modal-provider-initial">U</span>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-bold text-gray-900" id="modal-provider"></div>
+                                        <div class="text-xs text-gray-500">Created: <span id="modal-date"></span></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center text-xs text-gray-500">
@@ -373,13 +497,12 @@
                 const methodField = document.createElement('input');
                 methodField.type = 'hidden';
                 methodField.name = '_method';
-                methodField.value = 'PATCH'; 
+                methodField.value = method;
                 form.appendChild(methodField);
-
-                document.body.appendChild(form);
-                form.submit();
             }
-        });
-    }
-</script>
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    </script>
 @endsection

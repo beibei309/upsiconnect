@@ -7,6 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     <title>{{ $service->title ?? 'Service Page' }} - S2U</title>
 
+    {{-- Fonts & CSS --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -14,17 +15,18 @@
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
+    {{-- Scripts --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f8fafc;
-            /* Slate-50 */
         }
 
         h1,
@@ -34,40 +36,61 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
         }
 
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
 
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-
-        /* Sticky Sidebar logic */
         @media (min-width: 1024px) {
             .sticky-sidebar {
                 position: sticky;
                 top: 100px;
-                /* Adjust based on navbar height */
             }
         }
 
-        .tab-button {
-            transition: all 0.2s ease-in-out;
+        /* Custom Flatpickr Styling */
+        .flatpickr-calendar {
+            border-radius: 1rem;
+            border: none;
+            box-shadow: none;
+            margin: 0 auto;
+        }
+
+        .flatpickr-day.selected,
+        .flatpickr-day.selected:hover {
+            background: #4f46e5 !important;
+            border-color: #4f46e5 !important;
+        }
+
+        .rich-text ul {
+            list-style-type: disc;
+            padding-left: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .rich-text ol {
+            list-style-type: decimal;
+            padding-left: 1.25rem;
+            margin-bottom: 0.5rem;
         }
     </style>
 </head>
 
 <body class="antialiased text-slate-800">
+
+    @php
+        $hasActiveRequest = false;
+        if (auth()->check()) {
+            $hasActiveRequest = \App\Models\ServiceRequest::where('requester_id', auth()->id())
+                ->where('provider_id', $service->user_id)
+                ->whereIn('status', ['pending', 'accepted', 'in_progress'])
+                ->exists();
+        }
+    @endphp
 
     @include('layouts.navbar')
 
@@ -75,72 +98,42 @@
         <div class="max-w-7xl mx-auto px-6">
             <nav class="flex" aria-label="Breadcrumb">
                 <ol class="inline-flex items-center space-x-1 md:space-x-3 text-sm text-gray-500">
-                    <li class="inline-flex items-center">
-                        <a href="{{ route('dashboard') }}"
-                            class="inline-flex items-center hover:text-indigo-600 transition-colors">
-                            <i class="fa-solid fa-house mr-2"></i> Home
-                        </a>
-                    </li>
-                    <li>
-                        <div class="flex items-center">
-                            <i class="fa-solid fa-chevron-right text-gray-400 mx-2 text-xs"></i>
-                            <a href="{{ route('services.index') }}" class="hover:text-indigo-600 transition-colors">Find
-                                Services</a>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="flex items-center">
-                            <i class="fa-solid fa-chevron-right text-gray-400 mx-2 text-xs"></i>
-                            <span
-                                class="font-medium text-gray-800 truncate max-w-[200px] md:max-w-md">{{ $service->title ?? 'Service Details' }}</span>
-                        </div>
-                    </li>
+                    <li class="inline-flex items-center"><a href="{{ route('dashboard') }}"
+                            class="hover:text-indigo-600"><i class="fa-solid fa-house mr-2"></i> Home</a></li>
+                    <li><i class="fa-solid fa-chevron-right text-gray-400 mx-2 text-xs"></i><a
+                            href="{{ route('services.index') }}" class="hover:text-indigo-600">Find Services</a></li>
+                    <li><i class="fa-solid fa-chevron-right text-gray-400 mx-2 text-xs"></i><span
+                            class="font-medium text-gray-800">{{ $service->title }}</span></li>
                 </ol>
             </nav>
         </div>
     </div>
 
     <main class="max-w-7xl mx-auto px-6 py-10">
-
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
 
+            {{-- LEFT COLUMN (Service Details) --}}
             <div class="lg:col-span-8 space-y-8">
-
                 <div>
-                    <h1 class="text-3xl md:text-4xl font-bold text-slate-900 leading-tight mb-4">
-                        {{ $service->title ?? 'Service Title' }}
+                    <h1 class="text-3xl md:text-4xl font-bold text-slate-900 leading-tight mb-4">{{ $service->title }}
                     </h1>
-
                     <div class="flex flex-wrap items-center gap-4 text-sm">
-                        <a href="{{ auth()->guest() ? route('login') : route('students.profile', $service->user) }}"
-                            class="flex items-center gap-2 group">
-                            @if ($service->user->profile_photo_path)
-                                <img src="{{ asset('storage/' . $service->user->profile_photo_path) }}"
-                                    class="w-8 h-8 rounded-full object-cover ring-2 ring-white shadow-sm group-hover:ring-indigo-100 transition {{ auth()->guest() ? 'blur-sm' : '' }}">
-                            @else
-                                <div
-                                    class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs ring-2 ring-white shadow-sm {{ auth()->guest() ? 'blur-sm' : '' }}">
-                                    {{ strtoupper(substr($service->user->name, 0, 1)) }}
-                                </div>
-                            @endif
+                        <span class="font-semibold text-slate-900">{{ $service->user->name }}</span> |
+                        <span class="text-slate-500"><i class="fa-solid fa-star text-yellow-400"></i>
+                            {{ $service->rating ?? '0.0' }}</span>
 
-                            <span class="font-semibold text-slate-900 group-hover:text-indigo-600 transition">
-                                {{ $service->user->name }}
-                            </span>
-                        </a>
-
-                        <span class="text-gray-300">|</span>
-
-                        <div class="flex items-center gap-1">
-                            <i class="fa-solid fa-star text-yellow-400"></i>
-                            <span class="font-bold text-slate-900">{{ $service->rating ?? '0.0' }}</span>
-                            <span class="text-slate-500">({{ $service->user->reviewsReceived()->count() }} reviews)</span>
-                        </div>
-
-                        @if ($service->user->trust_badge)
+                        {{-- ADDED STATUS BADGE --}}
+                        @if ($service->status === 'available')
                             <span
-                                class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-xs font-semibold border border-blue-100 flex items-center gap-1">
-                                <i class="fas fa-check-circle"></i> Verified
+                                class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-50 text-green-700 border border-green-200">
+                                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                                Available
+                            </span>
+                        @else
+                            <span
+                                class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-gray-100 text-gray-500 border border-gray-200">
+                                <span class="w-2 h-2 rounded-full bg-gray-400"></span>
+                                Unavailable
                             </span>
                         @endif
                     </div>
@@ -148,257 +141,387 @@
 
                 <div class="rounded-2xl overflow-hidden shadow-lg border border-gray-100 bg-white">
                     <img src="{{ $service->image_path ? asset('storage/' . $service->image_path) : 'https://via.placeholder.com/1200x700' }}"
-                        alt="Service image"
-                        class="w-full h-[400px] object-cover hover:scale-105 transition-transform duration-700">
+                        class="w-full h-[400px] object-cover">
                 </div>
 
                 <section class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100">
-                    <h2 class="text-xl font-bold text-slate-900 mb-4 border-b border-gray-100 pb-2">About This Service
-                    </h2>
-                    <div class="prose prose-slate max-w-none text-gray-600 leading-relaxed">
-                        {!! $service->description !!}
-                    </div>
+                    <h2 class="text-xl font-bold text-slate-900 mb-4 border-b border-gray-100 pb-2">Description</h2>
+                    <div class="prose prose-slate max-w-none text-gray-600 rich-text">{!! $service->description !!}</div>
                 </section>
 
-                <section
-                    class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100 relative overflow-hidden">
-                    @php $isGuest = !auth()->check(); @endphp
+                {{-- Helper Profile Section --}}
+                {{-- Helper Profile Section --}}
+<section class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100 relative overflow-hidden">
+    <div class="flex flex-col md:flex-row gap-8 items-start">
+        
+        {{-- Left: Profile Image & Badge --}}
+        <div class="relative mx-auto md:mx-0 flex-shrink-0">
+            @if ($service->user->profile_photo_path)
+                <img src="{{ asset('storage/' . $service->user->profile_photo_path) }}"
+                    class="w-24 h-24 md:w-28 md:h-28 rounded-full object-cover border-4 border-white shadow-lg">
+            @else
+                <div class="w-24 h-24 md:w-28 md:h-28 rounded-full bg-indigo-600 flex items-center justify-center text-3xl md:text-4xl text-white font-bold border-4 border-white shadow-lg">
+                    {{ strtoupper(substr($service->user->name, 0, 1)) }}
+                </div>
+            @endif
 
-                    @if ($isGuest)
-                        <div
-                            class="absolute inset-0 z-10 bg-white/60 backdrop-blur-[2px] flex items-center justify-center">
-                            <a href="{{ route('login') }}"
-                                class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-full font-semibold shadow-lg transform hover:-translate-y-1 transition-all">
-                                Sign in to view Provider Details
-                            </a>
-                        </div>
-                    @endif
-
-                    <div class="{{ $isGuest ? 'filter blur-sm select-none' : '' }}">
-                        <h2 class="text-xl font-bold text-slate-900 mb-6">About The Helper</h2>
-
-                        <div class="flex flex-col sm:flex-row gap-6">
-                            <div class="flex-shrink-0">
-                                @if ($service->user->profile_photo_path)
-                                    <img src="{{ asset('storage/' . $service->user->profile_photo_path) }}"
-                                        class="w-24 h-24 rounded-full object-cover border-4 border-gray-50 shadow-sm">
-                                @else
-                                    <div
-                                        class="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-3xl text-white font-bold shadow-sm">
-                                        {{ strtoupper(substr($service->user->name, 0, 1)) }}
-                                    </div>
-                                @endif
-                            </div>
-
-                            <div class="flex-1 space-y-4">
-                                <div>
-                                    <h3 class="text-lg font-bold text-slate-900">{{ $service->user->name }}</h3>
-                                    <p class="text-slate-500">{{ $service->user->faculty ?? 'Faculty Student' }}</p>
-                                </div>
-
-                                <div class="grid grid-cols-2 gap-4 text-sm">
-                                    <div>
-                                        <span class="text-gray-400 block text-xs">From</span>
-                                        <span class="font-medium text-slate-700">Malaysia</span>
-                                    </div>
-                                    <div>
-                                        <span class="text-gray-400 block text-xs">Member since</span>
-                                        <span
-                                            class="font-medium text-slate-700">{{ $service->created_at->format('M Y') }}</span>
-                                    </div>
-                                </div>
-
-                                <div class="pt-2 border-t border-gray-100">
-                                    <p class="text-gray-600 italic">
-                                        "{{ $service->user->bio ?? 'Ready to help you with your tasks!' }}"</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <section class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100">
-                    <div class="flex items-center justify-between mb-8">
-                        <h2 class="text-xl font-bold text-slate-900">Reviews</h2>
-                        <div class="flex items-center gap-2 bg-yellow-50 px-3 py-1 rounded-full">
-                            <i class="fa-solid fa-star text-yellow-400"></i>
-                            <span
-                                class="font-bold text-slate-800">{{ round($service->user->reviewsReceived()->avg('rating'), 1) ?? 0 }}</span>
-                        </div>
-                    </div>
-
-                    <div class="space-y-8">
-                        @forelse ($service->user->reviewsReceived as $review)
-                           <div class="border-b border-gray-100 pb-8 last:border-0 last:pb-0">
-    <div class="flex items-start gap-4">
-        <div class="flex-shrink-0">
-            <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
-                @if (optional($review->reviewer)->profile_photo_path)
-                    <img src="{{ asset('storage/' . $review->reviewer->profile_photo_path) }}"
-                        class="w-full h-full object-cover {{ auth()->guest() ? 'blur-sm' : '' }}">
-                @else
-                    <div class="w-full h-full flex items-center justify-center text-gray-400 bg-gray-100 text-xs font-bold {{ auth()->guest() ? 'blur-sm' : '' }}">
-                        {{ substr(optional($review->reviewer)->name ?? 'A', 0, 1) }}
-                    </div>
-                @endif
-            </div>
+            {{-- Verified Badge --}}
+            @if($service->user->trust_badge ?? false)
+                <div class="absolute bottom-1 right-1 bg-blue-500 text-white w-7 h-7 flex items-center justify-center rounded-full border-2 border-white shadow-sm" title="Verified Student">
+                    <i class="fas fa-check text-xs"></i>
+                </div>
+            @endif
         </div>
-        <div class="flex-1">
-            <div class="flex justify-between items-start">
-                <div>
-                    <h4 class="font-bold text-slate-900 text-sm">
-                        @auth
-                            {{ optional($review->reviewer)->name ?? 'Anonymous User' }}
-                        @else
-                            {{ Str::mask(optional($review->reviewer)->name ?? 'Anonymous User', '*', 3) }}
-                        @endauth
-                    </h4>
-                    <div class="flex items-center gap-2 mt-1">
-                        <div class="flex text-yellow-400 text-xs">
-                            @for ($i = 1; $i <= 5; $i++)
-                                <i class="fa-{{ $i <= $review->rating ? 'solid' : 'regular' }} fa-star"></i>
-                            @endfor
-                        </div>
-                        <span class="text-xs text-gray-400">•
-                            {{ $review->created_at->diffForHumans() }}</span>
-                    </div>
+
+        {{-- Right: Info & Stats --}}
+        <div class="flex-1 w-full text-center md:text-left">
+            <div class="mb-4">
+                <h3 class="text-xl font-bold text-slate-900 mb-1">{{ $service->user->name }}</h3>
+                <div class="flex flex-wrap items-center justify-center md:justify-start gap-2 text-sm">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full font-medium bg-indigo-50 text-indigo-700">
+                        <i class="fa-solid fa-graduation-cap mr-1.5 text-xs"></i>
+                        {{ $service->user->faculty ?? 'Faculty of Computing' }}
+                    </span>
+                    <span class="text-gray-400 hidden sm:inline">•</span>
+                    <span class="text-gray-500">Member since {{ $service->user->created_at->format('M Y') }}</span>
                 </div>
             </div>
-            <p class="text-gray-600 text-sm mt-3 leading-relaxed">{{ $review->comment }}
-            </p>
+
+            {{-- Bio Box --}}
+            <div class="bg-slate-50 rounded-xl p-4 border border-slate-100 text-left relative">
+                <i class="fa-solid fa-quote-left text-slate-200 text-2xl absolute top-3 left-3 -z-0"></i>
+                <p class="text-gray-600 italic text-sm relative z-10 pl-6">
+                    "{{ $service->user->bio ?? 'Hi! I am a dedicated student at UPSI looking to help the community. I ensure all tasks are completed with care and punctuality.' }}"
+                </p>
+            </div>
+
+            {{-- Quick Stats Row --}}
+            <div class="grid grid-cols-2 gap-4 mt-5 pt-5 border-t border-gray-100">
+              
+            </div>
+            
+            <div class="mt-5 text-center md:text-left">
+                <a href="{{ route('students.profile', $service->user) }}" class="text-sm font-bold text-indigo-600 hover:text-indigo-800 hover:underline transition-colors">
+                    View Full Profile <i class="fa-solid fa-arrow-right ml-1 text-xs"></i>
+                </a>
+            </div>
         </div>
     </div>
-</div>
-                        @empty
-                            <div class="text-center py-8 text-gray-400">
-                                <p>No reviews yet.</p>
-                            </div>
-                        @endforelse
-                    </div>
-                </section>
+</section>
 
-            </div>
-            <div class="lg:col-span-4">
-                <div class="sticky-sidebar space-y-4">
-
-                    <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-                        <div class="grid grid-cols-3 border-b border-gray-200 bg-gray-50">
-                            @if ($service->basic_price)
-                                <button
-                                    class="tab-button py-4 text-sm font-semibold text-gray-500 hover:text-gray-800 focus:outline-none"
-                                    data-tab="basic">Basic</button>
-                            @endif
-                            @if ($service->standard_price)
-                                <button
-                                    class="tab-button py-4 text-sm font-semibold text-gray-500 hover:text-gray-800 focus:outline-none"
-                                    data-tab="standard">Standard</button>
-                            @endif
-                            @if ($service->premium_price)
-                                <button
-                                    class="tab-button py-4 text-sm font-semibold text-gray-500 hover:text-gray-800 focus:outline-none"
-                                    data-tab="premium">Premium</button>
-                            @endif
-                        </div>
-
-                        <div class="p-6">
-                            <div class="flex justify-between items-end mb-6">
-                                <span class="font-bold text-gray-400 text-sm mb-1 uppercase tracking-wider">Total
-                                    Price</span>
-                                <span id="main-price-display"
-                                    class="text-4xl font-extrabold transition-colors duration-300">
-                                    RM{{ number_format($service->basic_price ?? 0, 0) }}
-                                </span>
-                            </div>
-
-                            <div id="tab-content" class="min-h-[100px]">
-                                @if ($service->basic_price)
-                                    <div id="basic" class="tab-content hidden animate-fade-in">
-                                        <div class="flex items-center gap-2 mb-3">
-                                            <span class="font-bold text-slate-800">Basic Package</span>
-                                            <span
-                                                class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">{{ $service->basic_duration }}
-                                                hrs per {{ $service->basic_frequency }} </span>
-                                        </div>
-                                        <p class="text-sm text-gray-600 leading-relaxed">
-                                            {{ $service->basic_description }}</p>
-                                    </div>
-                                @endif
-
-                                @if ($service->standard_price)
-                                    <div id="standard" class="tab-content hidden animate-fade-in">
-                                        <div class="flex items-center gap-2 mb-3">
-                                            <span class="font-bold text-slate-800">Standard Package</span>
-                                            <span
-                                                class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">{{ $service->standard_duration }}
-                                                hrs per {{ $service->standard_frequency }} </span>
-                                        </div>
-                                        <p class="text-sm text-gray-600 leading-relaxed">
-                                            {{ $service->standard_description }}</p>
-                                    </div>
-                                @endif
-
-                                @if ($service->premium_price)
-                                    <div id="premium" class="tab-content hidden animate-fade-in">
-                                        <div class="flex items-center gap-2 mb-3">
-                                            <span class="font-bold text-slate-800">Premium Package</span>
-                                            <span
-                                                class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">{{ $service->premium_duration }}
-                                                hrs per {{ $service->premium_frequency }} </span>
-                                        </div>
-                                        <p class="text-sm text-gray-600 leading-relaxed">
-                                            {{ $service->premium_description }}</p>
-                                    </div>
-                                @endif
-                            </div>
-
-                            <div class="mt-8">
-                                <label class="block text-xs font-bold text-gray-700 uppercase mb-2">Select Date</label>
-                                <div class="relative">
-                                    <input type="text" id="calendar"
-                                        class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                        placeholder="Check availability..." />
-                                    <i class="fas fa-calendar absolute left-3 top-3.5 text-gray-400"></i>
+                {{-- Reviews Section --}}
+                <section class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100">
+                    <h2 class="text-xl font-bold text-slate-900 mb-4">Reviews
+                        ({{ $service->user->reviewsReceived()->count() }})</h2>
+                    @if (isset($reviews) && count($reviews) > 0)
+                        @foreach ($reviews as $review)
+                            <div class="mb-4 border-b pb-4">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold">{{ $review->reviewer->name }}</span>
+                                    <span class="text-yellow-500 text-sm"><i class="fas fa-star"></i>
+                                        {{ $review->rating }}</span>
                                 </div>
-                                <div id="availability-status" class="mt-2 text-xs font-semibold h-4"></div>
+                                <p class="text-gray-600 text-sm mt-1">{{ $review->comment }}</p>
                             </div>
+                        @endforeach
+                    @else
+                        <p class="text-gray-500">No reviews yet.</p>
+                    @endif
+                </section>
+            </div>
 
-                            <div class="mt-6">
-                                @auth
-                                    <button type="button" id="request-service-btn"
-                                        class="w-full bg-slate-900 hover:bg-indigo-600 text-white py-3.5 rounded-xl font-bold transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-                                        Continue (RM<span
-                                            id="btn-price">{{ number_format($service->basic_price ?? 0, 0) }}</span>)
-                                    </button>
-                                @else
-                                    <a href="{{ route('login') }}"
-                                        class="block w-full text-center bg-slate-900 hover:bg-indigo-600 text-white py-3.5 rounded-xl font-bold transition-all shadow-md">
-                                        Sign in to Request
-                                    </a>
-                                @endauth
-                            </div>
+            {{-- RIGHT COLUMN (Booking System) --}}
+            <div class="lg:col-span-4">
+    <div class="sticky top-24 space-y-6" x-data="bookingSystem()" x-init="init()">
+
+        {{-- 1. CALENDAR MODAL (Hidden by default) --}}
+        <template x-teleport="body">
+            <div x-show="showFullCalendar"
+                class="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4"
+                style="display: none;" x-transition.opacity>
+                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all"
+                    @click.away="showFullCalendar = false" x-transition.scale>
+                    <div class="flex justify-between items-center p-4 border-b border-gray-100 bg-gray-50">
+                        <h3 class="font-bold text-slate-800">Select Date</h3>
+                        <button @click="showFullCalendar = false"
+                            class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition-colors">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="p-4 flex justify-center">
+                        <div id="full-calendar-container"></div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        {{-- 2. MAIN BOOKING CARD --}}
+        <div class="bg-white rounded-2xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 overflow-hidden relative">
+            
+            <div class="grid grid-cols-3 border-b border-gray-200 bg-gray-50">
+                @if ($service->basic_price)
+                    <button @click="switchPackage('basic')"
+                        :class="currentPackage === 'basic' ?
+                            'border-b-2 border-teal-600 text-teal-600 font-bold bg-white' :
+                            'text-gray-500 hover:text-gray-700'"
+                        class="py-4 text-sm transition-all border-b-2 border-transparent">
+                        Basic
+                    </button>
+                @endif
+                @if ($service->standard_price)
+                    <button @click="switchPackage('standard')"
+                        :class="currentPackage === 'standard' ?
+                            'border-b-2 border-yellow-500 text-yellow-600 font-bold bg-white' :
+                            'text-gray-500 hover:text-gray-700'"
+                        class="py-4 text-sm transition-all border-b-2 border-transparent">
+                        Standard
+                    </button>
+                @endif
+                @if ($service->premium_price)
+                    <button @click="switchPackage('premium')"
+                        :class="currentPackage === 'premium' ?
+                            'border-b-2 border-red-600 text-red-600 font-bold bg-white' :
+                            'text-gray-500 hover:text-gray-700'"
+                        class="py-4 text-sm transition-all border-b-2 border-transparent">
+                        Premium
+                    </button>
+                @endif
+            </div>
+
+            <div class="p-6">
+                {{-- Price & Simple Info Display --}}
+                <div class="flex flex-col items-end mb-6 text-right">
+                    <span class="font-bold text-gray-400 text-xs uppercase tracking-wider mb-1">
+                        <span x-text="isSessionBased ? 'Total Estimate' : 'Task Price'"></span>
+                    </span>
+                    
+                    {{-- Price --}}
+                    <span class="text-4xl font-extrabold" :class="priceColorClass"
+                        x-text="'RM' + calculateTotal()"></span>
+
+                    {{-- 🟢 UPDATED: Simple Data Display (No labels) --}}
+                    <div class="text-sm font-medium text-gray-500 mt-1 flex items-center gap-1" 
+                         x-show="packages[currentPackage].duration || packages[currentPackage].frequency">
+                        <span x-text="packages[currentPackage].duration"></span>
+                        
+                        {{-- Show divider/text only if both exist --}}
+                        <span x-show="packages[currentPackage].duration && packages[currentPackage].frequency">
+                             per 
+                        </span>
+                        
+                        <span x-text="packages[currentPackage].frequency"></span>
+                    </div>
+                </div>
+
+                {{-- Description Box --}}
+                <div class="bg-slate-50 rounded-xl p-4 mb-6 border border-slate-100 text-sm" x-transition>
+                    <div class="text-slate-700 prose prose-sm max-w-none rich-text" 
+                         x-html="packages[currentPackage].description || 'No description provided.'"></div>
+                </div>
+
+                {{-- Duration (Session Based Only) --}}
+                <div class="mb-6" x-show="isSessionBased">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-xs font-bold text-gray-700 uppercase">Duration</label>
+                        <span class="text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded" x-text="selectedDuration + ' Hours'"></span>
+                    </div>
+                    <div class="grid grid-cols-4 gap-2">
+                        <template x-for="h in [1, 2, 3, 4]" :key="h">
+                            <button @click="selectDuration(h)" type="button"
+                                class="py-2.5 rounded-xl border text-sm font-bold transition-all"
+                                :class="selectedDuration === h ? 'bg-slate-800 text-white border-slate-800 shadow-md transform -translate-y-0.5' :
+                                    'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'">
+                                <span x-text="h + 'h'"></span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+
+                <div class="w-full h-px bg-gray-100 mb-6"></div>
+
+                {{-- Date Scroller --}}
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-3">
+                        <label class="text-xs font-bold text-gray-700 uppercase">Select Date</label>
+                        <button @click="openCalendar()" class="text-xs text-indigo-600 font-bold hover:text-indigo-800 flex items-center gap-1">
+                            <i class="fa-regular fa-calendar"></i> Full Calendar
+                        </button>
+                    </div>
+
+                    <div class="relative group">
+                        {{-- Prev Button --}}
+                        <button type="button" @click="$refs.dateScroller.scrollBy({ left: -200, behavior: 'smooth' })"
+                            class="absolute -left-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center bg-white rounded-full shadow-md border border-gray-100 text-gray-600 hover:text-indigo-600 hover:scale-110 transition-all opacity-0 group-hover:opacity-100">
+                            <i class="fa-solid fa-chevron-left text-xs"></i>
+                        </button>
+
+                        <div x-ref="dateScroller" class="flex space-x-2 overflow-x-auto pb-4 pt-1 px-1 no-scrollbar scroll-smooth">
+                            <template x-for="day in upcomingDays" :key="day.dateStr">
+                                <button @click="selectDate(day)" :disabled="!day.isAvailable"
+                                    class="flex flex-col items-center justify-center min-w-[4.5rem] py-3 rounded-2xl border transition-all flex-shrink-0 relative group/date"
+                                    :class="{
+                                        'bg-slate-900 text-white border-slate-900 shadow-lg shadow-slate-900/20 transform -translate-y-1': selectedDate === day.dateStr,
+                                        'bg-white text-gray-600 border-gray-200 hover:border-indigo-300 hover:shadow-md': selectedDate !== day.dateStr && day.isAvailable,
+                                        'bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed opacity-60': !day.isAvailable
+                                    }">
+                                    <span class="text-[10px] font-bold uppercase tracking-wider mb-1 opacity-80" x-text="day.dayName"></span>
+                                    <span class="text-lg font-black" x-text="day.dayNumber"></span>
+                                    
+                                    {{-- Today Indicator --}}
+                                    <span x-show="new Date().toDateString() === new Date(day.dateStr).toDateString()"
+                                        class="absolute top-2 right-2 w-1.5 h-1.5 rounded-full"
+                                        :class="selectedDate === day.dateStr ? 'bg-indigo-400' : 'bg-indigo-500'"></span>
+                                </button>
+                            </template>
                         </div>
-                    </div>
 
-                    <div class="flex items-center justify-center gap-4 py-2">
-                        <button onclick="handleShare(this)" data-url="{{ route('services.details', $service->id) }}"
-                            class="flex items-center gap-2 text-sm text-gray-500 hover:text-indigo-600 font-medium transition">
-                            <i class="fas fa-share-alt"></i> Share
-                        </button>
-                        <button
-                            onclick="handleFavourite({{ $service->id }}, {{ auth()->check() ? 'true' : 'false' }})"
-                            class="flex items-center gap-2 text-sm text-gray-500 hover:text-red-500 font-medium transition">
-                            <i id="heart-{{ $service->id }}" class="far fa-heart"></i> Save
+                        {{-- Next Button --}}
+                        <button type="button" @click="$refs.dateScroller.scrollBy({ left: 200, behavior: 'smooth' })"
+                            class="absolute -right-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center bg-white rounded-full shadow-md border border-gray-100 text-gray-600 hover:text-indigo-600 hover:scale-110 transition-all opacity-0 group-hover:opacity-100">
+                            <i class="fa-solid fa-chevron-right text-xs"></i>
                         </button>
                     </div>
+                </div>
 
+                {{-- Time Slots --}}
+                <div x-show="selectedDate && isSessionBased" x-transition class="mb-6">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-3">Start Time</label>
+                    <div class="flex flex-wrap gap-2" x-show="timeSlots.length > 0">
+                        <template x-for="slot in timeSlots" :key="slot.time">
+                            <button type="button" @click="selectedTime = slot.time" :disabled="!slot.available"
+                                class="px-4 py-2 rounded-lg text-sm font-bold transition-all border"
+                                :class="{
+                                    'bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-600/20': selectedTime === slot.time,
+                                    'bg-white text-slate-600 border-slate-200 hover:border-indigo-400 hover:text-indigo-600': selectedTime !== slot.time && slot.available,
+                                    'bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed': !slot.available
+                                }">
+                                <span x-text="formatTimeOnly(slot.time)"></span>
+                            </button>
+                        </template>
+                    </div>
+                    <div x-show="timeSlots.length === 0" class="text-sm bg-orange-50 text-orange-600 px-3 py-2 rounded-lg border border-orange-100">
+                        <i class="fa-regular fa-circle-xmark mr-1"></i> No times available.
+                    </div>
+                </div>
+
+                 {{-- Task Based Feedback --}}
+                 <div x-show="selectedDate && !isSessionBased" x-transition class="mb-6 p-4 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-indigo-600 shadow-sm shrink-0">
+                        <i class="fa-regular fa-calendar-check"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold text-indigo-900" x-text="new Date(selectedDate).toDateString()"></p>
+                        <p class="text-xs text-indigo-700">Full day service allocated.</p>
+                    </div>
+                </div>
+
+                {{-- CTA Button --}}
+                @auth
+                    @if ($service->status === 'available')
+                        <button @click="submitBooking()"
+                            :disabled="!selectedDate || (isSessionBased && !selectedTime)"
+                            class="group w-full py-4 rounded-xl font-bold text-white shadow-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:shadow-none disabled:bg-gray-300 disabled:cursor-not-allowed hover:-translate-y-1"
+                            :class="(!selectedDate || (isSessionBased && !selectedTime)) ? '' : 'bg-slate-900 hover:bg-indigo-600 hover:shadow-indigo-500/30'">
+                            <span>Request Appointment</span>
+                            <i class="fa-solid fa-arrow-right text-sm transition-transform group-hover:translate-x-1"
+                                x-show="!(!selectedDate || (isSessionBased && !selectedTime))"></i>
+                        </button>
+                    @else
+                        <button disabled class="w-full py-4 rounded-xl font-bold text-gray-400 bg-gray-100 border border-gray-200 cursor-not-allowed flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-ban text-sm"></i> <span>Service Unavailable</span>
+                        </button>
+                    @endif
+                @else
+                    <a href="{{ route('login') }}" class="w-full py-4 rounded-xl font-bold text-white shadow-lg transition-all flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 hover:-translate-y-0.5">
+                        <span>Sign in to Request</span> <i class="fa-solid fa-right-to-bracket text-sm"></i>
+                    </a>
+                @endauth
+            </div>
+        </div>
+
+        {{-- 3. CONTACT & INFO CARD --}}
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <span class="w-1 h-5 bg-indigo-500 rounded-full"></span> Contact
+            </h3>
+
+            {{-- WhatsApp Button --}}
+            @php
+                $rawPhone = $service->user->phone_number ?? ($service->user->phone ?? '');
+                $cleanPhone = preg_replace('/[^0-9]/', '', $rawPhone);
+                if (substr($cleanPhone, 0, 1) === '0') $cleanPhone = '60' . substr($cleanPhone, 1);
+                $whatsappUrl = "https://wa.me/{$cleanPhone}?text=Hi, I am interested in your service: " . urlencode($service->title);
+            @endphp
+
+            @if (!empty($cleanPhone))
+                <a href="{{ $whatsappUrl }}" target="_blank"
+                    class="flex items-center justify-center w-full py-3 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-xl font-bold transition-all shadow-md shadow-green-500/20 hover:shadow-green-500/40 hover:-translate-y-0.5 mb-6 group">
+                    <i class="fa-brands fa-whatsapp text-xl mr-2 transition-transform group-hover:scale-110"></i>
+                    Chat on WhatsApp
+                </a>
+            @endif
+
+            {{-- Collapsible Operating Hours --}}
+            <div x-data="{ showHours: false }" class="border-t border-gray-100 pt-5 mb-6">
+                <button @click="showHours = !showHours" class="flex items-center justify-between w-full text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors">
+                    <span class="flex items-center gap-2">
+                        <i class="fa-regular fa-clock text-gray-400"></i> Operating Hours
+                    </span>
+                    <i class="fa-solid fa-chevron-down text-xs text-gray-400 transition-transform duration-300" :class="showHours ? 'rotate-180' : ''"></i>
+                </button>
+                
+                <div x-show="showHours" x-collapse style="display: none;">
+                    <ul class="space-y-2 text-sm mt-3 pl-6 border-l-2 border-gray-50">
+                        @php
+                            $daysMap = ['mon'=>'Mon', 'tue'=>'Tue', 'wed'=>'Wed', 'thu'=>'Thu', 'fri'=>'Fri', 'sat'=>'Sat', 'sun'=>'Sun'];
+                            $schedule = $service->operating_hours ?? [];
+                        @endphp
+                        @foreach ($daysMap as $key => $dayName)
+                            @php
+                                $d = $schedule[$key] ?? [];
+                                $isOpen = isset($d['enabled']) && $d['enabled'] == true;
+                                $isToday = strtolower(now()->format('D')) == strtolower($dayName);
+                            @endphp
+                            <li class="flex justify-between items-center {{ $isToday ? 'text-indigo-600 font-bold' : 'text-gray-500' }}">
+                                <span class="w-10">{{ $dayName }}</span>
+                                @if ($isOpen)
+                                    <span>{{ $d['start'] ?? '09:00' }} - {{ $d['end'] ?? '17:00' }}</span>
+                                @else
+                                    <span class="text-xs bg-gray-100 px-1.5 py-0.5 rounded text-gray-400">Closed</span>
+                                @endif
+                            </li>
+                        @endforeach
+                    </ul>
                 </div>
             </div>
 
+            {{-- Utility Buttons Grid --}}
+            <div class="grid grid-cols-2 gap-3">
+                {{-- Share --}}
+                <button onclick="handleShare(this)" data-url="{{ route('student-services.show', $service->id) }}"
+                    class="flex items-center justify-center gap-2 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-bold hover:bg-gray-50 hover:border-gray-300 transition-all">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i> Share
+                </button>
+
+                {{-- Save / Favourite --}}
+                @php $isFav = auth()->check() && $service->is_favourited; @endphp
+                <button onclick="handleFavourite({{ $service->id }}, {{ auth()->check() ? 'true' : 'false' }})"
+                    class="flex items-center justify-center gap-2 py-2.5 rounded-xl border border-gray-200 text-sm font-bold transition-all group
+                    {{ $isFav ? 'bg-red-50 text-red-500 border-red-100' : 'text-gray-600 hover:bg-gray-50 hover:border-gray-300' }}">
+                    <i id="heart-{{ $service->id }}" class="{{ $isFav ? 'fas' : 'far' }} fa-heart transition-transform group-active:scale-90"></i>
+                    <span id="text-{{ $service->id }}">{{ $isFav ? 'Saved' : 'Save' }}</span>
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
         </div>
     </main>
 
     @include('layouts.footer')
 
+    {{-- Share Modal --}}
     <div id="shareModal"
         class="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50 opacity-0 pointer-events-none transition-opacity duration-300">
         <div class="bg-white rounded-2xl shadow-2xl w-80 p-6 transform scale-95 transition-transform duration-300">
@@ -413,216 +536,355 @@
                 <button onclick="copyShareLink()"
                     class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 text-sm font-medium">Copy</button>
             </div>
-            <p id="copyMessage" class="text-xs text-green-600 mt-2 text-center opacity-0 transition-opacity">Copied to
-                clipboard!</p>
+            <p id="copyMessage" class="text-xs text-green-600 mt-2 text-center opacity-0 transition-opacity">Copied!
+            </p>
         </div>
     </div>
 
-    @auth
-        <div id="requestServiceModal"
-            class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
-            <div class="bg-white p-6 rounded-2xl w-full max-w-md shadow-2xl animate-fade-in-up">
-                <h2 class="text-xl font-bold mb-1 text-slate-900">Request Details</h2>
-                <p class="text-sm text-gray-500 mb-6">Confirm your request details below.</p>
-
-                <div class="bg-gray-50 p-4 rounded-xl mb-4 border border-gray-100">
-                    <div class="flex justify-between text-sm mb-2">
-                        <span class="text-gray-500">Date:</span>
-                        <span id="selected-date-display" class="font-bold text-slate-900"></span>
-                    </div>
-                    <div class="flex justify-between text-sm">
-                        <span class="text-gray-500">Package:</span>
-                        <span id="selected-package-display" class="font-bold text-slate-900 capitalize"></span>
-                    </div>
-                </div>
-
-                <textarea id="service-message"
-                    class="w-full p-3 border border-gray-300 rounded-xl mb-4 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-                    rows="3" placeholder="Add a note for the helper (optional)..."></textarea>
-
-                <div class="flex gap-3">
-                    <button id="close-modal"
-                        class="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium transition">Cancel</button>
-                    <button id="submit-service-request"
-                        class="flex-1 bg-indigo-600 text-white px-4 py-2.5 rounded-xl hover:bg-indigo-700 font-bold shadow-md transition">Send
-                        Request</button>
-                </div>
-            </div>
-        </div>
-    @endauth
-
+    {{-- SCRIPTS --}}
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            // Data passed from PHP
-            const unavailableDates = @json($service->unavailable_dates ? json_decode($service->unavailable_dates) : []);
-
-            // Prices configuration
-            const prices = {
-                basic: {{ $service->basic_price ?? 0 }},
-                standard: {{ $service->standard_price ?? 0 }},
-                premium: {{ $service->premium_price ?? 0 }}
-            };
-
-            // Colors configuration (Tailwind text colors / Hex)
-            const colors = {
-                basic: '#0d9488', // Teal-600
-                standard: '#ca8a04', // Yellow-600
-                premium: '#dc2626' // Red-600
-            };
-
-            // DOM Elements
-            const tabs = document.querySelectorAll('.tab-button');
-            const tabContents = document.querySelectorAll('.tab-content');
-            const mainPriceDisplay = document.getElementById('main-price-display');
-            const btnPriceDisplay = document.getElementById('btn-price');
-            const statusDiv = document.getElementById("availability-status");
-            let selectedDate = null;
-            let currentPackage = 'basic'; // Default
-
-            // --- 1. Tab Switching & Price Updating Logic ---
-            function switchTab(pkg) {
-                currentPackage = pkg;
-
-                // Hide/Show content logic (Sama macam sebelum ini)
-                tabContents.forEach(content => content.classList.add('hidden'));
-                const contentToShow = document.getElementById(pkg);
-                if (contentToShow) contentToShow.classList.remove('hidden');
-
-                // --- LOGIC WARNA TAB DI SINI ---
-                tabs.forEach(t => {
-                    // Reset semua tab ke warna kelabu (default)
-                    t.classList.remove('border-b-2');
-                    t.style.borderColor = 'transparent';
-                    t.style.color = '#6b7280'; // text-gray-500
-                    t.style.fontWeight = 'normal';
-
-                    // Jika tab ini adalah tab yang dipilih (Active)
-                    if (t.dataset.tab === pkg) {
-                        t.classList.add('border-b-2');
-                        t.style.fontWeight = '700'; // Bold
-
-                        // Guna warna dari object 'colors' di atas
-                        t.style.color = colors[pkg];
-                        t.style.borderColor = colors[pkg];
-                    }
-                });
-
-                // Update warna harga besar (Total Price)
-                mainPriceDisplay.textContent = 'RM' + prices[pkg];
-                mainPriceDisplay.style.color = colors[pkg];
-
-                // Update button text
-                if (btnPriceDisplay) btnPriceDisplay.textContent = prices[pkg];
-            }
-
-            // Initialize Tabs
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+        document.addEventListener('alpine:init', () => {
+            Alpine.store('booking', {
+                showCalendarModal: false
             });
-
-            // Set Initial Tab
-            @if ($service->basic_price)
-                switchTab('basic');
-            @elseif ($service->standard_price) switchTab('standard');
-            @elseif ($service->premium_price) switchTab('premium');
-            @endif
-
-
-            // --- 2. Calendar Logic (Flatpickr) ---
-            flatpickr("#calendar", {
-                dateFormat: "Y-m-d",
-                minDate: "today",
-                disable: unavailableDates,
-                onDayCreate: function(dObj, dStr, fp, dayElem) {
-                    let date = dayElem.dateObj.toISOString().split("T")[0];
-                    if (unavailableDates.includes(date)) {
-                        dayElem.classList.add("bg-red-50", "text-red-400", "cursor-not-allowed");
-                    }
-                },
-                onChange: function(selectedDates, dateStr) {
-                    selectedDate = dateStr;
-                    if (!dateStr) {
-                        statusDiv.textContent = "";
-                        return;
-                    }
-                    if (unavailableDates.includes(dateStr)) {
-                        statusDiv.textContent = "Unavailable";
-                        statusDiv.className = "mt-2 text-xs font-bold text-red-500";
-                    } else {
-                        statusDiv.textContent = "Available";
-                        statusDiv.className = "mt-2 text-xs font-bold text-green-600";
-                    }
-                }
-            });
-
-            // --- 3. Modal & Request Logic ---
-            @auth
-            const modal = document.getElementById("requestServiceModal");
-            const reqBtn = document.getElementById("request-service-btn");
-            const closeBtn = document.getElementById("close-modal");
-            const submitBtn = document.getElementById("submit-service-request");
-
-            reqBtn.addEventListener("click", () => {
-                if (!selectedDate) {
-                    Swal.fire({
-                        icon: "warning",
-                        title: "Select a date",
-                        text: "Please check availability first.",
-                        confirmButtonColor: '#334155'
-                    });
-                    return;
-                }
-                document.getElementById("selected-date-display").textContent = selectedDate;
-                document.getElementById("selected-package-display").textContent = currentPackage;
-                modal.classList.remove("hidden");
-            });
-
-            closeBtn.addEventListener("click", () => modal.classList.add("hidden"));
-
-            submitBtn.addEventListener("click", () => {
-                const message = document.getElementById("service-message").value;
-                const offeredPrice = prices[currentPackage];
-
-                fetch("{{ route('service-requests.store') }}", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                        },
-                        body: JSON.stringify({
-                            student_service_id: {{ $service->id }},
-                            selected_dates: selectedDate,
-                            selected_package: currentPackage,
-                            message: message,
-                            offered_price: offeredPrice
-                        })
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (!data.success) throw new Error(data.error || "Error");
-                        Swal.fire({
-                            icon: "success",
-                            title: "Sent!",
-                            text: data.message,
-                            confirmButtonColor: '#4f46e5'
-                        });
-                        modal.classList.add("hidden");
-                    })
-                   .catch(err => {
-    console.error('Order/Action Failure:', err); 
-
-    Swal.fire({
-        icon: "warning", // Use 'warning' for user status issues rather than 'error'
-        title: "Currently Unavailable",
-        text: "The student is currently unavailable to receive new orders. Please check back later or choose another helper.",
-        confirmButtonColor: '#4F46E5' // Indigo color or similar
-    });
-});
-            });
-        @endauth
         });
 
-        // --- 4. Share Logic ---
+        function bookingSystem() {
+    return {
+        hasActiveRequest: @json($hasActiveRequest),
+        isSessionBased: {{ $service->session_duration ? 'true' : 'false' }},
+        
+        // --- DATA ---
+        holidays: @json(
+            $service->unavailable_dates 
+                ? (is_array($service->unavailable_dates) ? $service->unavailable_dates : json_decode($service->unavailable_dates)) 
+                : []
+        ),
+        schedule: @json($service->operating_hours ?? []),
+        bookedSlots: @json($bookedAppointments ?? []),
+        manualBlocks: @json($manualBlocks ?? []),
+
+        // 🟢 NEW: Full Package Objects
+        packages: {
+            basic: {
+                price: {{ $service->basic_price ?? 0 }},
+                description: `{!! $service->basic_description ?? '' !!}`,
+                duration: "{{ $service->basic_duration ?? 'N/A' }}",
+                frequency: "{{ $service->basic_frequency ?? 'N/A' }}"
+            },
+            standard: {
+                price: {{ $service->standard_price ?? 0 }},
+                description: `{!! $service->standard_description ?? '' !!}`,
+                duration: "{{ $service->standard_duration ?? 'N/A' }}",
+                frequency: "{{ $service->standard_frequency ?? 'N/A' }}"
+            },
+            premium: {
+                price: {{ $service->premium_price ?? 0 }},
+                description: `{!! $service->premium_description ?? '' !!}`,
+                duration: "{{ $service->premium_duration ?? 'N/A' }}",
+                frequency: "{{ $service->premium_frequency ?? 'N/A' }}"
+            }
+        },
+
+        currentPackage: '{{ $service->basic_price ? 'basic' : ($service->standard_price ? 'standard' : 'premium') }}',
+        selectedDuration: 1,
+        selectedDate: null,
+        selectedTime: null,
+        upcomingDays: [],
+        timeSlots: [],
+        sessionDuration: {{ $service->session_duration ?? 60 }},
+        showFullCalendar: false,
+        calendarInstance: null,
+
+        // --- COMPUTED PROPERTIES ---
+        get priceColorClass() {
+            if (this.currentPackage === 'basic') return 'text-teal-600';
+            if (this.currentPackage === 'standard') return 'text-yellow-500';
+            if (this.currentPackage === 'premium') return 'text-red-600';
+            return 'text-indigo-600';
+        },
+
+        // --- METHODS ---
+        init() {
+            this.generateCalendar();
+        },
+
+        calculateTotal() {
+            // Use the new packages object structure
+            return (this.packages[this.currentPackage].price * this.selectedDuration).toFixed(2);
+        },
+
+                selectDuration(hours) {
+                    this.selectedDuration = hours;
+                    this.selectedTime = null;
+                    if (this.selectedDate) {
+                        const dayObj = this.upcomingDays.find(d => d.dateStr === this.selectedDate);
+                        if (dayObj) {
+                            this.generateTimeSlots(dayObj.dayKey);
+                        } else {
+                            const dateObj = new Date(this.selectedDate);
+                            const jsDays = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+                            this.generateTimeSlots(jsDays[dateObj.getDay()]);
+                        }
+                    }
+                },
+
+                generateCalendar() {
+                    const days = [];
+                    const today = new Date();
+                    const jsDays = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+                    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+                    for (let i = 0; i < 14; i++) {
+                        const d = new Date(today);
+                        d.setDate(today.getDate() + i);
+
+                        const year = d.getFullYear();
+                        const month = String(d.getMonth() + 1).padStart(2, '0');
+                        const day = String(d.getDate()).padStart(2, '0');
+                        const dateStr = `${year}-${month}-${day}`;
+
+                        const dayOfWeekIndex = d.getDay();
+                        const dayKey = jsDays[dayOfWeekIndex];
+
+                        let isAvailable = true;
+                        if (this.holidays.includes(dateStr)) isAvailable = false;
+
+                        const config = this.schedule[dayKey];
+                        if (!config || !config.enabled || config.enabled == 'false') isAvailable = false;
+
+                        days.push({
+                            dateStr: dateStr,
+                            dayName: dayNames[dayOfWeekIndex],
+                            dayNumber: day,
+                            dayKey: dayKey,
+                            isAvailable: isAvailable
+                        });
+                    }
+                    this.upcomingDays = days;
+                },
+
+                selectDate(dayObj) {
+                    if (!dayObj.isAvailable) return;
+                    this.selectedDate = dayObj.dateStr;
+                    this.selectedTime = null;
+                    this.generateTimeSlots(dayObj.dayKey);
+                },
+                formatTimeOnly(timeStr) {
+                    if (!timeStr) return '';
+                    let [h, m] = timeStr.split(':').map(Number);
+                    let ampm = h >= 12 ? 'PM' : 'AM';
+                    h = h % 12;
+                    h = h ? h : 12;
+                    return `${h}:${m.toString().padStart(2, '0')} ${ampm}`;
+                },
+
+                generateTimeSlots(dayKey) {
+                    this.timeSlots = [];
+                    const config = this.schedule[dayKey];
+
+                    // If day is disabled in settings, stop.
+                    if (!config || !config.enabled) return;
+
+                    // Parse Operating Hours (e.g., 09:00 to 17:00)
+                    let [startH, startM] = config.start.split(':').map(Number);
+                    let [endH, endM] = config.end.split(':').map(Number);
+
+                    let currentMinutes = startH * 60 + startM;
+                    let endMinutes = endH * 60 + endM;
+
+                    // Step is determined by the Service's Session Duration (e.g., 60 mins)
+                    // But the USER's selected duration (e.g., 2 hours) determines if they fit in the gap
+                    let stepMinutes = this.sessionDuration;
+                    let durationMinutes = this.selectedDuration * 60; // How long the student wants to book
+
+                    // Filter real bookings for the selected date to optimize the loop
+                    let daysBookings = this.bookedSlots.filter(slot => slot.date === this.selectedDate);
+
+                    while (currentMinutes + durationMinutes <= endMinutes) {
+
+                        let h = Math.floor(currentMinutes / 60);
+                        let m = currentMinutes % 60;
+                        let timeStr = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`; // "14:00"
+
+                        let proposedStart = currentMinutes;
+                        let proposedEnd = currentMinutes + durationMinutes;
+
+                        // CHECK 1: Real Database Bookings (Overlap Check)
+                        let isBooked = daysBookings.some(booking => {
+                            let [bStartH, bStartM] = booking.start_time.split(':').map(Number);
+                            let [bEndH, bEndM] = booking.end_time.split(':').map(Number);
+
+                            let bookingStart = bStartH * 60 + bStartM;
+                            let bookingEnd = bEndH * 60 + bEndM;
+
+                            // If the requested time overlaps with any part of a booked slot
+                            return (proposedStart < bookingEnd) && (proposedEnd > bookingStart);
+                        });
+
+                        // CHECK 2: Manual Blocks (Exact Start Time Match)
+                        // The Helper blocked "2025-12-20 14:00". If this slot is 14:00, block it.
+                        let blockKey = `${this.selectedDate} ${timeStr}`;
+                        let isManuallyBlocked = this.manualBlocks.includes(blockKey);
+
+                        // CHECK 3: Manual Blocks (Overlap Logic - Optional but recommended)
+                        // If the helper blocked 14:00 (1 hour block), and student wants 2 hours starting at 13:00,
+                        // the student's 13:00-15:00 overlaps with the blocked 14:00-15:00.
+                        // For simplicity, we stick to "Is the start time blocked?" usually, 
+                        // but checking if any blocked start time falls within our proposed duration is safer:
+                        if (!isManuallyBlocked) {
+                            // Check if any manual block falls inside our proposed time range
+                            isManuallyBlocked = this.manualBlocks.some(blockedKey => {
+                                if (!blockedKey.startsWith(this.selectedDate)) return false;
+                                let blockedTime = blockedKey.split(' ')[1]; // "14:00"
+                                let [blkH, blkM] = blockedTime.split(':').map(Number);
+                                let blkMin = blkH * 60 + blkM;
+                                // Assuming manual blocks are 1 'session_duration' unit long
+                                let blkEnd = blkMin + this.sessionDuration;
+
+                                return (proposedStart < blkEnd) && (proposedEnd > blkMin);
+                            });
+                        }
+
+                        this.timeSlots.push({
+                            time: timeStr,
+                            available: !isBooked && !isManuallyBlocked
+                        });
+
+                        currentMinutes += stepMinutes;
+                    }
+                },
+
+                switchPackage(pkg) {
+                    this.currentPackage = pkg;
+                    this.selectedTime = null;
+                },
+
+                formatTimeDisplay(timeStr) {
+                    if (!timeStr) return '';
+                    let [h, m] = timeStr.split(':').map(Number);
+                    let startMinutes = h * 60 + m;
+
+                    // 🟢 NEW LOGIC: If Task Based, only show Start Time
+                    if (!this.isSessionBased) {
+                        return this.minutesToTime(startMinutes);
+                    }
+
+                    // If Session Based, show Range
+                    let endMinutes = startMinutes + (this.selectedDuration * 60);
+                    return `${this.minutesToTime(startMinutes)} - ${this.minutesToTime(endMinutes)}`;
+                },
+
+                minutesToTime(totalMinutes) {
+                    let h = Math.floor(totalMinutes / 60);
+                    let m = totalMinutes % 60;
+                    let ampm = h >= 12 ? 'PM' : 'AM';
+                    h = h % 12;
+                    h = h ? h : 12;
+                    return `${h}:${m.toString().padStart(2, '0')} ${ampm}`;
+                },
+
+                submitBooking() {
+                    @auth
+                    if (this.hasActiveRequest) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Limit Reached',
+                            text: 'You already have an active request.',
+                            confirmButtonColor: '#f59e0b'
+                        });
+                        return;
+                    }
+
+                    // --- 1. Prepare Data for Task vs Session ---
+                    let displayTime = this.isSessionBased ? this.formatTimeDisplay(this.selectedTime) :
+                        'Anytime (Full Day)';
+                    let displayDuration = this.isSessionBased ? this.selectedDuration + ' Hours' : 'Task Based';
+
+                    // Define times to send to backend
+                    let sendStartTime = this.isSessionBased ? this.selectedTime : '00:00';
+                    let sendEndTime = this.isSessionBased ? this.calculateEndTime(this.selectedTime) : '23:59';
+
+                    // --- 2. Build Modal HTML ---
+                    let detailsHtml = `
+            <div class="text-left bg-gray-50 p-4 rounded-lg border border-gray-200 text-sm mb-4">
+                <p class="mb-1"><strong>Date:</strong> ${this.selectedDate}</p>`;
+
+                    // Only show Time row if session based
+                    if (this.isSessionBased) {
+                        detailsHtml += `<p class="mb-1"><strong>Time:</strong> ${displayTime}</p>
+                            <p class="mb-1"><strong>Duration:</strong> ${displayDuration}</p>`;
+                    } else {
+                        detailsHtml += `<p class="mb-1"><strong>Type:</strong> Daily Task Request</p>`;
+                    }
+
+                    detailsHtml += `
+                <p class="mb-1"><strong>Package:</strong> ${this.currentPackage.toUpperCase()}</p>
+                <p class="text-lg font-bold text-indigo-600 mt-2">Total: RM${this.calculateTotal()}</p>
+            </div>
+            <div class="text-left">
+                <label class="block text-sm font-bold text-gray-700 mb-1">Message to Helper (Required)</label>
+                <textarea id="swal-message-input" 
+                    class="w-full border border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-3" 
+                    rows="3" 
+                    placeholder="Please describe the task details here..."></textarea>
+            </div>`;
+
+                    Swal.fire({
+                        title: 'Confirm Request?',
+                        html: detailsHtml,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: 'Yes, Send Request',
+                        confirmButtonColor: '#4f46e5',
+                        preConfirm: () => {
+                            const msg = document.getElementById('swal-message-input').value;
+                            if (!msg) Swal.showValidationMessage(
+                                'Please write a message describing your request');
+                            return msg;
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            const userNote = result.value;
+                            const systemInfo = this.isSessionBased ? `Duration: ${this.selectedDuration} Hours` :
+                                'One-off Task Request';
+                            const finalMessage = `${systemInfo}\n\nUser Note: ${userNote}`;
+
+                            fetch("{{ route('service-requests.store') }}", {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                                    },
+                                    body: JSON.stringify({
+                                        student_service_id: {{ $service->id }},
+                                        selected_dates: this.selectedDate,
+                                        start_time: sendStartTime, // Sends 00:00 if task based
+                                        end_time: sendEndTime, // Sends 23:59 if task based
+                                        message: finalMessage,
+                                        selected_package: this.currentPackage,
+                                        offered_price: this.calculateTotal()
+                                    })
+                                })
+                                .then(res => res.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        Swal.fire('Success', 'Request sent!', 'success').then(() => location
+                                            .reload());
+                                    } else {
+                                        Swal.fire('Error', data.message || 'Error occurred.', 'error');
+                                    }
+                                });
+                        }
+                    });
+                @endauth
+                @guest window.location.href = "{{ route('login') }}";
+            @endguest
+
+        }
+        }
+        }
+
         function handleShare(btn) {
             const modal = document.getElementById('shareModal');
             document.getElementById('shareLinkInput').value = btn.dataset.url;
@@ -647,25 +909,78 @@
             setTimeout(() => msg.classList.add('opacity-0'), 2000);
         }
 
-        // --- 5. Favorite Logic ---
-        function handleFavourite(id, loggedIn) {
-            if (!loggedIn) return window.location.href = "{{ route('login') }}";
-            const icon = document.getElementById('heart-' + id);
-            const isSaved = icon.classList.contains('fas'); // Solid
+        function handleFavourite(serviceId, loggedIn) {
+            if (!loggedIn) {
+                window.location.href = "{{ route('login') }}";
+                return;
+            }
 
-            // Optimistic UI
-            icon.className = isSaved ? 'far fa-heart' : 'fas fa-heart text-red-500';
+            const icon = document.getElementById('heart-' + serviceId);
+            const text = document.getElementById('text-' + serviceId);
 
-            fetch('/favourites/toggle/' + id, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    service_id: id
+            fetch("{{ route('favorites.services.toggle') }}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                    },
+                    body: JSON.stringify({
+                        service_id: serviceId
+                    })
                 })
-            });
+                .then(async res => {
+                    const data = await res.json();
+                    if (!res.ok) throw data;
+                    return data;
+                })
+                .then(data => {
+                    if (!data.success) return;
+
+                    if (data.favorited) {
+                        // ❤️ UI update
+                        icon.className = "fas fa-heart";
+                        icon.parentElement.classList.remove('text-gray-500');
+                        icon.parentElement.classList.add('text-red-500');
+                        text.innerText = "Saved";
+
+                        // ✅ SweetAlert success
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Saved!',
+                            text: 'Service added to your favourites',
+                            timer: 1500,
+                            showConfirmButton: false,
+                            toast: true,
+                            position: 'top-end'
+                        });
+
+                    } else {
+                        // 💔 UI update
+                        icon.className = "far fa-heart";
+                        icon.parentElement.classList.remove('text-red-500');
+                        icon.parentElement.classList.add('text-gray-500');
+                        text.innerText = "Save";
+
+                        // ⚠️ SweetAlert removed
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'Removed',
+                            text: 'Service removed from favourites',
+                            timer: 1500,
+                            showConfirmButton: false,
+                            toast: true,
+                            position: 'top-end'
+                        });
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: err.message || 'Unable to update favourite'
+                    });
+                });
         }
     </script>
 </body>

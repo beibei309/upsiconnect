@@ -7,6 +7,13 @@ use App\Models\User;
 use App\Models\StudentService;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ServiceWarningMail;
+use App\Mail\ServiceApprovedMail; 
+use App\Mail\ServiceRejectedMail; 
+
+// Import the Notification
+use App\Notifications\ServiceStatusNotification;
 
 // 👇 TAMBAH DUA LINE NI (Supaya boleh hantar email)
 use App\Mail\WarningMail;
@@ -15,27 +22,57 @@ use Illuminate\Support\Facades\Mail;
 
 class AdminServicesController extends Controller
 {
-    // Display the list of services with search and filtering
-    public function index(Request $request)
-    {
-        $search = $request->query('search');
+   public function index(Request $request)
+{
+    $search     = $request->query('search');
+    $categoryId = $request->query('category');
+    $studentId  = $request->query('student');
 
-        $services = StudentService::query()
-            ->when($search, function ($query, $search) {
-                return $query->where('title', 'like', "%$search%")
-                             ->orWhere('description', 'like', "%$search%");
-            })
-            ->with('user', 'category')
-            ->paginate(10);
+    $services = StudentService::with(['user', 'category'])
+        ->when($search, function ($query, $search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhereHas('user', function ($u) use ($search) {
+                      $u->where('name', 'like', "%{$search}%");
+                  });
+            });
+        })
+        ->when($categoryId, function ($query, $categoryId) {
+            $query->where('category_id', $categoryId);
+        })
+        ->when($studentId, function ($query, $studentId) {
+            $query->where('user_id', $studentId);
+        })
+        ->latest()
+        ->paginate(10)
+        ->withQueryString();
 
-        return view('admin.services.index', compact('services'));
-    }
+    $categories = Category::orderBy('name')->get();
+    $students   = User::where('role', 'student')->orderBy('name')->get();
+
+    return view('admin.services.index', compact(
+        'services',
+        'categories',
+        'students'
+    ));
+}
+
 
     // Approve a service
     public function approve(StudentService $service)
     {
         $service->approval_status = 'approved';
         $service->save();
+
+        if ($service->user && $service->user->email) {
+            Mail::to($service->user->email)->send(new ServiceApprovedMail($service));
+        }
+
+        // 2. Send Database Notification
+        if ($service->user) {
+            $service->user->notify(new ServiceStatusNotification('approved', $service));
+        }
 
         return redirect()->route('admin.services.index')->with('success', 'Service approved.');
     }
@@ -45,6 +82,15 @@ class AdminServicesController extends Controller
     {
         $service->approval_status = 'rejected';
         $service->save();
+
+        if ($service->user && $service->user->email) {
+            Mail::to($service->user->email)->send(new ServiceRejectedMail($service));
+        }
+
+        // 2. Send Database Notification
+        if ($service->user) {
+            $service->user->notify(new ServiceStatusNotification('rejected', $service));
+        }
 
         return redirect()->route('admin.services.index')->with('success', 'Service rejected.');
     }
