@@ -56,18 +56,19 @@ class AdminStudentStatusController extends Controller
 
     // 2. SHOW CREATE FORM
     public function create(Request $request)
-    {
-        $existingStatusIds = StudentStatus::pluck('student_id')->toArray();
+{
+    $existingStatusIds = StudentStatus::pluck('student_id')->toArray();
 
-        $students = User::whereIn('role', ['student', 'helper'])
-            ->whereNotIn('id', $existingStatusIds)
-            ->orderBy('name', 'asc')
-            ->get();
+    $students = User::whereIn('role', ['student', 'helper'])
+        ->whereNotIn('id', $existingStatusIds)
+        ->orderBy('name', 'asc')
+        ->get();
 
-        $selectedStudentId = $request->input('student_id');
+    $selectedStudentId = $request->input('student_id');
 
-        return view('admin.student_status.create', compact('students', 'selectedStudentId'));
-    }
+    return view('admin.student_status.create', compact('students', 'selectedStudentId'));
+}
+
 
     // 3. STORE NEW STATUS
     public function store(Request $request)
@@ -81,7 +82,7 @@ class AdminStudentStatusController extends Controller
 
     $student = User::findOrFail($request->student_id);
 
-    // LOGIC VALIDATION
+    // Graduation requires date
     if ($request->status === 'Graduated' && !$request->graduation_date) {
         return back()
             ->withInput()
@@ -90,21 +91,27 @@ class AdminStudentStatusController extends Controller
             ]);
     }
 
-    if ($request->status === 'Dismissed') {
-        $request->merge([
-            'semester' => null,
-            'graduation_date' => null,
-        ]);
+    // ✅ FORCE semester value (NO NULL)
+    if (in_array($request->status, ['Graduated', 'Dismissed'])) {
+        $semester = 'Final';
+    } else {
+        $semester = $request->semester;
+    }
+
+    if (!$semester) {
+        return back()
+            ->withInput()
+            ->withErrors([
+                'semester' => 'Semester is required.'
+            ]);
     }
 
     StudentStatus::create([
-        'student_id' => $student->id,
-        'matric_no' => $student->student_id,
-        'semester' => in_array($request->status, ['Graduated', 'Dismissed'])
-            ? null
-            : $request->semester,
-        'status' => $request->status,
-        'effective_date' => now(),
+        'student_id'      => $student->id,
+        'matric_no'       => $student->student_id,
+        'semester'        => $semester, // ✅ NEVER NULL
+        'status'          => $request->status,
+        'effective_date'  => now(),
         'graduation_date' => $request->graduation_date,
     ]);
 
@@ -112,6 +119,7 @@ class AdminStudentStatusController extends Controller
         ->route('admin.student_status.index')
         ->with('success', 'Student status created successfully.');
 }
+
 
     // 4. SHOW EDIT FORM
     public function edit($id)

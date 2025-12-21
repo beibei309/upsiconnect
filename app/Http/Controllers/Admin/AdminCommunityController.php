@@ -62,14 +62,26 @@ public function update(Request $request, $id)
 {
     $user = User::where('role', 'community')->findOrFail($id);
 
-    $user->name = $request->name;
+    // 🔒 Prevent reverting approved users back to pending
+    if (
+        $user->verification_status === 'approved' &&
+        $request->verification_status === 'pending'
+    ) {
+        return back()->with('error', 'Verified users cannot be reverted to pending.');
+    }
+
+    // Basic info
+    $user->name  = $request->name;
     $user->email = $request->email;
     $user->phone = $request->phone;
-    $user->bio = $request->bio;
+    $user->bio   = $request->bio;
+
+    // Now it is SAFE to update verification status
     $user->verification_status = $request->verification_status;
 
     // Upload new profile photo
     if ($request->hasFile('profile_photo')) {
+
         // Delete old photo if exists
         if ($user->profile_photo_path && Storage::disk('public')->exists($user->profile_photo_path)) {
             Storage::disk('public')->delete($user->profile_photo_path);
@@ -78,7 +90,7 @@ public function update(Request $request, $id)
         $file = $request->file('profile_photo');
         $filename = time() . '_' . $file->getClientOriginalName();
         $path = $file->storeAs('uploads/profile', $filename, 'public');
-        
+
         $user->profile_photo_path = $path;
     }
 
@@ -94,9 +106,11 @@ public function update(Request $request, $id)
 
     $user->save();
 
-    return redirect()->route('admin.community.view', $user->id)
-                     ->with('success', 'User updated successfully!');
+    return redirect()
+        ->route('admin.community.view', $user->id)
+        ->with('success', 'User updated successfully!');
 }
+
 
 public function blacklist(Request $request, $id)
 {
@@ -124,6 +138,22 @@ public function unblacklist($id)
 
     return redirect()->route('admin.community.index')
                      ->with('success', 'Blacklist removed.');
+}
+
+public function delete($id)
+{
+    $user = User::where('role', 'community')->findOrFail($id);
+
+    // Optional: delete profile photo
+    if ($user->profile_photo_path && Storage::disk('public')->exists($user->profile_photo_path)) {
+        Storage::disk('public')->delete($user->profile_photo_path);
+    }
+
+    $user->delete();
+
+    return redirect()
+        ->route('admin.community.index')
+        ->with('success', 'Community user deleted successfully.');
 }
 
 public function export(Request $request)

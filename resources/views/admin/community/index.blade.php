@@ -2,74 +2,73 @@
 
 @section('content')
 
-<!-- SUMMARY CARDS -->
-<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-    <div class="bg-white shadow rounded-lg p-4">
-        <h3 class="text-gray-500 text-sm">Total Community Users</h3>
-        <p class="text-2xl font-bold">{{ $stats['total'] }}</p>
-    </div>
-
-    <div class="bg-white shadow rounded-lg p-4">
-        <h3 class="text-gray-500 text-sm">Approved</h3>
-        <p class="text-2xl font-bold text-green-600">{{ $stats['approved'] }}</p>
-    </div>
-
-    <div class="bg-white shadow rounded-lg p-4">
-        <h3 class="text-gray-500 text-sm">Pending</h3>
-        <p class="text-2xl font-bold text-yellow-600">{{ $stats['pending'] }}</p>
-    </div>
-
-    <div class="bg-white shadow rounded-lg p-4">
-        <h3 class="text-gray-500 text-sm">Blacklisted</h3>
-        <p class="text-2xl font-bold text-red-600">{{ $stats['blacklisted'] }}</p>
-    </div>
-</div>
-
-
 <h1 class="text-3xl font-bold mb-6">Manage Community Users</h1>
 
-<!-- SEARCH BAR -->
-<form method="GET" class="mb-6 flex gap-3">
-    <input type="text" name="search" placeholder="Search community users..."
-           class="p-2 border rounded w-1/3" value="{{ request('search') }}" />
-    <button class="px-4 py-2 bg-blue-600 text-white rounded">Search</button>
-</form>
+<!-- Search + Export Row -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5">
 
-<!-- Filter Pills -->
-<div class="flex gap-3 mb-6">
+    <!-- Search -->
+    <form method="GET" class="flex items-center gap-2 w-full md:w-auto">
+        <input type="text"
+               name="search"
+               placeholder="Search community users..."
+               class="w-full md:w-80 px-4 py-2 border border-gray-300 rounded-lg
+                      focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+               value="{{ request('search') }}">
+
+        @if(request('status'))
+            <input type="hidden" name="status" value="{{ request('status') }}">
+        @endif
+
+        <button class="px-5 py-2 bg-blue-600 text-white rounded-lg
+                       hover:bg-blue-700 transition text-sm font-medium">
+            Search
+        </button>
+    </form>
+
+    <!-- Export -->
+    <a href="{{ route('admin.community.export', array_merge(request()->only('search', 'status'), ['format' => 'csv'])) }}"
+       class="inline-flex items-center gap-2 px-4 py-2 bg-green-600
+              text-white rounded-lg hover:bg-green-700 transition text-sm">
+        <i class="fa-solid fa-file-csv"></i>
+        Export CSV
+    </a>
+
+</div>
+
+<!-- FILTER PILLS -->
+<div class="flex flex-wrap gap-2 mb-6">
+
+    @php
+        $pill = 'px-4 py-2 rounded-full text-sm font-medium transition';
+        $active = 'bg-blue-600 text-white';
+        $inactive = 'bg-gray-100 text-gray-700 hover:bg-gray-200';
+    @endphp
 
     <!-- ALL -->
-    <a href="{{ route('admin.community.index') }}"
-       class="px-5 py-2 rounded-full text-sm font-medium
-              {{ request('status') == '' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700' }}">
+    <a href="{{ route('admin.community.index', request()->except('status')) }}"
+       class="{{ $pill }} {{ request('status') == null ? $active : $inactive }}">
         All
     </a>
 
     <!-- ACTIVE -->
-    <a href="{{ route('admin.community.index', ['status' => 'active', 'search' => request('search')]) }}"
-       class="px-5 py-2 rounded-full text-sm font-medium
-              {{ request('status') == 'active' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700' }}">
+    <a href="{{ route('admin.community.index', ['status' => 'active'] + request()->except('page')) }}"
+       class="{{ $pill }} {{ request('status') == 'active' ? $active : $inactive }}">
         Active
     </a>
 
     <!-- BLACKLISTED -->
-    <a href="{{ route('admin.community.index', ['status' => 'blacklisted', 'search' => request('search')]) }}"
-       class="px-5 py-2 rounded-full text-sm font-medium
-              {{ request('status') == 'blacklisted' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700' }}">
+    <a href="{{ route('admin.community.index', ['status' => 'blacklisted'] + request()->except('page')) }}"
+       class="{{ $pill }} {{ request('status') == 'blacklisted' ? $active : $inactive }}">
         Blacklisted
     </a>
-</div>
-      <div class="mb-4">
-    <a href="{{ route('admin.community.export', array_merge(request()->only('search', 'status'), ['format' => 'csv'])) }}"
-       class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
-        Export CSV
-    </a>
+
 </div>
 
 
 <div class="bg-white shadow rounded-lg p-6">
 
-    <table class="w-full text-left">
+    <table class="w-full text-center">
         <thead>
             <tr class="bg-gray-100">
                 <th class="py-3 px-4">User</th>
@@ -125,35 +124,62 @@
                     </td>
 
                     <!-- ACTIONS -->
-                    <td class="py-3 px-4 text-sm whitespace-nowrap">
-                        <div class="flex gap-3 items-center">
+                    <!-- ACTIONS -->
+<!-- ACTIONS -->
+<td class="py-3 px-4 text-sm text-center whitespace-nowrap">
+    <div class="flex justify-center gap-3 items-center">
 
-                        <a href="{{ route('admin.community.view', $user->id) }}" 
-                           class="text-blue-600 hover:underline">View</a>
+        {{-- VIEW --}}
+        <a href="{{ route('admin.community.view', $user->id) }}"
+           class="text-indigo-600 hover:text-indigo-900 transition"
+           title="View">
+            <i class="fa-solid fa-eye"></i>
+        </a>
 
-                        <a href="{{ route('admin.community.edit', $user->id) }}"
-                           class="text-yellow-600 hover:underline">Edit</a>
+        {{-- EDIT --}}
+        <a href="{{ route('admin.community.edit', $user->id) }}"
+           class="text-blue-600 hover:text-blue-900 transition"
+           title="Edit">
+            <i class="fa-solid fa-pen-to-square"></i>
+        </a>
 
-                        @if(!$user->is_blacklisted)
-                        <button onclick="openBlacklistModal({{ $user->id }})"
-                            class="text-red-600 hover:underline">
-                            Blacklist
-                        </button>
-                        @else
-                        <form action="{{ route('admin.community.unblacklist', $user->id) }}" method="POST">
-                            @csrf
-                            <button class="text-green-600 hover:underline">Unblacklist</button>
-                        </form>
-                        @endif
+        {{-- BLACKLIST / UNBLACKLIST --}}
+        @if(!$user->is_blacklisted)
+            <button onclick="openBlacklistModal({{ $user->id }})"
+                    class="text-red-600 hover:text-red-900 transition"
+                    title="Blacklist">
+                <i class="fa-solid fa-ban"></i>
+            </button>
+        @else
+            <form action="{{ route('admin.community.unblacklist', $user->id) }}"
+                  method="POST" class="inline">
+                @csrf
+                <button type="submit"
+                        class="text-green-600 hover:text-green-900 transition"
+                        title="Unblacklist">
+                    <i class="fa-solid fa-unlock"></i>
+                </button>
+            </form>
+        @endif
 
-                        <form action="{{ route('admin.community.delete', $user->id) }}" method="POST"
-                              onsubmit="return confirm('Delete this user?')">
-                            @csrf
-                            @method('DELETE')
-                            <button class="text-red-600 hover:underline">Delete</button>
-                        </form>
+        {{-- DELETE --}}
+        <form action="{{ route('admin.community.delete', $user->id) }}"
+              method="POST"
+              class="inline"
+              onsubmit="return confirm('Delete this user?')">
+            @csrf
+            @method('DELETE')
+            <button type="submit"
+                    class="text-red-700 hover:text-red-900 transition"
+                    title="Delete">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        </form>
 
-                    </td>
+    </div>
+</td>
+
+
                 </div>
                 </tr>
             @endforeach

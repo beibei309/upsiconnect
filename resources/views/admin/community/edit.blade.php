@@ -71,11 +71,35 @@
                 <h2 class="text-xl font-semibold mb-3 text-gray-800">Verification Status</h2>
 
                 <select name="verification_status"
-                        class="border p-3 rounded-lg w-full focus:ring-blue-400 focus:border-blue-400">
-                    <option value="pending"  {{ $user->verification_status == 'pending' ? 'selected' : '' }}>Pending</option>
-                    <option value="approved" {{ $user->verification_status == 'approved' ? 'selected' : '' }}>Approved</option>
-                    <option value="rejected" {{ $user->verification_status == 'rejected' ? 'selected' : '' }}>Rejected</option>
-                </select>
+        class="border p-3 rounded-lg w-full focus:ring-blue-400 focus:border-blue-400">
+
+    {{-- Pending (disabled if already approved) --}}
+    <option value="pending"
+        {{ $user->verification_status == 'pending' ? 'selected' : '' }}
+        {{ $user->verification_status == 'approved' ? 'disabled' : '' }}>
+        Pending
+    </option>
+
+    {{-- Approved --}}
+    <option value="approved"
+        {{ $user->verification_status == 'approved' ? 'selected' : '' }}>
+        Approved
+    </option>
+
+    {{-- Rejected --}}
+    <option value="rejected"
+        {{ $user->verification_status == 'rejected' ? 'selected' : '' }}>
+        Rejected
+    </option>
+
+</select>
+
+@if($user->verification_status === 'approved')
+    <p class="text-xs text-gray-500 mt-2">
+        Verified users cannot be reverted back to Pending.
+    </p>
+@endif
+
             </div>
 
             <!-- SECTION: BLACKLIST -->
