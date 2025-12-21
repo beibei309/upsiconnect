@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Category;
 use App\Models\StudentService;
+use Illuminate\Http\JsonResponse; // Added for return type
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -11,154 +12,145 @@ class DashboardController extends Controller
 {
 
 public function index(Request $request)
-{
-    // --- 1. Get Inputs ---
-    $q = $request->query('q'); 
-    $category_id = $request->query('category_id'); 
-    $min_rating = $request->query('min_rating');
-    $available = $request->query('available');
+    {
+        // --- 1. Get Inputs ---
+        $q = $request->input('q'); 
+        $category_id = $request->input('category_id'); 
+        $available = $request->input('available'); // '1' or '0'
+        $currentUserId = Auth::id(); 
+        
+        // --- 2. Initialize Base Query & Eager Loads ---
+        $query = StudentService::with(['category', 'user']) // Load User for profile photo/name
+            ->withCount('reviews')          // <--- ESSENTIAL: Counts reviews for THIS service
+            ->withAvg('reviews', 'rating')  // <--- ESSENTIAL: Calcs avg rating for THIS service
+            ->where('approval_status', 'approved'); // Only show approved services
 
-    $currentUserId = Auth::id(); 
-    
-    // --- 2. Initialize Base Query & Eager Loads ---
-    $query = StudentService::with([
-        'category',
-        'user' => function ($q) {
-            $q->withCount('reviewsReceived')
-              ->withAvg('reviewsReceived as average_rating', 'rating');
+        // --- 3. Apply Filters ---
+        
+        // Exclude current user's services (Don't show me my own services in dashboard)
+        if ($currentUserId) {
+            $query->where('user_id', '!=', $currentUserId);
         }
-    ])
-    ->where('is_active', true)
-    ->where('approval_status', 'approved');
 
-    // --- 3. Apply Filters to the Query Builder ---
-    
-    // FIX: Exclude the current user's own services
-    if ($currentUserId) {
-        $query->where('user_id', '!=', $currentUserId);
+        // Filter by Search Query (Title or Description)
+        if ($q) {
+            $query->where(function ($sub) use ($q) {
+                $sub->where('title', 'like', "%{$q}%")
+                    ->orWhere('description', 'like', "%{$q}%");
+            });
+        }
+
+        // Filter by Category
+        if ($category_id) {
+            $query->where('category_id', $category_id);
+        }
+
+        // Filter by Availability (If selected in filter)
+        if ($available === '1') {
+            $query->where('status', 'available');
+        } elseif ($available === '0') {
+            $query->where('status', 'unavailable');
+        }
+
+        // --- 4. Execute Query (For "Services You Might Like") ---
+        // We take 6 for the dashboard preview. 
+        // If a user searches, they usually go to the full index page, 
+        // but this allows basic searching on dashboard too.
+        $services = $query->latest()->take(6)->get();
+
+        // --- 5. Get Categories ---
+        $categories = Category::withCount(['services' => function ($q) {
+            $q->where('approval_status', 'approved');
+        }])->get();
+
+        // --- 6. Get Top Helpers (For "Top Helpers Online") ---
+        // This calculates the USER'S global reputation (all their services combined)
+        $topStudents = User::where('role', 'helper')
+            ->whereHas('services', function ($q) {
+                $q->where('approval_status', 'approved');
+            })
+            ->withCount('reviewsReceived') // Count all reviews received by this user
+            ->withAvg('reviewsReceived', 'rating') // Average of all reviews
+            ->orderByDesc('reviews_received_avg_rating') // Rank by best rating
+            ->take(10)
+            ->get();
+
+        return view('dashboard', compact('services', 'categories', 'topStudents', 'q', 'category_id'));
     }
-    
-    // NOTE: You would add other filters ($q, $category_id, $min_rating, $available) here.
-    
-    // --- 4. Execute the Query ---
-    $services = $query->latest()->get();
-
-    // --- 5. Get Categories with Count of APPROVED services (No changes needed here) ---
-    $categories = Category::withCount(['services' => function ($q) use ($currentUserId) {
-        $q->where('is_active', true)
-          ->where('approval_status', 'approved');
-          // Optional: Exclude user's own services from the category count as well
-          if ($currentUserId) {
-              $q->where('user_id', '!=', $currentUserId);
-          }
-    }])->get();
-
-    // --- 6. Get Top Providers (No changes needed here) ---
-    $topStudents = User::where('role', 'helper')
-    // ... (rest of the topStudents query remains the same)
-    ->whereHas('services', function ($q) {
-        $q->where('is_active', true)
-          ->where('approval_status', 'approved');
-    })
-    ->withCount([
-        'services' => function ($q) {
-            $q->where('is_active', true)
-              ->where('approval_status', 'approved');
-        },
-        'reviewsReceived'
-    ])
-    ->withAvg('reviewsReceived as average_rating', 'rating')
-    ->orderByDesc('services_count')
-    ->take(6)
-    ->get();
-
-    return view('dashboard', compact('services', 'categories', 'q', 'category_id', 'min_rating', 'available', 'topStudents'));
-}
 
     public function services(Request $request): JsonResponse
-{
-    $q = $request->string('q')->toString();
-    $categoryId = $request->integer('category_id');
-    $minRating = $request->integer('min_rating');
-    $availableOnly = $request->boolean('available_only', false);
+    {
+        $q = $request->string('q')->toString();
+        $categoryId = $request->integer('category_id');
+        $minRating = $request->integer('min_rating');
+        $availableOnly = $request->boolean('available_only', false);
 
-    $query = StudentService::query()
-        ->where('is_active', true)
-        ->with(['category', 'helper' => function ($query) {
-            $query->select(['id', 'name', 'role', 'is_available']);
-        }]);
+        $query = StudentService::query()
+            ->with(['category', 'user']) // Use 'user' relation standard
+            ->withAvg('reviews', 'rating') // Use Service specific rating
+            ->where('approval_status', 'approved');
 
-    if ($q) {
-        $query->where(function ($sub) use ($q) {
-            $sub->where('title', 'like', "%$q%")
-                ->orWhere('description', 'like', "%$q%");
+        if ($q) {
+            $query->where(function ($sub) use ($q) {
+                $sub->where('title', 'like', "%$q%")
+                    ->orWhere('description', 'like', "%$q%");
+            });
+        }
+
+        if ($categoryId) {
+            $query->where('category_id', $categoryId);
+        }
+
+        if ($availableOnly) {
+            $query->where('status', 'available');
+        }
+
+        // Filter by Service Rating (Not user rating)
+        if ($minRating) {
+            $query->having('reviews_avg_rating', '>=', $minRating);
+        }
+
+        $services = $query->latest()->get();
+
+        $result = $services->map(function ($svc) {
+            return [
+                'id' => $svc->id,
+                'title' => $svc->title,
+                'description' => $svc->description,
+                'basic_price' => $svc->basic_price,
+                'category' => $svc->category,
+                'rating' => round($svc->reviews_avg_rating, 1), // Service Rating
+                'student' => [
+                    'id' => $svc->user->id,
+                    'name' => $svc->user->name,
+                    'badge' => $svc->user->trust_badge,
+                ],
+            ];
         });
+
+        return response()->json(['services' => $result], 200);
     }
 
-    if ($categoryId) {
-        $query->where('category_id', $categoryId);
+    public function switchMode(Request $request)
+    {
+        $user = Auth::user();
+
+        // Only helpers can switch modes
+        if ($user->role !== 'helper') {
+            return back()->with('error', 'Unauthorized action.');
+        }
+
+        // Get current mode (default to 'seller' for helpers if not set)
+        $currentMode = session('view_mode', 'seller');
+
+        if ($currentMode === 'seller') {
+            // Switch to Buying Mode
+            session(['view_mode' => 'buyer']);
+            return redirect()->route('dashboard'); // Redirect to Browse Services/Home
+        } else {
+            // Switch to Selling Mode
+            session(['view_mode' => 'seller']);
+            return redirect()->route('students.index'); // Redirect to Helper Dashboard
+        }
     }
-
-    if ($availableOnly) {
-        $query->whereHas('student', function ($sub) {
-            $sub->where('is_available', true);
-        });
-    }
-
-    if ($minRating) {
-        $query->whereRaw('(
-            select avg(rating)
-            from reviews r
-            where r.reviewee_id = student_services.user_id
-        ) >= ?', [$minRating]);
-    }
-
-    $query->orderByDesc('id');
-
-    $services = $query->get();
-
-    $result = $services->map(function ($svc) {
-        $student = $svc->student;
-        return [
-            'id' => $svc->id,
-            'title' => $svc->title,
-            'description' => $svc->description,
-            'basic_price' => $svc->basic_price,
-            'category' => $svc->category,
-            'student' => [
-                'id' => $student->id,
-                'name' => $student->name,
-                'badge' => $student->trust_badge,
-                'is_available' => (bool) $student->is_available,
-                'average_rating' => $student->average_rating,
-            ],
-        ];
-    });
-
-    return response()->json(['services' => $result], 200);
-}
-
-public function switchMode(Request $request)
-{
-    $user = Auth::user();
-
-    // Only helpers can switch modes
-    if ($user->role !== 'helper') {
-        return back()->with('error', 'Unauthorized action.');
-    }
-
-    // Get current mode (default to 'seller' for helpers if not set)
-    $currentMode = session('view_mode', 'seller');
-
-    if ($currentMode === 'seller') {
-        // Switch to Buying Mode
-        session(['view_mode' => 'buyer']);
-        return redirect()->route('dashboard'); // Redirect to Browse Services/Home
-    } else {
-        // Switch to Selling Mode
-        session(['view_mode' => 'seller']);
-        return redirect()->route('students.index'); // Redirect to Helper Dashboard
-    }
-}
-
 }

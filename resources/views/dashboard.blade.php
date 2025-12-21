@@ -212,10 +212,10 @@
                                     <div class="ml-auto flex items-center gap-1 bg-slate-50 px-2 py-1 rounded text-xs">
                                         <i class="fas fa-star text-yellow-400"></i>
                                         <span class="font-bold text-slate-700">
-                                            {{ number_format($service->user->average_rating ?? 0, 1) }}
+                                            {{ number_format($service->reviews_avg_rating ?? 0, 1) }}
                                         </span>
                                         <span class="text-slate-400">
-                                            ({{ $service->user->reviews_received_count ?? 0 }} reviews)
+                                            ({{ $service->reviews_count ?? 0 }} reviews)
                                         </span>
                                     </div>
                                 </div>

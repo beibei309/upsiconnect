@@ -26,7 +26,8 @@ class StudentServiceController extends Controller
 
     // --- 2. Base Query Setup ---
     $query = StudentService::with(['student', 'category'])
-        // 🔴 PADAM baris ->where('status', 'available') di sini
+        ->withCount('reviews')          // <--- Tambah ini (Kira jumlah review)
+        ->withAvg('reviews', 'rating')  // <--- Tambah ini (Kira purata rating)
         ->where('approval_status', 'approved') // Kita hanya mahu yang approved, tapi status boleh available/unavailable
         ->whereHas('student', function ($q) {
             $q->where('role', 'helper');
@@ -482,12 +483,12 @@ $isUnavailable = $request->has('is_unavailable'); // Check checkbox status
             ->count();
 
         // Fetch Reviews
-        $reviews = Review::where('student_service_id', $service->id)
-                    ->with('reviewer') 
-                    ->latest()
-                    ->get();
+        $reviews = Review::where('student_service_id', $service->id) // <--- PENTING
+            ->with('reviewer') 
+            ->latest()
+            ->get();
 
-        $service->rating = round($reviews->avg('rating'), 1) ?? 0;
+        $service->rating = $reviews->count() > 0 ? round($reviews->avg('rating'), 1) : 0;
 
         // Optional: calculate average delivery time
         $service->avg_days = $orders->avg(function($order) {
@@ -500,9 +501,6 @@ $isUnavailable = $request->has('is_unavailable'); // Check checkbox status
         }
         // Fallback if null
         $manualBlocks = $manualBlocks ?? [];
-
-        
-
         
         $bookedAppointments = ServiceRequest::where('student_service_id', $service->id)
         ->whereIn('status', ['pending', 'accepted', 'in_progress', 'approved']) // statuses that block the calendar

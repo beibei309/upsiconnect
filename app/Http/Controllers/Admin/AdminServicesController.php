@@ -8,17 +8,14 @@ use App\Models\StudentService;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\ServiceWarningMail;
+use Illuminate\Support\Facades\Log;
+use App\Mail\WarningMail;
 use App\Mail\ServiceApprovedMail; 
 use App\Mail\ServiceRejectedMail; 
 
 // Import the Notification
 use App\Notifications\ServiceStatusNotification;
 
-// 👇 TAMBAH DUA LINE NI (Supaya boleh hantar email)
-use App\Mail\WarningMail;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 
 class AdminServicesController extends Controller
 {

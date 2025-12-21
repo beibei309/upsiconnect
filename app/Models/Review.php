@@ -13,10 +13,12 @@ class Review extends Model
         'conversation_id',
         'service_request_id',
         'service_application_id',
+        'student_service_id',
         'reviewer_id',
         'reviewee_id',
-        'service_id', // <--- Aku tambah ni, pastikan column ni wujud kat DB
         'rating',
+        'reply',
+        'replied_at',
         'comment',
     ];
 

@@ -279,10 +279,9 @@
                                             <div class="flex items-center gap-1 mb-3">
                                                 <i class="fas fa-star text-yellow-400 text-sm"></i>
                                                 <span
-                                                    class="font-bold text-slate-800 text-sm">{{ number_format($service->user->average_rating ?? 0, 1) }}</span>
+                                                    class="font-bold text-slate-800 text-sm">{{ number_format($service->reviews_avg_rating ?? 0, 1) }}</span>
                                                 <span
-                                                    class="text-slate-400 text-sm">({{ $service->user->reviewsReceived()->count() }}
-                                                    reviews)</span>
+                                                    class="text-slate-400 text-sm">({{ $service->reviews_count }} reviews)</span>
                                             </div>
 
                                             <div

@@ -22,7 +22,6 @@ use App\Http\Controllers\Admin\AdminFeedbackController;
 use App\Http\Controllers\Pages\SearchPageController;
 use App\Http\Controllers\Admin\ReportAdminController;
 use App\Http\Controllers\Admin\UserAdminController;
-use App\Http\Controllers\Pages\SearchPageController;
 use App\Http\Controllers\Pages\AdminPageController;
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Pages\StudentPageController;
@@ -35,7 +34,6 @@ use App\Http\Controllers\Admin\AdminFaqsController;
 use App\Http\Controllers\Admin\AdminCommunityController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminStudentStatusController;
-use App\Http\Controllers\Admin\AdminRequestController;
 use App\Http\Controllers\NotificationController;
 
 use App\Http\Controllers\Admin\VerificationController as AdminVerificationController;
@@ -211,6 +209,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/services/applications/{application}/interests/{interest}/decline', [ServiceApplicationController::class, 'declineInterest'])->name('services.applications.interests.decline');
 
     Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+    Route::post('/reviews/{review}/reply', [App\Http\Controllers\ReviewController::class, 'reply'])->name('reviews.reply');
     Route::post('/reports', [ReportController::class, 'store']);
 
     // Favorites routes
