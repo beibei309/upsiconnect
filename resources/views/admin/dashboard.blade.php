@@ -69,6 +69,20 @@
 </div>
 @endif
 
+@if($studentsWithoutStatus > 0)
+<div class="mt-6 bg-orange-100 border border-orange-300 text-orange-800 px-6 py-4 rounded-xl flex items-center justify-between">
+    <div>
+        <strong>⚠ Action Required</strong><br>
+        {{ $studentsWithoutStatus }} student(s) do not have an academic status assigned.
+    </div>
+
+    <a href="{{ route('admin.student_status.index') }}"
+       class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition">
+        Assign Status
+    </a>
+</div>
+@endif
+
     <!-- CHARTS -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
 
@@ -94,39 +108,85 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-    const monthLabels = [
-        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-    ];
+/* =========================
+   MONTH LABELS (Jan–Dec)
+========================= */
+const monthLabels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-    // Convert PHP → JS safely
-    const studentData = @json(array_values($studentsPerMonth));
-    const serviceData = @json(array_values($servicesPerMonth));
+/* =========================
+   LINE CHART – STUDENTS
+========================= */
+const studentCtx = document.getElementById('studentChart').getContext('2d');
 
-    // LINE CHART (Students)
-    new Chart(document.getElementById('studentChart').getContext('2d'), {
-        type: 'line',
-        data: {
-            labels: monthLabels,
-            datasets: [{
-                label: "Students Registered",
-                data: studentData,
-                fill: true,
-                tension: 0.3
-            }]
+new Chart(studentCtx, {
+    type: 'line',
+    data: {
+        labels: monthLabels,
+        datasets: [{
+            label: 'Students',
+            data: {!! json_encode(array_values($studentsPerMonth)) !!},
+            borderColor: '#6366F1', // Indigo
+            backgroundColor: 'rgba(99, 102, 241, 0.25)',
+            pointBackgroundColor: '#4F46E5',
+            pointBorderColor: '#ffffff',
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: { color: '#E5E7EB' }
+            },
+            x: {
+                grid: { display: false }
+            }
         }
-    });
+    }
+});
 
-    // BAR CHART (Services)
-    new Chart(document.getElementById('serviceChart').getContext('2d'), {
-        type: 'bar',
-        data: {
-            labels: monthLabels,
-            datasets: [{
-                label: "Services Created",
-                data: serviceData
-            }]
+/* =========================
+   BAR CHART – SERVICES
+========================= */
+const serviceCtx = document.getElementById('serviceChart').getContext('2d');
+
+new Chart(serviceCtx, {
+    type: 'bar',
+    data: {
+        labels: monthLabels,
+        datasets: [{
+            label: 'Services Created',
+            data: {!! json_encode(array_values($servicesPerMonth)) !!},
+            backgroundColor: [
+                '#22C55E','#16A34A','#10B981','#34D399',
+                '#4ADE80','#86EFAC','#6EE7B7','#2DD4BF',
+                '#14B8A6','#0D9488','#059669','#047857'
+            ],
+            borderRadius: 10
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: { color: '#E5E7EB' }
+            },
+            x: {
+                grid: { display: false }
+            }
         }
-    });
+    }
+});
 </script>
 @endsection

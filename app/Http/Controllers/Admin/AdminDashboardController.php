@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\StudentService;
 use App\Models\ServiceApplication;
+use App\Models\StudentStatus;
 
 class AdminDashboardController extends Controller
 {
@@ -17,14 +18,28 @@ class AdminDashboardController extends Controller
     $totalServices = StudentService::count();
     $pendingRequests = ServiceApplication::where('status', 'pending')->count();
 
-    // 🔔 NEW: Pending Student Approvals
-    $pendingStudents = User::where('role', 'student')
-    ->where('verification_status', 'pending')
-    ->count();
+    // ===============================
+        // 🔔 ADMIN ACTION REQUIRED
+        // ===============================
 
-    // 🔔 Pending helper verification
-$pendingHelpers = User::where('role', 'helper')
-    ->where('verification_status', 'pending')
+        // Pending student verification
+        $pendingStudents = User::where('role', 'student')
+            ->where('verification_status', 'pending')
+            ->count();
+
+        // Pending helper verification
+        $pendingHelpers = User::where('role', 'helper')
+            ->where('verification_status', 'pending')
+            ->count();
+
+        // Pending services approval
+        $pendingServices = StudentService::where('status', 'pending')->count();
+
+        $studentsWithoutStatus = User::where('role', 'student')
+    ->whereNotIn('id', function ($query) {
+        $query->select('student_id')
+              ->from('student_statuses');
+    })
     ->count();
 
     /* ---------------------------------------------
@@ -58,10 +73,12 @@ $pendingHelpers = User::where('role', 'helper')
         'totalCommunityUsers',
         'totalServices',
         'pendingRequests',
-        'pendingStudents', // ✅ pass to view
-        'pendingHelpers',   // 👈 ADD THIS
+        'pendingStudents',
+        'pendingHelpers',  
+        'pendingServices',   
         'studentsPerMonth',
-        'servicesPerMonth'
+        'servicesPerMonth',
+        'studentsWithoutStatus',
     ));
 }
 

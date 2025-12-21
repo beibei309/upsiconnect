@@ -267,47 +267,6 @@
         @endif
     </div>
 
-    {{-- IDENTITY VERIFICATION --}}
-<div class="bg-white shadow rounded-lg p-6 mt-6 border border-gray-200">
-    <h2 class="text-lg font-semibold text-gray-800 mb-3">
-        Identity Verification (Live Selfie)
-    </h2>
-
-    @if($student->selfie_media_path)
-        <p class="text-sm text-gray-600 mb-4">
-            Live selfie submitted during verification process.
-        </p>
-
-        <img src="{{ route('admin.verifications.selfie', $student->id) }}"
-             alt="Live Selfie"
-             class="w-40 h-40 rounded-lg object-cover border shadow">
-
-    @else
-        <div class="flex items-center gap-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            
-            <div class="w-24 h-24 flex items-center justify-center bg-yellow-100 rounded border">
-                <svg class="w-10 h-10 text-yellow-500" fill="none" stroke="currentColor"
-                     viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-            </div>
-
-            <div>
-                <p class="font-semibold text-yellow-800">
-                    Live Selfie Not Submitted
-                </p>
-                <p class="text-sm text-yellow-700">
-                    This student has not uploaded a live selfie for identity verification.
-                </p>
-                <p class="text-xs text-yellow-600 mt-1 italic">
-                    Required for verification approval.
-                </p>
-            </div>
-        </div>
-    @endif
-</div>
-
     {{-- SYSTEM INFO --}}
     <div class="bg-white shadow-sm rounded-lg p-6 mt-6 border border-gray-200">
         <h2 class="text-sm font-bold text-gray-500 uppercase mb-4">System Information</h2>

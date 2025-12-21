@@ -20,54 +20,64 @@
 
             {{-- LEFT COLUMN : STUDENT SELECTION --}}
             <div class="md:col-span-1">
-                <label class="block text-gray-700 font-bold mb-2">
-                    1. Select Student / Helper
-                </label>
+    <label class="block text-gray-700 font-bold mb-2">
+        1. Select Student
+    </label>
 
-                <div class="bg-white border border-gray-300 shadow-sm rounded-lg overflow-hidden h-[450px] flex flex-col">
+    <div class="bg-white border border-gray-300 shadow-sm rounded-lg p-4">
 
-                    <div class="bg-blue-600 px-4 py-3 border-b border-blue-700 shrink-0">
-                        <h3 class="text-white font-medium text-sm">
-                            Available Students
-                        </h3>
-                    </div>
+        @if($selectedStudentId)
+            @php
+                $selectedStudent = $students->firstWhere('id', $selectedStudentId);
+            @endphp
 
-                    <div class="overflow-y-auto flex-1">
-                        @if($students->isEmpty())
-                            <div class="p-4 text-center text-gray-500 text-sm">
-                                No students found.
-                            </div>
-                        @else
-                            <ul class="divide-y divide-gray-200">
-                                @foreach($students as $student)
-                                    <li class="hover:bg-blue-50 transition">
-                                        <label class="flex items-center justify-between px-4 py-3 cursor-pointer">
-                                            <div>
-                                                <span class="block text-gray-900 font-medium text-sm">
-                                                    {{ $student->name }}
-                                                </span>
-                                                <span class="block text-gray-500 text-xs">
-                                                    {{ $student->student_id ?? 'No Matric' }}
-                                                </span>
-                                            </div>
-
-                                            <input type="radio"
-                                                   name="student_id"
-                                                   value="{{ $student->id }}"
-                                                   required
-                                                   class="form-radio text-blue-600 h-4 w-4">
-                                        </label>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        @endif
-                    </div>
-                </div>
-
-                @error('student_id')
-                    <p class="text-red-500 text-xs mt-1">Please select a student.</p>
-                @enderror
+            {{-- AUTO-SELECTED STUDENT --}}
+            <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p class="text-sm text-gray-600 mb-1">Selected Student</p>
+                <p class="font-semibold text-gray-900">
+                    {{ $selectedStudent->name }}
+                </p>
+                <p class="text-xs text-gray-500">
+                    {{ $selectedStudent->student_id ?? 'No Matric' }}
+                </p>
             </div>
+
+            {{-- HIDDEN INPUT --}}
+            <input type="hidden" name="student_id" value="{{ $selectedStudentId }}">
+
+        @else
+            {{-- NORMAL SELECTION LIST --}}
+            <div class="h-[420px] overflow-y-auto border rounded-lg">
+                <ul class="divide-y divide-gray-200">
+                    @foreach($students as $student)
+                        <li class="hover:bg-blue-50 transition">
+                            <label class="flex items-center justify-between px-4 py-3 cursor-pointer">
+                                <div>
+                                    <span class="block text-gray-900 font-medium text-sm">
+                                        {{ $student->name }}
+                                    </span>
+                                    <span class="block text-gray-500 text-xs">
+                                        {{ $student->student_id ?? 'No Matric' }}
+                                    </span>
+                                </div>
+
+                                <input type="radio"
+                                       name="student_id"
+                                       value="{{ $student->id }}"
+                                       required
+                                       class="form-radio text-blue-600 h-4 w-4">
+                            </label>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+    </div>
+
+    @error('student_id')
+        <p class="text-red-500 text-xs mt-1">Please select a student.</p>
+    @enderror
+</div>
 
             {{-- RIGHT COLUMN : STATUS DETAILS --}}
             <div class="md:col-span-2">
@@ -111,29 +121,31 @@
 
                         {{-- SEMESTER --}}
                         <div id="semester-container">
-                            <label class="block text-gray-700 font-medium mb-2">
-                                3. Current Semester
-                            </label>
+    <label class="block text-gray-700 font-medium mb-2">
+        3. Current Semester
+    </label>
 
-                            <select name="semester"
-                                    id="semester"
-                                    class="w-full border-gray-300 rounded-md shadow-sm p-2.5
-                                           focus:ring-blue-500 focus:border-blue-500">
-                                <option value="">-- Select Semester --</option>
+    <select name="semester"
+            id="semester"
+            class="w-full border-gray-300 rounded-md shadow-sm p-2.5
+                   focus:ring-blue-500 focus:border-blue-500">
+        <option value="">-- Select Semester --</option>
 
-                                @for ($i = 1; $i <= 12; $i++)
-                                    <option value="Semester {{ $i }}">
-                                        Semester {{ $i }}
-                                    </option>
-                                @endfor
+        @for ($i = 1; $i <= 8; $i++)
+            <option value="Semester {{ $i }}">
+                Semester {{ $i }}
+            </option>
+        @endfor
 
-                                <option value="Extended">Extended</option>
-                            </select>
+        <option value="Final">Final</option>
+        <option value="N/A">N/A</option>
+    </select>
 
-                            @error('semester')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
+    @error('semester')
+        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+    @enderror
+</div>
+
 
                         {{-- GRADUATION / COMPLETION DATE --}}
                         <div id="graduation-date-container">
@@ -180,19 +192,30 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const status = document.getElementById('status');
     const semesterBox = document.getElementById('semester-container');
+    const semester = document.getElementById('semester');
     const dateBox = document.getElementById('graduation-date-container');
 
     function toggleFields() {
         const value = status.value;
 
-        // Semester logic
-        if (value === 'Graduated' || value === 'Dismissed') {
-            semesterBox.style.display = 'none';
-        } else {
-            semesterBox.style.display = 'block';
+        // ===== SEMESTER RULES =====
+        if (value === 'Graduated') {
+            semester.value = 'Final';
+            semester.disabled = true;
+            semesterBox.classList.add('opacity-60');
+        } 
+        else if (value === 'Dismissed') {
+            semester.value = 'N/A';
+            semester.disabled = true;
+            semesterBox.classList.add('opacity-60');
+        } 
+        else {
+            semester.disabled = false;
+            semester.value = '';
+            semesterBox.classList.remove('opacity-60');
         }
 
-        // Date logic
+        // ===== DATE RULES =====
         if (value === 'Dismissed') {
             dateBox.style.display = 'none';
         } else {

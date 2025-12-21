@@ -178,10 +178,11 @@
 
                             @else
                                 {{-- ADD BUTTON --}}
-                                <a href="{{ route('admin.student_status.create', ['student_id' => $student->id]) }}" 
-                                   class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1">
+                                <a href="{{ route('admin.student_status.create', ['student_id' => $student->id]) }}"
+                                    class="text-blue-600 hover:underline">
                                     + Add Status
                                 </a>
+
                             @endif
                         </div>
                     </td>

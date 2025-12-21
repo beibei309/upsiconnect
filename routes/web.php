@@ -278,252 +278,172 @@ Route::get('/search/services', [SearchController::class, 'services']);
 require __DIR__.'/auth.php';
 
 
-/// Admin Login (public)
-Route::get('/admin/login', [AdminAuthController::class, 'showLogin'])->name('admin.login');
-Route::post('/admin/login', [AdminAuthController::class, 'login'])->name('admin.login.submit');
-    
-// Protected Admin Routes
-Route::middleware(['auth:admin', 'prevent-back-history'])->prefix('admin')->group(function () {
-
-    // Dashboard
-    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
-
-    // Student Management
-    Route::get('/students', [AdminStudentController::class, 'index'])->name('admin.students.index');
-    Route::get('/students/view/{id}', [AdminStudentController::class, 'view'])->name('admin.students.view');
-Route::get('admin/requests/export', [App\Http\Controllers\Admin\AdminRequestController::class, 'export'])
-    ->name('admin.requests.export');
-
-/// Admin Login (public)
+/*
+|--------------------------------------------------------------------------
+| ADMIN AUTH (PUBLIC)
+|--------------------------------------------------------------------------
+*/
 Route::get('/admin/login', [AdminAuthController::class, 'showLogin'])
     ->name('admin.login');
 
 Route::post('/admin/login', [AdminAuthController::class, 'login'])
     ->name('admin.login.submit');
-    
-// Protected Admin Routes - Requires admin authentication
-Route::middleware(['auth:admin', 'prevent-back-history'])->prefix('admin')->group(function () {
-    
-    // ========================================
-    // VERIFICATION MANAGEMENT
-    // ========================================
-    // View pending community verifications (document + selfie uploads)
-    Route::get('/verifications', [AdminPageController::class, 'verifications'])->name('admin.verifications.page');
-    
-    // Approve a community user's verification
-    Route::post('/verifications/{user}/approve', [\App\Http\Controllers\Admin\VerificationController::class, 'approve'])->name('admin.verifications.approve');
-    
-    // Reject a community user's verification
-    Route::post('/verifications/{user}/reject', [\App\Http\Controllers\Admin\VerificationController::class, 'reject'])->name('admin.verifications.reject');
-    
-    // View uploaded verification document (secure, private storage)
-    Route::get('/verifications/{user}/document', [\App\Http\Controllers\Admin\VerificationController::class, 'showDocument'])->name('admin.verifications.document');
-    
-    // View uploaded selfie (secure, private storage)
-    Route::get('/verifications/{user}/selfie', [\App\Http\Controllers\Admin\VerificationController::class, 'showSelfie'])->name('admin.verifications.selfie');
-    
-    // ========================================
-    // REPORTS & FEEDBACK
-    // ========================================
-    // View all user reports and complaints
-    Route::get('/reports', [AdminPageController::class, 'reports'])->name('admin.reports.page');
-    
-    // ========================================
-    // ADMIN DASHBOARD
-    // ========================================
-    // Main admin dashboard with statistics
+
+
+/*
+|--------------------------------------------------------------------------
+| PROTECTED ADMIN ROUTES
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth:admin', 'prevent-back-history'])
+    ->prefix('admin')
+    ->group(function () {
+
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN DASHBOARD
+    |--------------------------------------------------------------------------
+    */
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])
         ->name('admin.dashboard');
 
-    // ========================================
-    // STUDENT MANAGEMENT
-    // ========================================
-    // List all students
-    Route::get('/students', [AdminStudentController::class, 'index'])->name('admin.students.index');
-    
-    // View individual student details
-    Route::get('/students/view/{id}', [AdminStudentController::class, 'view'])->name('admin.students.view');
-    
-    // Edit student profile
-    Route::get('/students/{id}/edit', [AdminStudentController::class, 'edit'])->name('admin.students.edit');
-    
-    // Update student profile
-    Route::put('/students/{id}/update', [AdminStudentController::class, 'update'])->name('admin.students.update');
-    
-    // Delete student account
-    Route::delete('/students/{id}', [AdminStudentController::class, 'destroy'])->name('admin.students.delete');
-    
-    // Ban student (prevents login)
-    Route::post('/students/{id}/ban', [AdminStudentController::class, 'ban'])->name('admin.students.ban');
-    
-    // Unban student (restore access)
-    Route::post('/students/{id}/unban', [AdminStudentController::class, 'unban'])->name('admin.students.unban');
-    Route::get('admin/students/export', [AdminStudentController::class, 'export'])->name('admin.students.export');
 
-    // Manage Service Requests
-    Route::get('/requests', [AdminRequestController::class, 'index'])->name('admin.requests.index');
-    Route::delete('/requests/{serviceRequest}', [AdminRequestController::class, 'destroy'])->name('admin.requests.destroy');
+    /*
+    |--------------------------------------------------------------------------
+    | STUDENT MANAGEMENT
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('students')->name('admin.students.')->group(function () {
 
-    // Route for Reports (Feedback & Complaints)
-    Route::get('/feedback', [AdminFeedbackController::class, 'index'])->name('admin.feedback.index');
-    Route::post('/feedback/{user}/warning', [AdminFeedbackController::class, 'sendWarning'])->name('admin.feedback.warning');
-    Route::post('/feedback/{user}/block', [AdminFeedbackController::class, 'blockUser'])->name('admin.feedback.block');   
+        Route::get('/', [AdminStudentController::class, 'index'])->name('index');
+        Route::get('/view/{id}', [AdminStudentController::class, 'view'])->name('view');
+        Route::get('/{id}/edit', [AdminStudentController::class, 'edit'])->name('edit');
+        Route::put('/{id}/update', [AdminStudentController::class, 'update'])->name('update');
 
-    // Manage Admin Accounts (superadmin)
-    Route::get('/superadmin/admins/create', [SuperAdminController::class, 'create'])
-        ->name('admin.super.admins.create');
+        Route::delete('/{id}', [AdminStudentController::class, 'destroy'])->name('delete');
 
-    // View helper verification selfie
-    Route::get('/students/{id}/selfie', [AdminStudentController::class, 'showSelfie'])->name('admin.students.selfie');
-    
-    // Revoke helper status (convert back to student)
-    Route::post('/students/{id}/revoke-helper', [AdminStudentController::class, 'revokeHelper'])->name('admin.students.revoke_helper');
+        Route::post('/{id}/ban', [AdminStudentController::class, 'ban'])->name('ban');
+        Route::post('/{id}/unban', [AdminStudentController::class, 'unban'])->name('unban');
 
-    // ========================================
-    // ADMIN ACCOUNT MANAGEMENT (Superadmin Only)
-    // ========================================
-    // List all admin accounts
-    Route::get('/admins', [SuperAdminController::class, 'adminsIndex'])->name('admin.super.admins.index');
-    
-    // Show create admin form
-    Route::get('/admins/create', [SuperAdminController::class, 'create'])->name('admin.super.admins.create');
-    
-    // Store new admin account
-    Route::post('/admins/store', [SuperAdminController::class, 'store'])->name('admin.super.admins.store');
-    
-    // Show edit admin form
-    Route::get('/admins/{id}/edit', [SuperAdminController::class, 'edit'])->name('admin.super.admins.edit');
-    
-    // Update admin account
-    Route::post('/admins/{id}/update', [SuperAdminController::class, 'update'])->name('admin.super.admins.update');
-    
-    // Delete admin account
-    Route::delete('/admins/{id}', [SuperAdminController::class, 'destroy'])->name('admin.super.admins.delete');
+        Route::get('/export', [AdminStudentController::class, 'export'])->name('export');
 
-    // ========================================
-    // COMMUNITY USER MANAGEMENT
-    // ========================================
-    // List all community users
-    Route::get('/community', [AdminCommunityController::class, 'index'])->name('admin.community.index');
-    
-    // View individual community user details
-    Route::get('/community/view/{id}', [AdminCommunityController::class, 'view'])->name('admin.community.view');
-    
-    // Edit community user profile
-    Route::get('/community/edit/{id}', [AdminCommunityController::class, 'edit'])->name('admin.community.edit');
-    
-    // Update community user profile
-    Route::put('/community/update/{id}', [AdminCommunityController::class, 'update'])->name('admin.community.update');
-    
-    // Blacklist community user (permanent ban)
-    Route::post('/community/blacklist/{id}', [AdminCommunityController::class, 'blacklist'])->name('admin.community.blacklist');
-    
-    // Remove from blacklist
-    Route::post('/community/unblacklist/{id}', [AdminCommunityController::class, 'unblacklist'])->name('admin.community.unblacklist');
-    
-    // Delete community user account
-    Route::delete('/community/delete/{id}', [AdminCommunityController::class, 'delete'])->name('admin.community.delete');
+        Route::get('/{id}/selfie', [AdminStudentController::class, 'showSelfie'])->name('selfie');
+        Route::post('/{id}/revoke-helper', [AdminStudentController::class, 'revokeHelper'])
+            ->name('revoke_helper');
+    });
 
-    // ========================================
-    // STUDENT STATUS MANAGEMENT
-    // ========================================
-    // Manage student enrollment status (active, graduated, etc.)
+
+    /*
+    |--------------------------------------------------------------------------
+    | COMMUNITY USER MANAGEMENT
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('community')->name('admin.community.')->group(function () {
+
+        Route::get('/', [AdminCommunityController::class, 'index'])->name('index');
+        Route::get('/view/{id}', [AdminCommunityController::class, 'view'])->name('view');
+        Route::get('/edit/{id}', [AdminCommunityController::class, 'edit'])->name('edit');
+        Route::put('/update/{id}', [AdminCommunityController::class, 'update'])->name('update');
+
+        Route::post('/blacklist/{id}', [AdminCommunityController::class, 'blacklist'])->name('blacklist');
+        Route::post('/unblacklist/{id}', [AdminCommunityController::class, 'unblacklist'])->name('unblacklist');
+
+        Route::delete('/delete/{id}', [AdminCommunityController::class, 'delete'])->name('delete');
+        Route::get('/export', [AdminCommunityController::class, 'export'])->name('export');
+    });
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | USER MODERATION (GLOBAL)
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('users')->name('admin.users.')->group(function () {
+
+        Route::post('/{user}/ban', [UserAdminController::class, 'ban'])->name('ban');
+        Route::post('/{user}/unban', [UserAdminController::class, 'unban'])->name('unban');
+        Route::post('/{user}/suspend', [UserAdminController::class, 'suspend'])->name('suspend');
+        Route::post('/{user}/unsuspend', [UserAdminController::class, 'unsuspend'])->name('unsuspend');
+    });
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | VERIFICATION MANAGEMENT
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('verifications')->name('admin.verifications.')->group(function () {
+
+        Route::get('/', [AdminVerificationController::class, 'index'])->name('index');
+        Route::post('/{user}/approve', [AdminVerificationController::class, 'approve'])->name('approve');
+        Route::post('/{user}/reject', [AdminVerificationController::class, 'reject'])->name('reject');
+
+        Route::get('/{user}/document', [AdminVerificationController::class, 'showDocument'])
+            ->name('document');
+
+        Route::get('/{user}/selfie', [AdminVerificationController::class, 'showSelfie'])
+            ->name('selfie');
+    });
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | REPORTS & FEEDBACK
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/reports', [ReportAdminController::class, 'index'])
+        ->name('admin.reports.index');
+
+    Route::post('/reports/{report}/resolve', [ReportAdminController::class, 'resolve'])
+        ->name('admin.reports.resolve');
+
+    Route::get('/feedback', [AdminFeedbackController::class, 'index'])
+        ->name('admin.feedback.index');
+
+    Route::post('/feedback/{user}/warning', [AdminFeedbackController::class, 'sendWarning'])
+        ->name('admin.feedback.warning');
+
+    Route::post('/feedback/{user}/block', [AdminFeedbackController::class, 'blockUser'])
+        ->name('admin.feedback.block');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | STUDENT STATUS MANAGEMENT
+    |--------------------------------------------------------------------------
+    */
     Route::prefix('student-status')->name('admin.student_status.')->group(function () {
 
-        
-        // List all student statuses
         Route::get('/', [AdminStudentStatusController::class, 'index'])->name('index');
-        
-        // Show create status form
         Route::get('/create', [AdminStudentStatusController::class, 'create'])->name('create');
-        
-        // Store new status
         Route::post('/store', [AdminStudentStatusController::class, 'store'])->name('store');
-        
-        // Show edit status form
         Route::get('/edit/{id}', [AdminStudentStatusController::class, 'edit'])->name('edit');
-        
-        // Update status
         Route::put('/update/{id}', [AdminStudentStatusController::class, 'update'])->name('update');
-        
-        // Delete status
         Route::delete('/delete/{id}', [AdminStudentStatusController::class, 'destroy'])->name('delete');
     });
 
-    // ========================================
-    // USER MODERATION ACTIONS
-    // ========================================
-    // Ban any user (student or community)
-    Route::post('/users/{user}/ban', [UserAdminController::class, 'ban']);
-    
-    // Unban any user
-    Route::post('/users/{user}/unban', [UserAdminController::class, 'unban']);
-    
-    // Suspend user temporarily
-    Route::post('/users/{user}/suspend', [UserAdminController::class, 'suspend']);
-    
-    // Remove suspension
-    Route::post('/users/{user}/unsuspend', [UserAdminController::class, 'unsuspend']);
 
-    // ========================================
-    // REPORT MANAGEMENT
-    // ========================================
-    // List all user reports
-    Route::get('/reports/index', [ReportAdminController::class, 'index']);
-    
-    // Mark report as resolved
-    Route::post('/reports/{report}/resolve', [ReportAdminController::class, 'resolve']);
+    /*
+    |--------------------------------------------------------------------------
+    | SUPERADMIN – ADMIN ACCOUNT MANAGEMENT
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('admins')->name('admin.super.admins.')->group(function () {
 
-    // ========================================
-    // ADMIN LOGOUT
-    // ========================================
-    Route::post('/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
-});   
-    Route::get('/admins/create', [SuperAdminController::class, 'create'])
-    ->name('admin.super.admins.create');
+        Route::get('/', [SuperAdminController::class, 'adminsIndex'])->name('index');
+        Route::get('/create', [SuperAdminController::class, 'create'])->name('create');
+        Route::post('/store', [SuperAdminController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [SuperAdminController::class, 'edit'])->name('edit');
+        Route::post('/{id}/update', [SuperAdminController::class, 'update'])->name('update');
+        Route::delete('/{id}', [SuperAdminController::class, 'destroy'])->name('delete');
+    });
 
-    Route::post('/admins/store', [SuperAdminController::class, 'store'])
-        ->name('admin.super.admins.store');
 
-    Route::get('/admins/{id}/edit', [SuperAdminController::class, 'edit'])
-        ->name('admin.super.admins.edit');
-
-    Route::post('/admins/{id}/update', [SuperAdminController::class, 'update'])
-        ->name('admin.super.admins.update');
-
-    Route::delete('/admins/{id}', [SuperAdminController::class, 'destroy'])
-        ->name('admin.super.admins.delete');
-    
-
-}); // end admin middleware group
-
-// Admin Community Part
-Route::get('/community', [AdminCommunityController::class, 'index'])->name('admin.community.index');
-
-Route::prefix('community')->group(function () {
-    Route::get('/', [AdminCommunityController::class, 'index'])->name('admin.community.index');
-    Route::get('/view/{id}', [AdminCommunityController::class, 'view'])->name('admin.community.view');
-    Route::get('/edit/{id}', [AdminCommunityController::class, 'edit'])->name('admin.community.edit');
-    Route::put('/update/{id}', [AdminCommunityController::class, 'update'])->name('admin.community.update');
-
-    // Blacklist routes
-    Route::post('/admin/community/blacklist/{id}', [AdminCommunityController::class, 'blacklist'])->name('admin.community.blacklist');
-    Route::post('/admin/community/unblacklist/{id}', [AdminCommunityController::class, 'unblacklist'])->name('admin.community.unblacklist');
-    // Delete
-    Route::delete('/delete/{id}', [AdminCommunityController::class, 'delete'])->name('admin.community.delete');
-    Route::get('admin/community/export', [App\Http\Controllers\Admin\AdminCommunityController::class, 'export'])
-    ->name('admin.community.export');
-
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN LOGOUT
+    |--------------------------------------------------------------------------
+    */
+    Route::post('/logout', [AdminAuthController::class, 'logout'])
+        ->name('admin.logout');
 });
-
-Route::prefix('admin/student-status')->name('admin.student_status.')->group(function () {
-    Route::get('/', [AdminStudentStatusController::class, 'index'])->name('index');
-    Route::get('/create', [AdminStudentStatusController::class, 'create'])->name('create');
-    Route::post('/store', [AdminStudentStatusController::class, 'store'])->name('store');
-    Route::get('/edit/{id}', [AdminStudentStatusController::class, 'edit'])->name('edit');
-    Route::put('/update/{id}', [AdminStudentStatusController::class, 'update'])->name('update');
-    Route::delete('/delete/{id}', [AdminStudentStatusController::class, 'destroy'])->name('delete');
-});
-
-Route::post('/admin/logout', [AdminAuthController::class, 'logout'])
-    ->name('admin.logout');   
