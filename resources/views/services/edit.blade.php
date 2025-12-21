@@ -598,9 +598,13 @@
 
                                                 {{-- Time Display --}}
                                                 <span class="text-xs font-bold tracking-wide"
-                                                    :class="{ 'line-through text-slate-400': slot
-                                                        .isBooked, 'text-gray-500': slot.isBlocked, 'text-slate-700': !
-                                                            slot.isBooked && !slot.isBlocked }"
+                                                    :class="{
+                                                        'line-through text-slate-400': slot
+                                                            .isBooked,
+                                                        'text-gray-500': slot.isBlocked,
+                                                        'text-slate-700': !
+                                                            slot.isBooked && !slot.isBlocked
+                                                    }"
                                                     x-text="slot.display"></span>
 
                                                 {{-- Status Label --}}
@@ -614,8 +618,8 @@
                                                     {{-- 2. Manually Blocked by User --}}
                                                     <template x-if="slot.isBlocked && !slot.isBooked">
                                                         <span
-                                                            class="text-[10px] font-bold text-gray-500 uppercase tracking-wide flex items-center gap-1">
-                                                            <i class="fa-solid fa-ban text-[9px]"></i> Blocked
+                                                            class="text-[10px] font-bold text-red-500 uppercase tracking-wide flex items-center gap-1">
+                                                            <i class="fa-solid fa-ban text-[9px]"></i> Booked
                                                         </span>
                                                     </template>
 
@@ -634,29 +638,63 @@
                             </div>
 
                             {{-- RIGHT COLUMN (Block Dates) --}}
+                            {{-- RIGHT COLUMN (Block Dates) --}}
                             <div class="lg:col-span-1 space-y-6">
-                                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 sticky top-24">
-                                    <h2 class="font-bold text-slate-800 mb-2">Block Dates</h2>
-                                    <p class="text-xs text-slate-500 mb-6">Select specific dates (like holidays) when you
-                                        are unavailable.</p>
-                                    <div class="relative mb-4">
-                                        <input id="unavailableDates" name="unavailable_dates"
-                                            class="w-full pl-10 px-4 py-3 border border-slate-200 rounded-xl bg-white focus:ring-indigo-500"
-                                            placeholder="Select dates..."
-                                            value="{{ $service->unavailable_dates ? implode(',', json_decode($service->unavailable_dates, true)) : '' }}">
-                                        <i class="fa-regular fa-calendar absolute left-3.5 top-3.5 text-slate-400"></i>
+                                {{-- Kita tambah x-data di sini untuk kawal UI bila toggle ditekan --}}
+                                {{-- Pastikan tukar $service->is_active mengikut nama column DB anda (contoh: is_unavailable atau active status) --}}
+                                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 sticky top-24"
+                                    x-data="{ isUnavailable: {{ $service->is_active ? 'false' : 'true' }} }">
+
+                                    {{-- 1. TOGGLE UNAVAILABLE (BARU) --}}
+                                    <div class="flex items-center justify-between mb-6 pb-6 border-b border-slate-100">
+                                        <div>
+                                            <h2 class="font-bold text-slate-800">Temporary Unavailable</h2>
+                                            <p class="text-xs text-slate-500">Close bookings indefinitely.</p>
+                                        </div>
+
+                                        <div class="relative inline-block w-12 h-7">
+                                            {{-- Input ini hantar '1' jika unavailable. Controller perlu handle logic ini. --}}
+                                            <input type="checkbox" name="is_unavailable" id="toggle-unavailable"
+                                                class="toggle-checkbox absolute block w-7 h-7 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-200 checked:right-0 checked:border-indigo-600 transition-all duration-300 shadow-sm"
+                                                x-model="isUnavailable" value="1" {{-- Jika DB guna is_active, logic ini mungkin terbalik --}}
+                                                {{ !$service->is_active ? 'checked' : '' }} />
+                                            <label for="toggle-unavailable"
+                                                class="toggle-label block overflow-hidden h-7 rounded-full bg-slate-200 cursor-pointer"></label>
+                                        </div>
                                     </div>
-                                    <div class="grid grid-cols-2 gap-3 mb-3">
-                                        <button type="button" onclick="quickBlockDates(1, 'week')"
-                                            class="text-xs bg-slate-50 border border-slate-200 text-slate-600 py-2 rounded-lg hover:bg-slate-100">+
-                                            1 Week</button>
-                                        <button type="button" onclick="quickBlockDates(1, 'month')"
-                                            class="text-xs bg-slate-50 border border-slate-200 text-slate-600 py-2 rounded-lg hover:bg-slate-100">+
-                                            1 Month</button>
+
+                                    {{-- UI Selection Dates (Akan kabur jika toggle unavailable ON) --}}
+                                    <div class="transition-opacity duration-300"
+                                        :class="isUnavailable ? 'opacity-40 pointer-events-none select-none' : ''">
+                                        <h2 class="font-bold text-slate-800 mb-2">Block Specific Dates</h2>
+                                        <p class="text-xs text-slate-500 mb-6">Select specific dates (like holidays) when
+                                            you are unavailable.</p>
+
+                                        <div class="relative mb-4">
+                                            <input id="unavailableDates" name="unavailable_dates"
+                                                class="w-full pl-10 px-4 py-3 border border-slate-200 rounded-xl bg-white focus:ring-indigo-500"
+                                                placeholder="Select dates..."
+                                                value="{{ $service->unavailable_dates ? implode(',', json_decode($service->unavailable_dates, true)) : '' }}">
+                                            <i class="fa-regular fa-calendar absolute left-3.5 top-3.5 text-slate-400"></i>
+                                        </div>
+
+                                        {{-- 2. BUTANG TAMBAHAN (2 Weeks / 2 Months) --}}
+                                        <div class="grid grid-cols-2 gap-3 mb-3">
+                                            <button type="button" onclick="quickBlockDates(1, 'week')"
+                                                class="text-xs bg-slate-50 border border-slate-200 text-slate-600 py-2 rounded-lg hover:bg-slate-100 font-medium">
+                                                + 1 Week
+                                            </button>    
+                                            <button type="button" onclick="quickBlockDates(1, 'month')"
+                                                class="text-xs bg-slate-50 border border-slate-200 text-slate-600 py-2 rounded-lg hover:bg-slate-100 font-medium">
+                                                + 1 Month
+                                            </button>
+                                        </div>
+
+                                        <button type="button" onclick="clearUnavailableDates()"
+                                            class="w-full text-xs bg-red-50 text-red-600 border border-red-100 py-2 rounded-lg hover:bg-red-100 font-bold transition-colors">
+                                            <i class="fa-solid fa-trash-can mr-1"></i> Clear All Dates
+                                        </button>
                                     </div>
-                                    <button type="button" onclick="clearUnavailableDates()"
-                                        class="w-full text-xs bg-red-50 text-red-600 border border-red-100 py-2 rounded-lg hover:bg-red-100"><i
-                                            class="fa-solid fa-trash-can mr-1"></i> Clear All Dates</button>
                                 </div>
                             </div>
 

@@ -73,6 +73,12 @@ class StudentService extends Model
         return $this->hasMany(ServiceApplication::class, 'service_id');
     }
 
+    public function reviews()
+{
+    // Pastikan 'student_service_id' wujud dalam table reviews
+    return $this->hasMany(Review::class, 'student_service_id');
+}
+
     /**
      * Check if service is available
      */

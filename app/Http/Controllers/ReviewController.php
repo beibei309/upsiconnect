@@ -6,6 +6,7 @@ use App\Models\Review;
 use App\Models\Conversation;
 use App\Models\ServiceRequest;
 use App\Models\ServiceApplication;
+use App\Models\StudentService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -27,30 +28,35 @@ class ReviewController extends Controller
         }
 
         $revieweeId = null;
+        $studentServiceId = null; // Initialize variable awal-awal
 
         if ($request->conversation_id) {
-            // Existing conversation-based review logic
+            // --- CONVERSATION LOGIC ---
             $conversation = Conversation::findOrFail($request->conversation_id);
             
+            // Note: Conversation usually doesn't have direct service_id, unless added to conversation table.
+            // Leaving $studentServiceId as null here.
+
             // Determine who is being reviewed
             if ($conversation->student_id == auth()->id()) {
                 $revieweeId = $conversation->community_member_id;
             } else {
                 $revieweeId = $conversation->student_id;
             }
+
         } elseif ($request->service_request_id) {
+            // --- SERVICE REQUEST LOGIC ---
             $serviceRequest = ServiceRequest::findOrFail($request->service_request_id);
             
-            // Ensure the user is part of this service request
             if ($serviceRequest->requester_id != auth()->id() && $serviceRequest->provider_id != auth()->id()) {
                 return response()->json(['error' => 'Unauthorized'], 403);
             }
             
-            // Ensure the service request is completed
             if (!$serviceRequest->isCompleted()) {
                 return response()->json(['error' => 'Service request must be completed before reviewing'], 400);
             }
             
+            // Capture Service ID
             $studentServiceId = $serviceRequest->student_service_id;
 
             // Determine who is being reviewed
@@ -59,19 +65,22 @@ class ReviewController extends Controller
             } else {
                 $revieweeId = $serviceRequest->requester_id;
             }
+
         } elseif ($request->service_application_id) {
-            // New service application-based review logic
+            // --- SERVICE APPLICATION LOGIC ---
             $serviceApplication = ServiceApplication::findOrFail($request->service_application_id);
             
-            // Ensure the user is part of this service application
             if ($serviceApplication->customer_id != auth()->id() && $serviceApplication->service->user_id != auth()->id()) {
                 return response()->json(['error' => 'Unauthorized'], 403);
             }
             
-            // Ensure the service application is fully completed
             if (!$serviceApplication->isFullyCompleted()) {
                 return response()->json(['error' => 'Service application must be fully completed before reviewing'], 400);
             }
+
+            // Capture Service ID (Mengambil dari relation service)
+            // Pastikan relation 'service' wujud dalam model ServiceApplication
+            $studentServiceId = $serviceApplication->service->id ?? null; 
             
             // Determine who is being reviewed
             if ($serviceApplication->customer_id == auth()->id()) {
@@ -81,7 +90,7 @@ class ReviewController extends Controller
             }
         }
 
-        // Check if user has already reviewed this conversation/service request/service application
+        // Check if user has already reviewed
         $existingReview = Review::where('reviewer_id', auth()->id())
             ->where(function ($query) use ($request) {
                 if ($request->conversation_id) {
@@ -98,11 +107,12 @@ class ReviewController extends Controller
             return response()->json(['error' => 'You have already reviewed this'], 400);
         }
 
+        // Create Review
         $review = Review::create([
             'conversation_id' => $request->conversation_id,
             'service_request_id' => $request->service_request_id,
             'service_application_id' => $request->service_application_id,
-            'student_service_id' => $studentServiceId ?? null, 
+            'student_service_id' => $studentServiceId, // Variable ini sekarang dah ada value
             'reviewer_id' => auth()->id(),
             'reviewee_id' => $revieweeId,
             'rating' => $request->rating,
@@ -114,5 +124,26 @@ class ReviewController extends Controller
             'message' => 'Review submitted successfully',
             'review' => $review
         ]);
+    }
+
+    public function reply(Request $request, $id)
+    {
+        $request->validate([
+            'reply' => 'required|string|max:1000',
+        ]);
+
+        $review = Review::findOrFail($id);
+
+        // Pastikan hanya helper yang berkaitan boleh reply
+        if ($review->reviewee_id != auth()->id()) {
+            return back()->with('error', 'Unauthorized');
+        }
+
+        $review->update([
+            'reply' => $request->reply,
+            'replied_at' => now(),
+        ]);
+
+        return back()->with('success', 'Reply submitted successfully!');
     }
 }

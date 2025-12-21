@@ -17,7 +17,7 @@
             @endphp
 
             <div id="received-content" class="sr-tab-content">
-                <div class="bg-gray-50 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
                         <h3 class="text-lg font-medium mb-4">My Services Orders ({{ $receivedRequests->count() }} total)</h3>
 
@@ -161,11 +161,13 @@
                                                                     </svg>
                                                                     @php
                                                                         $dates = $request->selected_dates;
-                                                                        $firstDate = is_array($dates) ? $dates[0] : $dates;
+                                                                        $firstDate = is_array($dates)
+                                                                            ? $dates[0]
+                                                                            : $dates;
                                                                         $count = is_array($dates) ? count($dates) : 1;
                                                                     @endphp
                                                                     {{ \Carbon\Carbon::parse($firstDate)->format('M j, Y') }}
-                                                                    @if($count > 1)
+                                                                    @if ($count > 1)
                                                                         <span class="ml-1">(+{{ $count - 1 }})</span>
                                                                     @endif
                                                                 </span>
@@ -198,39 +200,48 @@
 
                                                 <div
                                                     class="flex min-w-[140px] flex-col justify-between gap-3 border-t border-gray-100 pt-4 md:border-l md:border-t-0 md:pl-6 md:pt-0">
-                                   <div class="space-y-2">
-    <span class="block text-xs font-semibold uppercase text-gray-400">Actions</span>
+                                                    <div class="space-y-2">
+                                                        <span
+                                                            class="block text-xs font-semibold uppercase text-gray-400">Actions</span>
 
-    
 
-    <button onclick="acceptRequest({{ $request->id }})" 
-        class="flex w-full items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:bg-green-700 hover:shadow-lg focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
-        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-        </svg>
-        Accept
-    </button>
-    <form id="accept-form-{{ $request->id }}" action="{{ route('service-requests.accept', $request->id) }}" method="POST" class="hidden">@csrf</form>
 
-    <button onclick="rejectRequest({{ $request->id }})" 
-        class="flex w-full items-center justify-center gap-2 rounded-lg border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 shadow-sm transition-all hover:bg-red-50 hover:border-red-300 focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
-        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-        Reject
-    </button>
+                                                        <button onclick="acceptRequest({{ $request->id }})"
+                                                            class="flex w-full items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:bg-green-700 hover:shadow-lg focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                                                stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                    stroke-width="2" d="M5 13l4 4L19 7" />
+                                                            </svg>
+                                                            Accept
+                                                        </button>
+                                                        <form id="accept-form-{{ $request->id }}"
+                                                            action="{{ route('service-requests.accept', $request->id) }}"
+                                                            method="POST" class="hidden">@csrf</form>
 
-     <a href="https://wa.me/6{{ $request->requester->phone }}"
-                                                        target="_blank"
-                                                        class="flex w-full items-center justify-center gap-2 rounded-lg bg-green-500 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:bg-green-600 hover:shadow-lg hover:-translate-y-0.5 focus:ring-2 focus:ring-green-400 focus:ring-offset-2">
-                                                        <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-                                                            <path
-                                                                d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" />
-                                                        </svg>
-                                                        WhatsApp
-                                                    </a>
-    <form id="reject-form-{{ $request->id }}" action="{{ route('service-requests.reject', $request->id) }}" method="POST" class="hidden">@csrf</form>
-</div>
+                                                        <button onclick="rejectRequest({{ $request->id }})"
+                                                            class="flex w-full items-center justify-center gap-2 rounded-lg border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 shadow-sm transition-all hover:bg-red-50 hover:border-red-300 focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                                                stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                    stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                            </svg>
+                                                            Reject
+                                                        </button>
+
+                                                        <a href="https://wa.me/6{{ $request->requester->phone }}"
+                                                            target="_blank"
+                                                            class="flex w-full items-center justify-center gap-2 rounded-lg bg-green-500 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:bg-green-600 hover:shadow-lg hover:-translate-y-0.5 focus:ring-2 focus:ring-green-400 focus:ring-offset-2">
+                                                            <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                                                                <path
+                                                                    d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" />
+                                                            </svg>
+                                                            WhatsApp
+                                                        </a>
+                                                        <form id="reject-form-{{ $request->id }}"
+                                                            action="{{ route('service-requests.reject', $request->id) }}"
+                                                            method="POST" class="hidden">@csrf</form>
+                                                    </div>
 
                                                     <div class="text-center">
                                                         <span class="text-[10px] text-gray-400">ID:
@@ -331,12 +342,15 @@
                                                                     </svg>
                                                                     @php
                                                                         $dates = $request->selected_dates;
-                                                                        $firstDate = is_array($dates) ? $dates[0] : $dates;
+                                                                        $firstDate = is_array($dates)
+                                                                            ? $dates[0]
+                                                                            : $dates;
                                                                         $count = is_array($dates) ? count($dates) : 1;
                                                                     @endphp
                                                                     <span>{{ \Carbon\Carbon::parse($firstDate)->format('M j, Y') }}</span>
-                                                                    @if($count > 1)
-                                                                        <span class="ml-1 text-xs">(+{{ $count - 1 }})</span>
+                                                                    @if ($count > 1)
+                                                                        <span
+                                                                            class="ml-1 text-xs">(+{{ $count - 1 }})</span>
                                                                     @endif
                                                                 </div>
                                                             @endif
@@ -444,6 +458,117 @@
                                                 default => 'bg-gray-300',
                                             };
                                         @endphp
+                                        @if($request->review)
+        <button onclick='openReviewModal(@json($request->review), "{{ $request->requester->name }}")'
+            class="flex w-full items-center justify-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-sm font-semibold text-indigo-700 shadow-sm transition-all hover:bg-indigo-100 hover:shadow-md">
+            <i class="fas fa-star text-yellow-500"></i>
+            {{ $request->review->reply ? 'View Review' : 'Reply Review' }}
+        </button>
+    @elseif($request->status === 'completed')
+        <span class="text-xs text-gray-400 text-center italic">Waiting for review...</span>
+    @endif
+    {{-- REVIEW MODAL --}}
+<div id="reviewModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        {{-- Background overlay --}}
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeReviewModal()"></div>
+
+        <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
+
+        <div class="inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-yellow-100 sm:mx-0 sm:h-10 sm:w-10">
+                        <i class="fas fa-star text-yellow-500"></i>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                        <h3 class="text-lg font-medium leading-6 text-gray-900" id="modal-title">Client Review</h3>
+                        
+                        {{-- Client Review Section --}}
+                        <div class="mt-4 bg-gray-50 p-4 rounded-lg border border-gray-100">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-bold text-sm text-gray-700" id="modalRequesterName"></span>
+                                <div class="text-yellow-400 text-sm" id="modalStars"></div>
+                            </div>
+                            <p class="text-sm text-gray-600 italic" id="modalComment"></p>
+                            <p class="text-xs text-gray-400 mt-2 text-right" id="modalDate"></p>
+                        </div>
+
+                        {{-- Reply Section --}}
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Your Reply:</label>
+                            
+                            {{-- State A: Already Replied (Show Text) --}}
+                            <div id="viewReplyContainer" class="hidden">
+                                <div class="bg-indigo-50 p-3 rounded-lg border border-indigo-100 text-sm text-gray-700">
+                                    <p id="modalReplyText"></p>
+                                    <p class="text-xs text-indigo-400 mt-2 text-right">Replied on <span id="modalRepliedAt"></span></p>
+                                </div>
+                            </div>
+
+                            {{-- State B: Not Replied (Show Form) --}}
+                            <form id="replyForm" method="POST" action="" class="hidden">
+                                @csrf
+                                <textarea name="reply" rows="3" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Write your thank you note or response here..."></textarea>
+                                <div class="mt-3 flex justify-end">
+                                    <button type="submit" class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:text-sm">
+                                        Send Reply
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                <button type="button" onclick="closeReviewModal()" class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openReviewModal(review, requesterName) {
+        // 1. Populate Client Review Data
+        document.getElementById('modalRequesterName').innerText = requesterName;
+        document.getElementById('modalComment').innerText = '"' + (review.comment || 'No comment provided') + '"';
+        document.getElementById('modalDate').innerText = new Date(review.created_at).toLocaleDateString();
+        
+        // Generate Stars
+        let starsHtml = '';
+        for(let i=1; i<=5; i++) {
+            starsHtml += `<i class="${i <= review.rating ? 'fas' : 'far'} fa-star"></i>`;
+        }
+        document.getElementById('modalStars').innerHTML = starsHtml;
+
+        // 2. Handle Reply Logic
+        const replyForm = document.getElementById('replyForm');
+        const viewReplyContainer = document.getElementById('viewReplyContainer');
+
+        if (review.reply) {
+            // Already replied -> Show text
+            replyForm.classList.add('hidden');
+            viewReplyContainer.classList.remove('hidden');
+            document.getElementById('modalReplyText').innerText = review.reply;
+            document.getElementById('modalRepliedAt').innerText = new Date(review.replied_at).toLocaleDateString();
+        } else {
+            // Not replied -> Show form
+            viewReplyContainer.classList.add('hidden');
+            replyForm.classList.remove('hidden');
+            // Set dynamic action URL for the form
+            replyForm.action = `/reviews/${review.id}/reply`; 
+        }
+
+        // 3. Show Modal
+        document.getElementById('reviewModal').classList.remove('hidden');
+    }
+
+    function closeReviewModal() {
+        document.getElementById('reviewModal').classList.add('hidden');
+    }
+</script>
 
                                         <div
                                             class="group relative overflow-hidden rounded-xl border border-gray-100 bg-white p-6 opacity-85 transition-all duration-300 hover:opacity-100 hover:shadow-md sr-request-item">
@@ -515,7 +640,7 @@
                                                                     $count = is_array($dates) ? count($dates) : 1;
                                                                 @endphp
                                                                 {{ \Carbon\Carbon::parse($firstDate)->format('d M Y') }}
-                                                                @if($count > 1)
+                                                                @if ($count > 1)
                                                                     <span>(+{{ $count - 1 }})</span>
                                                                 @endif
                                                             </div>

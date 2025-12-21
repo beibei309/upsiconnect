@@ -68,6 +68,11 @@ class ServiceRequest extends Model
         return $this->hasMany(Review::class, 'service_request_id');
     }
 
+        public function review()
+    {
+        return $this->hasOne(Review::class, 'service_request_id');
+    }
+
     /**
      * Scope for pending requests
      */

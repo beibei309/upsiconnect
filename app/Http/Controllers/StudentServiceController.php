@@ -22,12 +22,13 @@ class StudentServiceController extends Controller
     $sort = $request->sort ?? 'newest';
     $available_only = $request->available_only; 
 
-    $currentUserId = Auth::id(); // This will be null if the user is not logged in
+    $currentUserId = Auth::id();
 
     // --- 2. Base Query Setup ---
     $query = StudentService::with(['student', 'category'])
-        ->where('status', 'available')
-        ->where('approval_status', 'approved')
+        ->withCount('reviews')          // <--- Tambah ini (Kira jumlah review)
+        ->withAvg('reviews', 'rating')  // <--- Tambah ini (Kira purata rating)
+        ->where('approval_status', 'approved') // Kita hanya mahu yang approved, tapi status boleh available/unavailable
         ->whereHas('student', function ($q) {
             $q->where('role', 'helper');
         });
@@ -36,12 +37,15 @@ class StudentServiceController extends Controller
         $query->where('user_id', '!=', $currentUserId);
     }
 
-    if (in_array($available_only, ['1', '0'])) {
-        $query->whereHas('student', function ($q) use ($available_only) {
-            $q->where('is_available', (int)$available_only); 
-        });
+    
+    if ($available_only === '1') {
+        // Jika user nak cari yang Available sahaja
+        $query->where('status', 'available');
+    } elseif ($available_only === '0') {
+        // Jika user nak cari yang Busy (Unavailable) sahaja
+        $query->where('status', 'unavailable');
     }
-
+    // Jika $available_only null/kosong, ia akan tunjuk KEDUA-DUA (Available & Busy)
 
     // --- 4. Search filter ---
     if ($q) {
@@ -62,18 +66,16 @@ class StudentServiceController extends Controller
     } elseif ($sort == 'oldest') {
         $query->orderBy('created_at', 'asc');
     } elseif ($sort == 'price_low') {
-        // Note: Ensure 'basic_price' exists on StudentService model and is correct
         $query->orderBy('basic_price', 'asc'); 
     } elseif ($sort == 'price_high') {
         $query->orderBy('basic_price', 'desc');
     }
 
-    
     $services = $query->paginate(15); 
 
     return view('services.index', [
         'services' => $services,
-        'categories' => Category::all(), // Using imported model
+        'categories' => Category::all(),
         'category_id' => $category_id,
         'sort' => $sort,
     ]);
@@ -124,7 +126,7 @@ public function update(Request $request, StudentService $service): JsonResponse
         'template_image' => 'nullable|string',
         'description' => 'nullable|string',
         'blocked_slots' => 'nullable|string',
-        
+        'is_unavailable' => 'nullable', 
         // Packages
         'packages' => 'nullable|array',
         'packages.*.duration' => 'nullable|string',
@@ -155,6 +157,17 @@ public function update(Request $request, StudentService $service): JsonResponse
         $service->blocked_slots = [];
     }
 
+$isUnavailable = $request->has('is_unavailable'); // Check checkbox status
+
+    if ($isUnavailable) {
+        // Jika checkbox "Unavailable" ditanda
+        $service->is_active = false;      // 0
+        $service->status = 'unavailable'; // Set text column
+    } else {
+        // Jika checkbox "Unavailable" TIDAK ditanda (Available)
+        $service->is_active = true;       // 1
+        $service->status = 'available';   // Set text column
+    }
     // 4. Update Basic Info
     $service->title = $validated['title'];
     $service->category_id = $validated['category_id'];
@@ -470,12 +483,12 @@ public function update(Request $request, StudentService $service): JsonResponse
             ->count();
 
         // Fetch Reviews
-        $reviews = Review::where('student_service_id', $service->id)
-                    ->with('reviewer') 
-                    ->latest()
-                    ->get();
+        $reviews = Review::where('student_service_id', $service->id) // <--- PENTING
+            ->with('reviewer') 
+            ->latest()
+            ->get();
 
-        $service->rating = round($reviews->avg('rating'), 1) ?? 0;
+        $service->rating = $reviews->count() > 0 ? round($reviews->avg('rating'), 1) : 0;
 
         // Optional: calculate average delivery time
         $service->avg_days = $orders->avg(function($order) {
@@ -488,7 +501,6 @@ public function update(Request $request, StudentService $service): JsonResponse
         }
         // Fallback if null
         $manualBlocks = $manualBlocks ?? [];
-
         
         $bookedAppointments = ServiceRequest::where('student_service_id', $service->id)
         ->whereIn('status', ['pending', 'accepted', 'in_progress', 'approved']) // statuses that block the calendar

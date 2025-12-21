@@ -198,7 +198,7 @@
                                             {{ request('available_only') == '1' ? 'selected' : '' }}>Available Only
                                         </option>
                                         <option value="0"
-                                            {{ request('available_only') == '0' ? 'selected' : '' }}>Busy / Away
+                                            {{ request('available_only') == '0' ? 'selected' : '' }}>Unavailable
                                         </option>
                                     </select>
                                     <div
@@ -253,11 +253,10 @@
                                                         {{ $service->created_at->diffForHumans() }}
                                                     </span>
                                                     <span class="inline-block w-1 h-1 rounded-full bg-gray-300"></span>
-                                                    <span
-                                                        class="text-xs font-medium {{ $service->user->is_available ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50' }} px-2 py-0.5 rounded-full border {{ $service->user->is_available ? 'border-green-100' : 'border-red-100' }}">
-                                                        {{ $service->user->is_available ? 'Available' : 'Busy' }}
-                                                    </span>
-                                                </div>
+                                                    <span class="text-xs font-medium {{ $service->status === 'available' ? 'text-green-600 bg-green-50' : 'text-red-500 bg-red-100' }} px-2 py-0.5 rounded-full border {{ $service->status === 'available' ? 'border-green-100' : 'border-red-200' }}">
+                                {{ $service->status === 'available' ? 'Available' : 'Unavailable' }}
+                            </span>
+                                                                            </div>
 
                                                 <div class="flex items-center gap-2">
 
@@ -280,10 +279,9 @@
                                             <div class="flex items-center gap-1 mb-3">
                                                 <i class="fas fa-star text-yellow-400 text-sm"></i>
                                                 <span
-                                                    class="font-bold text-slate-800 text-sm">{{ number_format($service->user->average_rating ?? 0, 1) }}</span>
+                                                    class="font-bold text-slate-800 text-sm">{{ number_format($service->reviews_avg_rating ?? 0, 1) }}</span>
                                                 <span
-                                                    class="text-slate-400 text-sm">({{ $service->user->reviewsReceived()->count() }}
-                                                    reviews)</span>
+                                                    class="text-slate-400 text-sm">({{ $service->reviews_count }} reviews)</span>
                                             </div>
 
                                             <div
@@ -304,10 +302,10 @@
                                                     <img src="{{ $service->user->profile_photo_path ? asset('storage/' . $service->user->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode($service->user->name) . '&background=random' }}"
                                                         class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm group-hover/user:border-indigo-100 transition 
              
-             {{-- 👇 PERBAIKAN 1: Tambahkan class blur jika pengguna adalah guest --}}
-             @guest
-blur-md @endguest
-             ">
+                                            {{-- 👇 PERBAIKAN 1: Tambahkan class blur jika pengguna adalah guest --}}
+                                            @guest
+                                            blur-md @endguest
+                                                        ">
 
                                                     {{-- Optional: Overlay dan Icon Kunci jika guest (memberi tahu gambar dikunci) --}}
                                                     @guest

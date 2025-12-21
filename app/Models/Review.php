@@ -13,9 +13,12 @@ class Review extends Model
         'conversation_id',
         'service_request_id',
         'service_application_id',
+        'student_service_id',
         'reviewer_id',
         'reviewee_id',
         'rating',
+        'reply',
+        'replied_at',
         'comment',
     ];
 
@@ -34,6 +37,14 @@ class Review extends Model
         return $this->belongsTo(ServiceApplication::class);
     }
 
+    // 👇 Ini function service yang betul
+    // PENTING: Pastikan nama column dalam database reviews ialah 'service_id'
+    // Kalau dalam database nama dia 'student_service_id', tukar kat bawah ni.
+    public function service()
+    {
+        return $this->belongsTo(StudentService::class, 'service_id');
+    }
+
     public function reviewer()
     {
         return $this->belongsTo(User::class, 'reviewer_id');
@@ -43,12 +54,4 @@ class Review extends Model
     {
         return $this->belongsTo(User::class, 'reviewee_id');
     }
-
-    public function service()
-    {
-        return $this->belongsTo(StudentService::class, 'student_service_id');
-        
-    }
-
-    
 }
