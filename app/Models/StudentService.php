@@ -79,6 +79,7 @@ class StudentService extends Model
     return $this->hasMany(Review::class, 'student_service_id');
 }
 
+
     /**
      * Check if service is available
      */

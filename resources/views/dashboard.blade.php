@@ -67,69 +67,79 @@
         {{-- Navigation bar --}}
         @include('layouts.navbar')
 
-      <section class="relative pt-28 pb-20 overflow-hidden">
-    
-    {{-- 1. BACKGROUND IMAGE START --}}
-    <div class="absolute inset-0"> {{-- Removed -z-10 --}}
-    <img src="{{ asset('images/bgupsi.jpg') }}" 
-         alt="Background" 
-         class="w-full h-full object-cover">
-         
-    {{-- Keep the overlay here --}}
-    <div class="absolute inset-0 bg-gray-900/80"></div>
-</div>
-    {{-- BACKGROUND IMAGE END --}}
+        <section class="relative pt-28 pb-20 overflow-hidden">
 
-    {{-- 2. EXISTING ANIMATED BLOBS --}}
-    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none">
-        <div class="absolute top-20 left-20 w-72 h-72 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-        <div class="absolute top-20 right-20 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
-    </div>
+            {{-- 1. BACKGROUND IMAGE START --}}
+            <div class="absolute inset-0"> {{-- Removed -z-10 --}}
+                <img src="{{ asset('images/bgupsi.jpg') }}" alt="Background" class="w-full h-full object-cover">
 
-    {{-- 3. CONTENT --}}
-    <div class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
-        <span class="inline-block py-1 px-3 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-sm font-semibold mb-6">
-            Welcome back, {{ Auth::user()->name }}!
-        </span>
+                {{-- Keep the overlay here --}}
+                <div class="absolute inset-0 bg-gray-900/80"></div>
+            </div>
+            {{-- BACKGROUND IMAGE END --}}
 
-        <h1 class="text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-6 leading-tight">
-            Find the perfect <span class="text-indigo-400">student seller</span><br>for your needs.
-        </h1>
-        
-        <p class="text-lg text-slate-300 mb-10 max-w-2xl mx-auto"> {{-- Changed text-slate-400 to text-slate-300 for better contrast on bg --}}
-            Discover talented UPSI students offering professional services. From design to daily tasks, get it done by your community.
-        </p>
-
-        <div class="w-full max-w-3xl mx-auto mb-8">
-            <form action="{{ route('services.index') }}" method="GET" class="relative group">
-                <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                    <svg class="h-6 w-6 text-slate-400 group-focus-within:text-indigo-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                    </svg>
+            {{-- 2. EXISTING ANIMATED BLOBS --}}
+            <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none">
+                <div
+                    class="absolute top-20 left-20 w-72 h-72 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob">
                 </div>
-                <input type="text" name="q"
-                    class="block w-full pl-14 pr-4 py-5 bg-white/95 backdrop-blur-sm rounded-2xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-indigo-500/30 shadow-xl text-lg font-medium transition-all"
-                    placeholder="What service are you looking for today?">
-                <button type="submit"
-                    class="absolute right-3 top-3 bottom-3 bg-indigo-600 hover:bg-indigo-700 text-white px-6 rounded-xl font-semibold transition-colors shadow-lg">
-                    Search
-                </button>
-            </form>
-        </div>
+                <div
+                    class="absolute top-20 right-20 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000">
+                </div>
+            </div>
 
-        <div class="flex flex-wrap justify-center gap-3 text-sm">
-            <span class="text-slate-400 mr-2 py-1.5">Popular:</span>
-            <a href="{{ route('services.index', ['q' => 'iron baju']) }}"
-                class="px-4 py-1.5 rounded-full bg-slate-800/60 border border-slate-700 text-slate-300 hover:bg-indigo-600 hover:text-white hover:border-indigo-500 transition-all cursor-pointer backdrop-blur-sm">Iron Baju</a>
-            <a href="{{ route('services.index', ['q' => 'video editing']) }}"
-                class="px-4 py-1.5 rounded-full bg-slate-800/60 border border-slate-700 text-slate-300 hover:bg-indigo-600 hover:text-white hover:border-indigo-500 transition-all cursor-pointer backdrop-blur-sm">Video Editing</a>
-            <a href="{{ route('services.index', ['q' => 'poster design']) }}"
-                class="px-4 py-1.5 rounded-full bg-slate-800/60 border border-slate-700 text-slate-300 hover:bg-indigo-600 hover:text-white hover:border-indigo-500 transition-all cursor-pointer backdrop-blur-sm">Poster Design</a>
-            <a href="{{ route('services.index', ['q' => 'pickup']) }}"
-                class="px-4 py-1.5 rounded-full bg-slate-800/60 border border-slate-700 text-slate-300 hover:bg-indigo-600 hover:text-white hover:border-indigo-500 transition-all cursor-pointer backdrop-blur-sm">Pickup Parcel</a>
-        </div>
-    </div>
-</section>
+            {{-- 3. CONTENT --}}
+            <div class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
+                <span
+                    class="inline-block py-1 px-3 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-sm font-semibold mb-6">
+                    Welcome back, {{ Auth::user()->name }}!
+                </span>
+
+                <h1 class="text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-6 leading-tight">
+                    Find the perfect <span class="text-indigo-400">student seller</span><br>for your needs.
+                </h1>
+
+                <p class="text-lg text-slate-300 mb-10 max-w-2xl mx-auto"> {{-- Changed text-slate-400 to text-slate-300 for better contrast on bg --}}
+                    Discover talented UPSI students offering professional services. From design to daily tasks, get it
+                    done by your community.
+                </p>
+
+                <div class="w-full max-w-3xl mx-auto mb-8">
+                    <form action="{{ route('services.index') }}" method="GET" class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                            <svg class="h-6 w-6 text-slate-400 group-focus-within:text-indigo-500 transition-colors"
+                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                        <input type="text" name="q"
+                            class="block w-full pl-14 pr-4 py-5 bg-white/95 backdrop-blur-sm rounded-2xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-indigo-500/30 shadow-xl text-lg font-medium transition-all"
+                            placeholder="What service are you looking for today?">
+                        <button type="submit"
+                            class="absolute right-3 top-3 bottom-3 bg-indigo-600 hover:bg-indigo-700 text-white px-6 rounded-xl font-semibold transition-colors shadow-lg">
+                            Search
+                        </button>
+                    </form>
+                </div>
+
+                <div class="flex flex-wrap justify-center gap-3 text-sm">
+                    <span class="text-slate-400 mr-2 py-1.5">Popular:</span>
+                    <a href="{{ route('services.index', ['q' => 'iron baju']) }}"
+                        class="px-4 py-1.5 rounded-full bg-slate-800/60 border border-slate-700 text-slate-300 hover:bg-indigo-600 hover:text-white hover:border-indigo-500 transition-all cursor-pointer backdrop-blur-sm">Iron
+                        Baju</a>
+                    <a href="{{ route('services.index', ['q' => 'video editing']) }}"
+                        class="px-4 py-1.5 rounded-full bg-slate-800/60 border border-slate-700 text-slate-300 hover:bg-indigo-600 hover:text-white hover:border-indigo-500 transition-all cursor-pointer backdrop-blur-sm">Video
+                        Editing</a>
+                    <a href="{{ route('services.index', ['q' => 'poster design']) }}"
+                        class="px-4 py-1.5 rounded-full bg-slate-800/60 border border-slate-700 text-slate-300 hover:bg-indigo-600 hover:text-white hover:border-indigo-500 transition-all cursor-pointer backdrop-blur-sm">Poster
+                        Design</a>
+                    <a href="{{ route('services.index', ['q' => 'pickup']) }}"
+                        class="px-4 py-1.5 rounded-full bg-slate-800/60 border border-slate-700 text-slate-300 hover:bg-indigo-600 hover:text-white hover:border-indigo-500 transition-all cursor-pointer backdrop-blur-sm">Pickup
+                        Parcel</a>
+                </div>
+            </div>
+        </section>
 
         <section class="py-12  border-b border-gray-100">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -148,7 +158,7 @@
                             <div
                                 class="w-14 h-14 mb-4 rounded-full flex items-center justify-center bg-white shadow-sm transition-transform group-hover:scale-110">
 
-                                
+
                                 <i class="{{ $category->icon ?? 'fa-solid fa-folder' }} text-2xl"
                                     style="color: {{ $category->color }};">
                                 </i>

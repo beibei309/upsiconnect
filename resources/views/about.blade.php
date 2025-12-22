@@ -171,259 +171,223 @@
         @include('layouts.navbar')
 
         <!-- Hero Section -->
-        <section class="py-20 px-4 sm:px-6 lg:px-8 bg-white">
-            <div class="max-w-6xl mx-auto">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-12">
-                    <!-- Left: Text Content -->
-                    <div>
-                        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                            About S2U
+        <section class="py-24 bg-white relative overflow-hidden">
+            <div
+                class="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-96 h-96 bg-blue-50 rounded-full blur-3xl opacity-50">
+            </div>
+            <div
+                class="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/4 w-96 h-96 bg-purple-50 rounded-full blur-3xl opacity-50">
+            </div>
+
+            <div class="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center mb-20">
+
+                    <div class="order-2 lg:order-1">
+                        <span class="text-blue-600 font-bold tracking-widest uppercase text-xs mb-4 block">Our
+                            Mission</span>
+                        <h1 class="text-4xl md:text-5xl font-black text-slate-900 mb-6 leading-tight">
+                            Empowering the <span
+                                class="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">UPSI
+                                Community</span> through S2U
                         </h1>
-                        <!--<p class="text-xl text-gray-600 leading-relaxed mb-6">
-                            Since 2024, S2U has been the premier platform connecting UPSI students with peer-to-peer services.
-                            With extensive experience, we specialize in helping students find tutoring, design help, coding assistance,
-                            and more from their fellow students.
-                        </p> -->
-                        <p class="text-lg text-gray-600 leading-relaxed mb-8">
-                            S2U is the premier platform connecting UPSI students with peer-to-peer services. Find
-                            tutoring, design help, coding assistance, and more from your fellow students.
+                        <p class="text-lg text-slate-600 leading-relaxed mb-8">
+                            S2U (Student-to-Community) is more than just a marketplace. It is a dedicated ecosystem
+                            designed specifically for UPSI students to bridge the gap between talent and needs. Whether
+                            you're looking for expert tutoring, creative design, or technical coding help, your peers
+                            are here to deliver.
                         </p>
-                        @auth
-                            <a href="{{ route('search.index') }}" class="btn-primary">
-                                Find Your Next Service!
-                            </a>
-                        @else
-                            <a href="{{ route('register') }}" class="btn-primary">
-                                Join S2U Today!
-                            </a>
-                        @endauth
+
+                        <div class="flex flex-wrap gap-4">
+                            @auth
+                                <a href="{{ route('search.index') }}"
+                                    class="px-8 py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-blue-600 transition-all duration-300 shadow-xl shadow-slate-200 flex items-center gap-2">
+                                    Find Your Next Service
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                                    </svg>
+                                </a>
+                            @else
+                                <a href="{{ route('register') }}"
+                                    class="px-8 py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all duration-300 shadow-xl shadow-blue-200">
+                                    Join S2U Today!
+                                </a>
+                            @endauth
+                        </div>
                     </div>
 
-                    <!-- Right: Image Placeholder -->
-                    <div>
-                        <div class="hero-image-placeholder">
-                            <span>Student Image Here</span>
+                    <div class="order-1 lg:order-2 relative">
+                        <div
+                            class="relative z-10 rounded-3xl overflow-hidden shadow-2xl transform lg:rotate-3 hover:rotate-0 transition-transform duration-500 border-8 border-white">
+                            <div
+                                class="aspect-video bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center group">
+                                <img src="{{ asset('images/about.jpg') }}" alt="Students Collaborating"
+                                    class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <span
+                                        class="bg-white/90 backdrop-blur px-4 py-2 rounded-full text-slate-900 font-bold text-sm shadow-lg">UPSI
+                                        Talent in Action</span>
+                                </div>
+                            </div>
                         </div>
+                        <div class="absolute -bottom-6 -left-6 w-32 h-32 bg-purple-100 rounded-2xl -z-10 rotate-12">
+                        </div>
+                        <div class="absolute -top-6 -right-6 w-32 h-32 bg-blue-100 rounded-2xl -z-10 -rotate-12"></div>
                     </div>
                 </div>
 
-                <!-- Stats Grid -->
-                <div class="stats-section">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <div class="stat-item">
-                            <span class="stat-number">1,250+</span>
-                            <p class="stat-label">Students Served</p>
+                <div class="bg-slate-50 rounded-[2.5rem] p-8 md:p-12 border border-slate-100 shadow-inner">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
+
+                        <div class="relative group">
+                            <div class="flex flex-col items-center">
+                                <span
+                                    class="text-4xl md:text-5xl font-black text-slate-900 mb-2 group-hover:text-blue-600 transition-colors">{{ number_format($totalUsers ?? 0) }}+</span>
+                                <div
+                                    class="w-12 h-1 bg-blue-500 rounded-full mb-4 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300">
+                                </div>
+                                <p class="text-slate-500 font-semibold uppercase tracking-widest text-xs">Community
+                                    Served</p>
+                            </div>
                         </div>
-                        <div class="stat-item">
-                            <span class="stat-number">340</span>
-                            <p class="stat-label">Verified Services</p>
+
+                        <div class="relative group border-y md:border-y-0 md:border-x border-slate-200 py-8 md:py-0">
+                            <div class="flex flex-col items-center">
+                                <span
+                                    class="text-4xl md:text-5xl font-black text-slate-900 mb-2 group-hover:text-purple-600 transition-colors">{{ number_format($totalServices ?? 0) }}</span>
+                                <div
+                                    class="w-12 h-1 bg-purple-500 rounded-full mb-4 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300">
+                                </div>
+                                <p class="text-slate-500 font-semibold uppercase tracking-widest text-xs">Verified
+                                    Services</p>
+                            </div>
                         </div>
-                        <div class="stat-item">
-                            <span class="stat-number">150</span>
-                            <p class="stat-label">Service Providers</p>
+
+                        <div class="relative group">
+                            <div class="flex flex-col items-center">
+                                <span
+                                    class="text-4xl md:text-5xl font-black text-slate-900 mb-2 group-hover:text-emerald-500 transition-colors">{{ number_format($totalSellers ?? 0) }}</span>
+                                <div
+                                    class="w-12 h-1 bg-emerald-500 rounded-full mb-4 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300">
+                                </div>
+                                <p class="text-slate-500 font-semibold uppercase tracking-widest text-xs">Student
+                                    Sellers</p>
+                            </div>
                         </div>
+
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- How It Works Section -->
-        <section class="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
-            <div class="max-w-6xl mx-auto">
-                <h2 class="section-title">How S2U Works</h2>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-                    <div class="bg-white rounded-lg shadow-sm p-8 text-center">
-                        <div class="mb-6">
-                            <svg class="w-16 h-16 mx-auto text-indigo-600" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                                </path>
-                            </svg>
-                        </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-3">Explore Verified Service Listings</h3>
-                        <p class="text-gray-600 leading-relaxed">
-                            All of S2U's services are thoroughly screened to ensure they are legitimate. When you log
-                            in, you'll only find high-quality opportunities from verified UPSI students—no scams, junk
-                            listings, or unreliable providers.
-                        </p>
-                    </div>
-
-                    <div class="bg-white rounded-lg shadow-sm p-8 text-center">
-                        <div class="mb-6">
-                            <svg class="w-16 h-16 mx-auto text-indigo-600" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-3">Search Smarter, Connect Faster</h3>
-                        <p class="text-gray-600 leading-relaxed">
-                            Use advanced search filters to find services that match your needs, schedule, and budget.
-                            Save searches, track requests, and follow providers to stay updated on new services.
-                        </p>
-                    </div>
-
-                    <div class="bg-white rounded-lg shadow-sm p-8 text-center">
-                        <div class="mb-6">
-                            <svg class="w-16 h-16 mx-auto text-indigo-600" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
-                                </path>
-                            </svg>
-                        </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-3">Access Student Support & Resources</h3>
-                        <p class="text-gray-600 leading-relaxed">
-                            Get guidance with tutorials, guides, articles, and more, all designed to help you get the
-                            most out of our platform and succeed academically.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Benefits Section -->
-        <section class="py-20 px-4 sm:px-6 lg:px-8 bg-white">
-            <div class="max-w-6xl mx-auto">
-                <h2 class="section-title">Benefits of Using S2U</h2>
-
-                <div class="text-center mb-12">
-                    @auth
-                        <a href="{{ route('dashboard') }}" class="btn-primary">
-                            Get Started
-                        </a>
-                    @else
-                        <a href="{{ route('register') }}" class="btn-primary">
-                            Get Started
-                        </a>
-                    @endauth
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="feature-box">
-                        <div class="flex items-start gap-4">
-                            <div
-                                class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                            </div>
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-900 mb-2">High-Quality Student Services</h3>
-                                <p class="text-gray-600 leading-relaxed">
-                                    We help students find professional peer-to-peer services in 50+ categories, from
-                                    academic tutoring to creative design, coding to language help, all within the UPSI
-                                    community.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="feature-box">
-                        <div class="flex items-start gap-4">
-                            <div
-                                class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                </svg>
-                            </div>
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-900 mb-2">Every Service & Provider Verified for
-                                    You</h3>
-                                <p class="text-gray-600 leading-relaxed">
-                                    Our expert team verifies and screens the best service providers and provides
-                                    information on each student to help you decide whether to connect.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="feature-box">
-                        <div class="flex items-start gap-4">
-                            <div
-                                class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                                </svg>
-                            </div>
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-900 mb-2">High-Quality Support & Resources</h3>
-                                <p class="text-gray-600 leading-relaxed">
-                                    When it comes to S2U's services, we offer great resources to provide support,
-                                    guidance, and tools so you can find the right service and succeed academically, and
-                                    that includes student support you can talk to.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="feature-box">
-                        <div class="flex items-start gap-4">
-                            <div
-                                class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1">
-                                    </path>
-                                </svg>
-                            </div>
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-900 mb-2">No-Risk Satisfaction Guarantee</h3>
-                                <p class="text-gray-600 leading-relaxed">
-                                    We want our users to be happy with our service. Student-friendly rates with
-                                    transparent pricing. No hidden fees or commissions. It's that easy.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
 
         <!-- Story Section with Image -->
-        <section class="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
-            <div class="max-w-6xl mx-auto">
-                <h2 class="section-title">How & Why S2U Started</h2>
+        <section class="py-24 bg-white relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-full opacity-40 pointer-events-none">
+                <div class="absolute top-1/4 -left-20 w-72 h-72 bg-blue-100 rounded-full blur-[100px]"></div>
+                <div class="absolute bottom-1/4 -right-20 w-72 h-72 bg-purple-100 rounded-full blur-[100px]"></div>
+            </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                    <!-- Left: Text Content -->
-                    <div class="text-gray-600 text-lg leading-relaxed space-y-4">
-                        <p>
-                            S2U was created in 2025 to provide a trusted, more effective, friendly, and overall better
-                            way
-                            to find peer-to-peer services among UPSI students.
-                        </p>
-                        <p>
-                            We were founded by students after they had been looking for reliable academic help and
-                            creative
-                            services. They realized that millions of others were just as frustrated by the lack of
-                            trust,
-                            scams, and inefficiencies when searching for help, so they decided to create the solution
-                            everyone
-                            was looking for.
-                        </p>
-                        <p>
-                            It wasn't our original intention, but somehow S2U has become a leader in the student
-                            services
-                            movement that's currently transforming how UPSI students connect and help each other. We
-                            continue
-                            to grow as students turn to us for reliable peer-to-peer services.
-                        </p>
+            <div class="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+
+                    <div class="relative">
+                        <div
+                            class="inline-block px-4 py-1.5 mb-6 text-sm font-bold tracking-widest text-blue-600 uppercase bg-blue-50 rounded-full">
+                            Our Origin
+                        </div>
+
+                        <h2 class="text-4xl md:text-5xl font-black text-slate-900 mb-8 leading-tight">
+                            Built by Students, <br>
+                            <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+                                For the Community.
+                            </span>
+                        </h2>
+
+                        <div class="space-y-8 relative">
+                            <div
+                                class="absolute left-0 top-2 w-px h-[90%] bg-gradient-to-b from-blue-200 via-purple-200 to-transparent ml-[-20px] hidden md:block">
+                            </div>
+
+                            <div class="relative group">
+                                <p
+                                    class="text-lg text-slate-600 leading-relaxed italic border-l-4 border-blue-500 pl-6 md:border-none md:pl-0">
+                                    "S2U was born in 2025 out of a simple need: a trusted, friendly, and more effective
+                                    way for UPSI students to help one another."
+                                </p>
+                            </div>
+
+                            <div class="text-slate-600 leading-relaxed space-y-6">
+                                <p>
+                                    Founded by a group of students who experienced the frustration of searching for
+                                    reliable academic help and creative services. Tired of
+                                    <span class="font-semibold text-slate-900">unreliable providers and cluttered
+                                        listings</span>, they decided to build the solution the UPSI community deserved.
+                                </p>
+
+                                <div class="bg-slate-50 p-6 rounded-2xl border-l-4 border-purple-500 shadow-sm">
+                                    <p class="text-slate-700 font-medium">
+                                        What started as a small project has now become a movement, transforming how we
+                                        connect and support each other's financial and academic growth.
+                                    </p>
+                                </div>
+
+                                <p>
+                                    Today, S2U stands as a leader in student-led services at UPSI, continuously growing
+                                    as more students turn to us for verified, peer-to-peer excellence.
+                                </p>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Right: Image Placeholder -->
-                    <div>
-                        <img src="{{ !empty($imagePath) ? asset('images/' . $imagePath) : asset('images/service_tutor.jpg') }}"
-                            alt="Students Collaborating" class="w-full h-auto rounded-lg border">
+                    <div class="relative mt-12 lg:mt-0">
+                        <div class="relative z-20">
+                            <img src="{{ !empty($imagePath) ? asset('images/' . $imagePath) : asset('images/about2.jpg') }}"
+                                alt="Students Collaborating"
+                                class="w-full h-[500px] object-cover rounded-[2rem] shadow-2xl border-8 border-white">
+
+                            <div
+                                class="absolute -bottom-6 -left-6 md:-left-12 bg-white p-6 rounded-3xl shadow-xl z-30 flex items-center gap-4 border border-slate-100">
+                                <div
+                                    class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl">
+                                    25
+                                </div>
+                                <div>
+                                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Founded In</p>
+                                    <p
+                                        class="text-lg font-black text-slate-900 underline decoration-blue-500 decoration-4">
+                                        Year 2025</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="absolute top-12 -right-6 w-full h-full bg-slate-100 rounded-[2rem] -z-10 rotate-3">
+                        </div>
+                        <div class="absolute -top-6 -right-6 text-slate-200">
+                            <svg width="100" height="100" fill="currentColor" viewBox="0 0 100 100">
+                                <circle cx="2" cy="2" r="2" />
+                                <circle cx="22" cy="2" r="2" />
+                                <circle cx="42" cy="2" r="2" />
+                                <circle cx="62" cy="2" r="2" />
+                                <circle cx="82" cy="2" r="2" />
+                                <circle cx="2" cy="22" r="2" />
+                                <circle cx="22" cy="22" r="2" />
+                                <circle cx="42" cy="22" r="2" />
+                                <circle cx="62" cy="22" r="2" />
+                                <circle cx="82" cy="22" r="2" />
+                                <circle cx="2" cy="42" r="2" />
+                                <circle cx="22" cy="42" r="2" />
+                                <circle cx="42" cy="42" r="2" />
+                                <circle cx="62" cy="42" r="2" />
+                                <circle cx="82" cy="42" r="2" />
+                                <circle cx="2" cy="62" r="2" />
+                                <circle cx="22" cy="62" r="2" />
+                                <circle cx="42" cy="62" r="2" />
+                                <circle cx="62" cy="62" r="2" />
+                                <circle cx="82" cy="62" r="2" />
+                            </svg>
+                        </div>
                     </div>
 
                 </div>
@@ -431,96 +395,107 @@
         </section>
 
         <!-- Step-by-Step Guide -->
-        <section class="py-20 px-4 sm:px-6 lg:px-8 bg-white">
-            <div class="max-w-6xl mx-auto">
-                <h2 class="section-title">Simple Steps to Get Started</h2>
-                <p class="section-subtitle">
-                    Connect with your peers in just a few easy steps
-                </p>
+       <section class="py-24 bg-slate-50 relative overflow-hidden" x-data="{ activeTab: 'seekers' }">
+    <div class="absolute top-0 right-0 w-96 h-96 bg-blue-100/50 rounded-full blur-[100px] -mr-48 -mt-48"></div>
+    
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+        <div class="text-center max-w-2xl mx-auto mb-16">
+            <h2 class="text-blue-600 font-bold tracking-widest uppercase text-xs mb-3">Process</h2>
+            <h3 class="text-4xl font-extrabold text-slate-900 mb-6">Simple Steps to Get Started</h3>
+            
+            <div class="inline-flex p-1.5 bg-white border border-slate-200 rounded-2xl shadow-sm">
+                <button @click="activeTab = 'seekers'" 
+                    :class="activeTab === 'seekers' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-600 hover:bg-slate-50'"
+                    class="px-6 py-2.5 rounded-xl font-bold transition-all duration-300 text-sm">
+                    For Seekers
+                </button>
+                <button @click="activeTab = 'providers'" 
+                    :class="activeTab === 'providers' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-600 hover:bg-slate-50'"
+                    class="px-6 py-2.5 rounded-xl font-bold transition-all duration-300 text-sm">
+                    For Providers
+                </button>
+            </div>
+        </div>
 
-                <!-- Tab Buttons -->
-                <div class="tab-buttons">
-                    <button @click="activeTab = 'seekers'" :class="activeTab === 'seekers' ? 'active' : ''"
-                        class="tab-btn">
-                        For Service Seekers
-                    </button>
-                    <button @click="activeTab = 'providers'" :class="activeTab === 'providers' ? 'active' : ''"
-                        class="tab-btn">
-                        For Service Providers
-                    </button>
-                </div>
-
-                <!-- Service Seekers Tab -->
-                <div x-show="activeTab === 'seekers'" x-transition class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="text-center">
-                        <div class="step-number">1</div>
-                        <h3 class="text-lg font-bold text-gray-900 mb-2">Search & Browse</h3>
-                        <p class="text-gray-600">
-                            Use our smart filters to find exactly what you need - tutoring, design, coding, and more.
-                        </p>
+        <div x-show="activeTab === 'seekers'" x-transition:enter="transition ease-out duration-500 transform" x-transition:enter-start="opacity-0 translate-y-8" x-transition:enter-end="opacity-100 translate-y-0">
+            <div class="relative">
+                <div class="hidden md:block absolute top-10 left-0 w-full h-0.5 border-t-2 border-dashed border-slate-300 z-0"></div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-12 relative z-10">
+                    <div class="group flex flex-col items-center text-center">
+                        <div class="w-20 h-20 bg-white text-blue-600 rounded-3xl flex items-center justify-center text-3xl font-black mb-8 shadow-xl shadow-blue-100 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-300 border-2 border-blue-50">1</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-3">Search & Browse</h4>
+                        <p class="text-slate-600 leading-relaxed max-w-xs">Use smart filters to find tutoring, design, or coding help from your peers.</p>
                     </div>
-                    <div class="text-center">
-                        <div class="step-number">2</div>
-                        <h3 class="text-lg font-bold text-gray-900 mb-2">Connect & Chat</h3>
-                        <p class="text-gray-600">
-                            Send a chat request to discuss your needs, timeline, and pricing with the service provider.
-                        </p>
+                    <div class="group flex flex-col items-center text-center">
+                        <div class="w-20 h-20 bg-white text-purple-600 rounded-3xl flex items-center justify-center text-3xl font-black mb-8 shadow-xl shadow-purple-100 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 border-2 border-purple-50">2</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-3">Connect & Chat</h4>
+                        <p class="text-slate-600 leading-relaxed max-w-xs">Discuss needs, timelines, and pricing directly with providers through chat.</p>
                     </div>
-                    <div class="text-center">
-                        <div class="step-number">3</div>
-                        <h3 class="text-lg font-bold text-gray-900 mb-2">Learn & Review</h3>
-                        <p class="text-gray-600">
-                            Get the help you need and leave a review to help other students make informed decisions.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Service Providers Tab -->
-                <div x-show="activeTab === 'providers'" x-transition class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="text-center">
-                        <div class="step-number">1</div>
-                        <h3 class="text-lg font-bold text-gray-900 mb-2">Create Your Profile</h3>
-                        <p class="text-gray-600">
-                            Set up your services, showcase your skills, and set your availability status.
-                        </p>
-                    </div>
-                    <div class="text-center">
-                        <div class="step-number">2</div>
-                        <h3 class="text-lg font-bold text-gray-900 mb-2">Receive Requests</h3>
-                        <p class="text-gray-600">
-                            Get notified when students are interested in your services and start conversations.
-                        </p>
-                    </div>
-                    <div class="text-center">
-                        <div class="step-number">3</div>
-                        <h3 class="text-lg font-bold text-gray-900 mb-2">Earn & Grow</h3>
-                        <p class="text-gray-600">
-                            Help fellow students while earning money and building your reputation in the community.
-                        </p>
+                    <div class="group flex flex-col items-center text-center">
+                        <div class="w-20 h-20 bg-white text-emerald-500 rounded-3xl flex items-center justify-center text-3xl font-black mb-8 shadow-xl shadow-emerald-100 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-300 border-2 border-emerald-50">3</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-3">Learn & Review</h4>
+                        <p class="text-slate-600 leading-relaxed max-w-xs">Get the job done and leave a review to help build a trustworthy community.</p>
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
 
-        <!-- Final CTA -->
-        <section class="py-20 px-4 sm:px-6 lg:px-8 gradient-bg">
-            <div class="max-w-4xl mx-auto text-center">
-                <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">
-                    Over 1,250 Students Have Used S2U to Find a Better Way to Learn
-                </h2>
-                @auth
-                    <a href="{{ route('search.index') }}"
-                        class="bg-white text-indigo-600 px-8 py-4 rounded-lg font-semibold hover:bg-gray-50 transition inline-block">
-                        Find Your Next Service!
-                    </a>
-                @else
-                    <a href="{{ route('register') }}"
-                        class="bg-white text-indigo-600 px-8 py-4 rounded-lg font-semibold hover:bg-gray-50 transition inline-block">
-                        Find Your Next Service!
-                    </a>
-                @endauth
+        <div x-show="activeTab === 'providers'" x-transition:enter="transition ease-out duration-500 transform" x-transition:enter-start="opacity-0 translate-y-8" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
+            <div class="relative">
+                <div class="hidden md:block absolute top-10 left-0 w-full h-0.5 border-t-2 border-dashed border-orange-200 z-0"></div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-12 relative z-10">
+                    <div class="group flex flex-col items-center text-center">
+                        <div class="w-20 h-20 bg-white text-orange-500 rounded-3xl flex items-center justify-center text-3xl font-black mb-8 shadow-xl shadow-orange-100 group-hover:scale-110 transition-all border-2 border-orange-50">1</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-3">Create Profile</h4>
+                        <p class="text-slate-600 leading-relaxed max-w-xs">Showcase your skills, portfolio, and set your own availability status.</p>
+                    </div>
+                    <div class="group flex flex-col items-center text-center">
+                        <div class="w-20 h-20 bg-white text-pink-500 rounded-3xl flex items-center justify-center text-3xl font-black mb-8 shadow-xl shadow-pink-100 group-hover:scale-110 transition-all border-2 border-pink-50">2</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-3">Receive Requests</h4>
+                        <p class="text-slate-600 leading-relaxed max-w-xs">Get instant notifications when students are interested in your services.</p>
+                    </div>
+                    <div class="group flex flex-col items-center text-center">
+                        <div class="w-20 h-20 bg-white text-teal-500 rounded-3xl flex items-center justify-center text-3xl font-black mb-8 shadow-xl shadow-teal-100 group-hover:scale-110 transition-all border-2 border-teal-50">3</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-3">Earn & Grow</h4>
+                        <p class="text-slate-600 leading-relaxed max-w-xs">Build your reputation, earn money, and help your fellow students succeed.</p>
+                    </div>
+                </div>
             </div>
-        </section>
+        </div>
+    </div>
+
+    
+</section>
+
+<section class="py-24 bg-slate-950 relative overflow-hidden text-center">
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full opacity-30 pointer-events-none">
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-600 rounded-full blur-[120px]"></div>
+    </div>
+
+    <div class="max-w-4xl mx-auto px-6 relative z-10">
+        <h2 class="text-4xl md:text-6xl font-black text-white mb-8 tracking-tight leading-tight">
+            Over <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">{{ number_format($totalUsers ?? 1250) }}+</span> Students Have Used S2U
+        </h2>
+        <p class="text-slate-400 text-lg md:text-xl mb-12 max-w-2xl mx-auto">
+            Find a better way to learn and earn. Join the UPSI student movement transforming the campus economy.
+        </p>
+        
+        <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
+            <a href="{{ Auth::check() ? route('search.index') : route('register') }}" 
+               class="group px-10 py-4 bg-white text-slate-950 rounded-2xl font-bold hover:scale-105 transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.2)] flex items-center gap-2">
+                <span>Find Your Next Service!</span>
+                <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+            </a>
+            
+            @guest
+            <a href="{{ route('login') }}" class="px-10 py-4 text-white border border-slate-700 rounded-2xl font-bold hover:bg-slate-900 transition-all">
+                Log In
+            </a>
+            @endguest
+        </div>
+    </div>
+</section>
 
         <!-- Footer -->
         @include('layouts.footer')

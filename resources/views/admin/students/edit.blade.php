@@ -163,17 +163,35 @@
                             Verification Status
                         </label>
                         <select name="verification_status"
-                                class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                            <option value="pending" {{ $student->verification_status === 'pending' ? 'selected' : '' }}>
-                                Pending
-                            </option>
-                            <option value="approved" {{ $student->verification_status === 'approved' ? 'selected' : '' }}>
-                                Approved (Verified)
-                            </option>
-                            <option value="rejected" {{ $student->verification_status === 'rejected' ? 'selected' : '' }}>
-                                Rejected
-                            </option>
-                        </select>
+        class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+
+    {{-- Pending --}}
+    <option value="pending"
+        @if($student->verification_status === 'approved') disabled @endif
+        {{ $student->verification_status === 'pending' ? 'selected' : '' }}>
+        Pending
+    </option>
+
+    {{-- Approved --}}
+    <option value="approved"
+        {{ $student->verification_status === 'approved' ? 'selected' : '' }}>
+        Approved (Verified)
+    </option>
+
+    {{-- Rejected --}}
+    <option value="rejected"
+        {{ $student->verification_status === 'rejected' ? 'selected' : '' }}>
+        Rejected
+    </option>
+
+</select>
+
+@if($student->verification_status === 'approved')
+    <p class="text-xs text-gray-500 mt-1">
+        Once approved, the status cannot be reverted to pending.
+    </p>
+@endif
+
                     </div>
 
                     <hr class="my-4 border-gray-100">

@@ -42,8 +42,10 @@ class Review extends Model
     // Kalau dalam database nama dia 'student_service_id', tukar kat bawah ni.
     public function service()
     {
-        return $this->belongsTo(StudentService::class, 'service_id');
+
+        return $this->belongsTo(StudentService::class, 'student_service_id');
     }
+
 
     public function reviewer()
     {

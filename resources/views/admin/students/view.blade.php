@@ -57,7 +57,7 @@
                         <strong>Role:</strong>
                         @if($student->role === 'helper')
                             <span class="ml-2 px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-bold">
-                                Seller
+                                Helper
                             </span>
                         @else
                             <span class="ml-2 px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs font-bold">
@@ -122,7 +122,7 @@
             <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
             </svg>
-            <h2 class="text-xl font-bold text-green-800">Seller Verification Information</h2>
+            <h2 class="text-xl font-bold text-green-800">Helper Verification Information</h2>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -142,91 +142,26 @@
             </div>
 
             <!-- GPS Location -->
-           <div class="bg-white rounded-lg p-4 shadow-sm">
-    <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">📍 Location</p>
-    
-    @if($student->latitude && $student->longitude)
-        {{-- 1. Display Coordinates --}}
-        <p class="text-sm font-mono text-gray-900 mb-1">
-            {{ number_format($student->latitude, 6) }}, {{ number_format($student->longitude, 6) }}
-            
-            {{-- Map Link Button --}}
-            <a href="https://www.google.com/maps/search/?api=1&query={{ $student->latitude }},{{ $student->longitude }}" 
-               target="_blank" 
-               class="ml-2 text-xs text-blue-600 hover:underline">
-               (View Map)
-            </a>
-        </p>
-
-        {{-- 2. Address Display Container --}}
-        <div class="text-xs text-gray-600 mt-1 p-2 bg-gray-50 rounded border border-gray-100">
-            @if($student->address)
-                {{-- If address exists in DB, show it --}}
-                <strong>Saved Address:</strong><br>
-                {{ $student->address }}
-            @else
-                {{-- If NO address in DB, use ID to target with JS --}}
-                <strong>Detected Address:</strong><br>
-                <span id="dynamic-address-{{ $student->id }}" class="text-gray-500 italic flex items-center gap-1">
-                    <svg class="animate-spin h-3 w-3 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Fetching location...
-                </span>
-            @endif
-        </div>
-
-        {{-- 3. Verification Date --}}
-        @if($student->location_verified_at)
-            <p class="text-xs text-gray-400 mt-2 flex items-center gap-1">
-                <svg class="w-3 h-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                Verified: {{ $student->location_verified_at->format('M d, Y') }}
-            </p>
-        @endif
-
-        {{-- 4. JavaScript to Fetch Address (Only runs if address is missing) --}}
-        @if(!$student->address)
-        <script>
-            document.addEventListener("DOMContentLoaded", function() {
-                const lat = {{ $student->latitude }};
-                const lng = {{ $student->longitude }};
-                const elementId = "dynamic-address-{{ $student->id }}";
-                
-                // Use OpenStreetMap Nominatim API (Free)
-                const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`;
-
-                fetch(url, {
-                    headers: {
-                        'User-Agent': 'YourAppName/1.0' // Good practice for OSM API
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    const el = document.getElementById(elementId);
-                    if (data && data.display_name) {
-                        // Clean up address (remove redundant country codes if needed)
-                        el.innerText = data.display_name;
-                        el.classList.remove('text-gray-500', 'italic');
-                        el.classList.add('text-gray-800');
-                    } else {
-                        el.innerText = "Address details unavailable";
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching address:', error);
-                    document.getElementById(elementId).innerText = "Could not fetch address details";
-                });
-            });
-        </script>
-        @endif
-
-    @else
-        <div class="text-center py-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
-            <p class="text-gray-400 italic text-sm">No location data captured</p>
-        </div>
-    @endif
-</div>
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">📍 Location</p>
+                @if($student->latitude && $student->longitude)
+                    <p class="text-sm font-mono text-gray-900">
+                        {{ number_format($student->latitude, 6) }}, {{ number_format($student->longitude, 6) }}
+                    </p>
+                    @if($student->address)
+                        <p class="text-xs text-gray-600 mt-1">
+                            {{ $student->address }}
+                        </p>
+                    @endif
+                    @if($student->location_verified_at)
+                        <p class="text-xs text-gray-400 mt-1">
+                            Verified: {{ $student->location_verified_at->format('M d, Y') }}
+                        </p>
+                    @endif
+                @else
+                    <p class="text-gray-400 italic">No location data</p>
+                @endif
+            </div>
 
             <!-- Verification Selfie -->
             <div class="bg-white rounded-lg p-4 shadow-sm">
@@ -257,7 +192,7 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                         </svg>
-                        Revoke Seller Status
+                        Revoke Helper Status
                     </button>
                 </form>
             </div>
@@ -331,47 +266,6 @@
             <p class="text-gray-400 italic">No bio provided.</p>
         @endif
     </div>
-
-    {{-- IDENTITY VERIFICATION --}}
-<div class="bg-white shadow rounded-lg p-6 mt-6 border border-gray-200">
-    <h2 class="text-lg font-semibold text-gray-800 mb-3">
-        Identity Verification (Live Selfie)
-    </h2>
-
-    @if($student->selfie_media_path)
-        <p class="text-sm text-gray-600 mb-4">
-            Live selfie submitted during verification process.
-        </p>
-
-        <img src="{{ route('admin.verifications.selfie', $student->id) }}"
-             alt="Live Selfie"
-             class="w-40 h-40 rounded-lg object-cover border shadow">
-
-    @else
-        <div class="flex items-center gap-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            
-            <div class="w-24 h-24 flex items-center justify-center bg-yellow-100 rounded border">
-                <svg class="w-10 h-10 text-yellow-500" fill="none" stroke="currentColor"
-                     viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-            </div>
-
-            <div>
-                <p class="font-semibold text-yellow-800">
-                    Live Selfie Not Submitted
-                </p>
-                <p class="text-sm text-yellow-700">
-                    This student has not uploaded a live selfie for identity verification.
-                </p>
-                <p class="text-xs text-yellow-600 mt-1 italic">
-                    Required for verification approval.
-                </p>
-            </div>
-        </div>
-    @endif
-</div>
 
     {{-- SYSTEM INFO --}}
     <div class="bg-white shadow-sm rounded-lg p-6 mt-6 border border-gray-200">

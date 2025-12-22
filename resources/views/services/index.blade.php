@@ -18,17 +18,11 @@
 
     <style>
         body {
-            font-family: 'Inter', sans-serif;
             background-color: #f8fafc;
             /* Slate-50 */
         }
 
-        h1,
-        h2,
-        h3,
-        .font-heading {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
+    
 
         /* Custom Scrollbar for cleaner look */
         ::-webkit-scrollbar {
@@ -107,48 +101,90 @@
                 {{--       SIDEBAR           --}}
                 {{-- ======================= --}}
                 <aside class="lg:col-span-3 space-y-6">
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sticky top-24">
-                        <h3 class="font-bold text-slate-900 mb-4 px-2">Categories</h3>
+                    <div
+                        class="bg-white rounded-[2rem] shadow-sm border border-slate-100 p-6 sticky top-24 transition-all duration-300">
 
-                        <div class="space-y-1">
-                            {{-- All Categories Link (Stays Indigo) --}}
+                        <div class="flex items-center justify-between mb-6 px-2">
+                            <h3 class="font-black text-slate-900 uppercase tracking-tighter text-sm">Explore Categories
+                            </h3>
+                            <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+                        </div>
+
+                        <div class="space-y-2">
+                            {{-- All Categories Link --}}
                             <a href="{{ route('services.index') }}"
-                                class="group flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200
-               {{ !$category_id ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-gray-50 hover:text-slate-900' }}">
-                                <span
-                                    class="w-8 h-8 flex items-center justify-center rounded-lg 
-                      {{ !$category_id ? 'bg-white text-indigo-600 shadow-sm' : 'bg-gray-100 text-gray-500 group-hover:bg-white group-hover:shadow-sm' }}">
-                                    <i class="fas fa-th-large"></i>
-                                </span>
-                                All Categories
+                                class="group flex items-center justify-between px-4 py-3.5 rounded-2xl text-sm font-bold transition-all duration-300
+                {{ !$category_id ? 'bg-slate-200 text-slate-700 shadow-xl shadow-slate-200' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+
+                                <div class="flex items-center gap-3">
+                                    <span
+                                        class="w-9 h-9 flex items-center justify-center rounded-xl transition-all duration-300
+            {{ !$category_id ? 'bg-white text-indigo-600 shadow-sm' : 'bg-slate-100 text-slate-400 group-hover:bg-white group-hover:shadow-sm' }}">
+                                        <i class="fas fa-th-large text-sm"></i>
+                                    </span>
+                                    <span>All Services</span>
+                                </div>
+                                @if (!$category_id)
+                                    <i class="fas fa-chevron-right text-[10px] opacity-50"></i>
+                                @endif
                             </a>
 
+                            <div class="py-2 px-4">
+                                <div class="h-px bg-slate-100 w-full"></div>
+                            </div>
+
+                            {{-- Dynamic Categories --}}
                             @foreach ($categories as $cat)
+                                @php $isActive = ($category_id == $cat->id); @endphp
+
                                 <a href="?category_id={{ $cat->id }}"
-                                    class="group flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200
-                   {{ $category_id == $cat->id ? 'bg-indigo-50 text-slate-900' : 'text-slate-600 hover:bg-gray-50 hover:text-slate-900' }}">
+                                    class="group flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-bold transition-all duration-300
+                    {{ $isActive ? 'bg-white shadow-lg shadow-slate-100 ring-1 ring-slate-100' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
 
-                                    {{-- Icon Container with Soft Background Color --}}
-                                    <span
-                                        class="w-8 h-8 flex items-center justify-center rounded-lg transition-colors border"
-                                        style="background-color: {{ $cat->color }}20; border-color: {{ $cat->color }}40;">
+                                    <div class="flex items-center gap-3">
+                                        {{-- Modern Icon Container --}}
+                                        <span
+                                            class="w-9 h-9 flex items-center justify-center rounded-xl transition-all duration-300 border shadow-sm"
+                                            style="
+                                background-color: {{ $isActive ? $cat->color : $cat->color . '10' }}; 
+                                border-color: {{ $cat->color . '30' }};
+                                color: {{ $isActive ? '#FFFFFF' : $cat->color }};
+                            ">
+                                            <i class="{{ $cat->icon ?? 'fa-solid fa-folder' }} text-sm"></i>
+                                        </span>
 
-                                        {{-- REPLACED IMG WITH ICON --}}
-                                        <i class="{{ $cat->icon ?? 'fa-solid fa-folder' }}"
-                                            style="color: {{ $cat->color }};">
-                                        </i>
+                                        <span class="transition-colors {{ $isActive ? 'text-slate-900' : '' }}">
+                                            {{ $cat->name }}
+                                        </span>
+                                    </div>
 
-                                    </span>
-
-                                    <span
-                                        class="transition-colors 
-                          {{ $category_id == $cat->id ? 'font-bold' : 'group-hover:text-slate-900' }}"
-                                        style="{{ $category_id == $cat->id ? 'color: ' . $cat->color : '' }}">
-                                        {{ $cat->name }}
-                                    </span>
+                                    {{-- Count Badge (Jika anda ada withCount dalam controller) --}}
+                                    @if (isset($cat->services_count))
+                                        <span
+                                            class="text-[10px] px-2 py-1 rounded-lg font-black tracking-tighter transition-all
+                            {{ $isActive ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200 group-hover:text-slate-600' }}">
+                                            {{ $cat->services_count }}
+                                        </span>
+                                    @endif
                                 </a>
                             @endforeach
                         </div>
+
+                        @guest
+                            <div
+                                class="mt-8 p-5 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl text-white relative overflow-hidden group">
+                                <div
+                                    class="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700">
+                                </div>
+                                <p class="text-[10px] font-black uppercase tracking-widest opacity-80 mb-1">New Opportunity?
+                                </p>
+                                <h4 class="text-xs font-bold leading-tight mb-3">Become a seller and start earning today!
+                                </h4>
+                                <a href="{{ route('register') }}"
+                                    class="text-[10px] bg-white text-indigo-600 px-3 py-1.5 rounded-lg font-black uppercase hover:bg-indigo-50 transition-colors">Join
+                                    Now</a>
+                            </div>
+                        @endguest
                     </div>
                 </aside>
 
@@ -158,194 +194,220 @@
                 <main class="lg:col-span-9">
 
                     {{-- Top Filters --}}
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-2 mb-8 sticky top-2 z-10">
-                        <form method="GET" class="flex flex-col md:flex-row gap-2">
-                            <input type="hidden" name="category_id" value="{{ $category_id }}">
+                    <div class="sticky top-4 z-30 mb-10 px-2 sm:px-0">
+                        <div
+                            class="bg-white/80 backdrop-blur-md border border-slate-200 shadow-xl shadow-slate-200/50 rounded-[2rem] p-2 transition-all duration-300">
 
-                            <div class="relative flex-1">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="fas fa-search text-gray-400"></i>
-                                </div>
-                                <input type="text" name="q" value="{{ request('q') }}"
-                                    placeholder="Search for services (e.g., Cleaning, Tutoring)..."
-                                    class="block w-full pl-10 pr-3 py-3 border-none rounded-xl text-gray-900 placeholder-gray-400 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all text-sm">
-                            </div>
+                            <form method="GET" action="{{ route('services.index') }}"
+                                class="flex flex-col lg:flex-row gap-2">
+                                <input type="hidden" name="category_id" value="{{ $category_id }}">
 
-                            <div class="flex gap-2">
-                                <div class="relative min-w-[140px]">
-                                    <select name="sort" onchange="this.form.submit()"
-                                        class="block w-full pl-3 pr-10 py-3 border-none rounded-xl text-gray-700 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 text-sm cursor-pointer appearance-none font-medium">
-                                        <option value="newest" {{ $sort == 'newest' ? 'selected' : '' }}>Newest
-                                        </option>
-                                        <option value="oldest" {{ $sort == 'oldest' ? 'selected' : '' }}>Oldest
-                                        </option>
-                                        <option value="price_low" {{ $sort == 'price_low' ? 'selected' : '' }}>Price:
-                                            Low to High</option>
-                                        <option value="price_high" {{ $sort == 'price_high' ? 'selected' : '' }}>Price:
-                                            High to Low</option>
-                                    </select>
-                                    <div
-                                        class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-gray-500">
-                                        <i class="fas fa-chevron-down text-xs"></i>
+                                <div class="relative flex-1 group">
+                                    <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                                        <svg class="w-5 h-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors"
+                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                        </svg>
                                     </div>
+                                    <input type="text" name="q" value="{{ request('q') }}"
+                                        placeholder="Search services (Cleaning, Tutoring...)"
+                                        class="block w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-[1.5rem] text-slate-900 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all text-sm font-medium">
                                 </div>
 
-                                <div class="relative min-w-[130px]">
-                                    <select name="available_only" onchange="this.form.submit()"
-                                        class="block w-full pl-3 pr-10 py-3 border-none rounded-xl text-gray-700 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 text-sm cursor-pointer appearance-none font-medium">
-                                        <option value="">Status: All</option>
-                                        <option value="1"
-                                            {{ request('available_only') == '1' ? 'selected' : '' }}>Available Only
-                                        </option>
-                                        <option value="0"
-                                            {{ request('available_only') == '0' ? 'selected' : '' }}>Unavailable
-                                        </option>
-                                    </select>
-                                    <div
-                                        class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-gray-500">
-                                        <i class="fas fa-chevron-down text-xs"></i>
+                                <div class="flex flex-wrap md:flex-nowrap gap-2">
+                                    <div class="relative flex-1 md:w-44 group">
+                                        <select name="sort" onchange="this.form.submit()"
+                                            class="block w-full pl-4 pr-10 py-4 bg-slate-50 border-none rounded-[1.5rem] text-slate-700 focus:bg-white focus:ring-2 focus:ring-indigo-500 text-sm cursor-pointer appearance-none font-bold transition-all">
+                                            <option value="newest" {{ $sort == 'newest' ? 'selected' : '' }}>✨ Newest
+                                                First</option>
+                                            <option value="oldest" {{ $sort == 'oldest' ? 'selected' : '' }}>⏳ Oldest
+                                                First</option>
+                                            <option value="price_low" {{ $sort == 'price_low' ? 'selected' : '' }}>💸
+                                                Price: Low-High</option>
+                                            <option value="price_high" {{ $sort == 'price_high' ? 'selected' : '' }}>💰
+                                                Price: High-Low</option>
+                                        </select>
+                                        <div
+                                            class="absolute inset-y-0 right-4 flex items-center pointer-events-none text-slate-400">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path d="M19 9l-7 7-7-7" stroke-width="2" stroke-linecap="round"
+                                                    stroke-linejoin="round"></path>
+                                            </svg>
+                                        </div>
                                     </div>
-                                </div>
 
-                                <button type="submit"
-                                    class="hidden md:block bg-indigo-600 hover:bg-indigo-700 text-white px-5 rounded-xl transition shadow-md hover:shadow-lg">
-                                    Search
-                                </button>
-                            </div>
-                        </form>
+                                    <div class="relative flex-1 md:w-44 group">
+                                        <select name="available_only" onchange="this.form.submit()"
+                                            class="block w-full pl-4 pr-10 py-4 bg-slate-50 border-none rounded-[1.5rem] text-slate-700 focus:bg-white focus:ring-2 focus:ring-indigo-500 text-sm cursor-pointer appearance-none font-bold transition-all">
+                                            <option value="">🔘 All Status</option>
+                                            <option value="1"
+                                                {{ request('available_only') == '1' ? 'selected' : '' }}>🟢 Available
+                                            </option>
+                                            <option value="0"
+                                                {{ request('available_only') == '0' ? 'selected' : '' }}>🔴 Busy
+                                            </option>
+                                        </select>
+                                        <div
+                                            class="absolute inset-y-0 right-4 flex items-center pointer-events-none text-slate-400">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path d="M19 9l-7 7-7-7" stroke-width="2" stroke-linecap="round"
+                                                    stroke-linejoin="round"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+
+                                    <button type="submit"
+                                        class="w-full md:w-14 h-14 bg-indigo-500 hover:bg-indigo-600 text-white rounded-[1.2rem] transition-all duration-300 shadow-lg shadow-slate-900/20 active:scale-90 flex items-center justify-center group"
+                                        title="Search">
+
+                                        <svg class="w-6 h-6 transform group-hover:scale-110 transition-transform duration-300"
+                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z">
+                                            </path>
+                                        </svg>
+
+                                        <span class="sr-only">Search</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
 
-                    <div class="space-y-6">
+                    <div class="space-y-8">
                         @foreach ($services as $service)
                             <div
-                                class="group bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 shadow-sm hover:shadow-xl transition-all duration-300 relative overflow-hidden">
+                                class="group bg-white rounded-[2rem] border border-slate-100 p-2 sm:p-3 shadow-sm hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-500 relative overflow-hidden">
 
-                                <div class="flex flex-col sm:flex-row gap-6">
+                                <div class="flex flex-col md:flex-row gap-6">
                                     {{-- IMAGE SECTION --}}
                                     <div
-                                        class="sm:w-64 h-56 sm:h-auto flex-shrink-0 relative rounded-xl overflow-hidden bg-gray-100">
-                                         @php $isStorageImage = Str::startsWith($service->image_path, 'services/'); @endphp
-                                <img src="{{ $isStorageImage ? asset('storage/' . $service->image_path) : asset($service->image_path) }}"
-                                     class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                     onerror="this.src='https://via.placeholder.com/400x300?text=Service+Image'">
-                                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                        class="md:w-72 h-64 md:h-auto flex-shrink-0 relative rounded-[1.5rem] overflow-hidden bg-slate-50">
+                                        @php $isStorageImage = Str::startsWith($service->image_path, 'services/'); @endphp
+                                        <img src="{{ $isStorageImage ? asset('storage/' . $service->image_path) : asset($service->image_path) }}"
+                                            class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                                            onerror="this.src='https://via.placeholder.com/400x300?text=S2U+Service'">
 
+                                        {{-- Category Badge --}}
                                         @if ($service->category)
-                                            <div class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold shadow-sm"
-                                                style="color: {{ $service->category->color }}">
-                                                {{ $service->category->name }}
+                                            <div class="absolute top-4 left-4">
+                                                <span
+                                                    class="backdrop-blur-md bg-white/80 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm"
+                                                    style="color: {{ $service->category->color }}">
+                                                    {{ $service->category->name }}
+                                                </span>
                                             </div>
                                         @endif
 
+                                        {{-- Price Tag (Mobile Only) --}}
                                         @if ($service->basic_price)
                                             <div
-                                                class="sm:hidden absolute bottom-3 right-3 bg-indigo-600 text-white px-3 py-1 rounded-lg text-sm font-bold shadow-md">
+                                                class="md:hidden absolute bottom-4 right-4 bg-slate-900/90 backdrop-blur text-white px-4 py-2 rounded-2xl text-sm font-bold shadow-lg">
                                                 RM{{ number_format($service->basic_price, 0) }}
                                             </div>
                                         @endif
                                     </div>
 
                                     {{-- CONTENT SECTION --}}
-                                    <div class="flex-1 flex flex-col justify-between">
-                                        <div>
-                                            <div class="flex justify-between items-start mb-2">
-                                                <div class="flex items-center gap-2">
-                                                    <span
-                                                        class="text-xs font-medium text-gray-400 flex items-center gap-1">
-                                                        <i class="far fa-clock"></i>
-                                                        {{ $service->created_at->diffForHumans() }}
-                                                    </span>
-                                                    <span class="inline-block w-1 h-1 rounded-full bg-gray-300"></span>
-                                                    <span class="text-xs font-medium {{ $service->status === 'available' ? 'text-green-600 bg-green-50' : 'text-red-500 bg-red-100' }} px-2 py-0.5 rounded-full border {{ $service->status === 'available' ? 'border-green-100' : 'border-red-200' }}">
-                                {{ $service->status === 'available' ? 'Available' : 'Unavailable' }}
-                            </span>
-                                                                            </div>
-
-                                                <div class="flex items-center gap-2">
-
-                                                    <button type="button" onclick="handleShare(this)"
-                                                        data-url="{{ route('services.details', $service->id) }}"
-                                                        class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition text-gray-400 hover:text-indigo-600"
-                                                        title="Share">
-                                                        <i class="fas fa-share-alt text-lg"></i>
-                                                    </button>
-                                                </div>
-                                            </div>
-
-                                            <h2
-                                                class="text-xl font-bold text-slate-900 mb-2 leading-tight group-hover:text-indigo-600 transition-colors">
-                                                <a href="{{ route('services.details', $service->id) }}">
-                                                    {{ $service->title }}
-                                                </a>
-                                            </h2>
-
-                                            <div class="flex items-center gap-1 mb-3">
-                                                <i class="fas fa-star text-yellow-400 text-sm"></i>
+                                    <div class="flex-1 px-4 py-4 md:py-6 flex flex-col">
+                                        <div class="flex justify-between items-start mb-3">
+                                            <div class="flex items-center gap-3">
                                                 <span
-                                                    class="font-bold text-slate-800 text-sm">{{ number_format($service->reviews_avg_rating ?? 0, 1) }}</span>
+                                                    class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                                                    <i class="far fa-clock text-indigo-500"></i>
+                                                    {{ $service->created_at->diffForHumans() }}
+                                                </span>
+                                                <span class="w-1 h-1 rounded-full bg-slate-200"></span>
                                                 <span
-                                                    class="text-slate-400 text-sm">({{ $service->reviews_count }} reviews)</span>
+                                                    class="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter border {{ $service->status === 'available' ? 'text-emerald-600 bg-emerald-50 border-emerald-100' : 'text-rose-500 bg-rose-50 border-rose-100' }}">
+                                                    {{ $service->status }}
+                                                </span>
                                             </div>
 
-                                            <div
-                                                class="rich-text text-slate-500 text-sm line-clamp-2 leading-relaxed mb-4">
-                                                {!! $service->description !!}
-                                            </div>
+                                            <button type="button" onclick="handleShare(this)"
+                                                data-url="{{ route('services.details', $service->id) }}"
+                                                class="w-10 h-10 flex items-center justify-center rounded-2xl bg-slate-50 text-slate-400 hover:bg-indigo-600 hover:text-white transition-all duration-300 shadow-sm"
+                                                title="Share Service">
+                                                <i class="fas fa-share-alt"></i>
+                                            </button>
                                         </div>
 
-                                        <div
-                                            class="flex items-center justify-between border-t border-gray-100 pt-4 mt-auto">
+                                        <h2
+                                            class="text-2xl font-black text-slate-900 mb-3 leading-tight group-hover:text-indigo-600 transition-colors duration-300">
+                                            <a href="{{ route('services.details', $service->id) }}">
+                                                {{ $service->title }}
+                                            </a>
+                                        </h2>
 
-                                            {{-- Ganti rute utama agar mengarah ke login jika guest --}}
+                                        <div class="flex items-center gap-2 mb-4">
+                                            <div class="flex text-yellow-400 text-xs">
+                                                @for ($i = 1; $i <= 5; $i++)
+                                                    <i
+                                                        class="{{ $i <= ($service->reviews_avg_rating ?? 0) ? 'fas' : 'far' }} fa-star"></i>
+                                                @endfor
+                                            </div>
+                                            <span
+                                                class="text-sm font-bold text-slate-700">{{ number_format($service->reviews_avg_rating ?? 0, 1) }}</span>
+                                            <span
+                                                class="text-xs text-slate-400 font-medium">({{ $service->reviews_count }}
+                                                reviews)</span>
+                                        </div>
+
+                                        <div class="text-slate-500 text-sm line-clamp-2 leading-relaxed mb-6 flex-1">
+                                            {!! strip_tags($service->description) !!}
+                                        </div>
+
+                                        <div class="flex items-center justify-between border-t border-slate-50 pt-6">
+                                            {{-- Seller Info --}}
                                             <a href="{{ Auth::guest() ? route('login') : route('students.profile', $service->user) }}"
-                                                class="flex items-center gap-3 group/user" {{-- Tambahkan title untuk memberi tahu guest harus login --}}
-                                                title="{{ Auth::guest() ? 'Login to view profile' : '' }}">
-
-                                                <div class="relative">
+                                                class="flex items-center gap-3 group/user overflow-hidden max-w-[200px]">
+                                                <div class="relative flex-shrink-0">
                                                     <img src="{{ $service->user->profile_photo_path ? asset('storage/' . $service->user->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . urlencode($service->user->name) . '&background=random' }}"
-                                                        class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm group-hover/user:border-indigo-100 transition 
-             
-                                            {{-- 👇 PERBAIKAN 1: Tambahkan class blur jika pengguna adalah guest --}}
-                                            @guest
-                                            blur-md @endguest
-                                                        ">
+                                                        class="w-12 h-12 rounded-2xl object-cover border-2 border-white shadow-md group-hover/user:ring-2 group-hover/user:ring-indigo-500 transition-all duration-300 @guest blur-sm @endguest">
 
-                                                    {{-- Optional: Overlay dan Icon Kunci jika guest (memberi tahu gambar dikunci) --}}
                                                     @guest
                                                         <div
-                                                            class="absolute inset-0 flex items-center justify-center text-white bg-black/30 rounded-full">
-                                                            <i class="fas fa-lock text-sm"></i>
+                                                            class="absolute inset-0 flex items-center justify-center text-white bg-slate-900/20 rounded-2xl">
+                                                            <i class="fas fa-lock text-[10px]"></i>
                                                         </div>
                                                     @endguest
 
                                                     @if ($service->user->trust_badge)
-                                                        <div class="absolute -bottom-1 -right-1 bg-blue-500 text-white w-4 h-4 rounded-full flex items-center justify-center text-[8px] border border-white"
-                                                            title="Verified Helper">
+                                                        <div
+                                                            class="absolute -top-1 -right-1 bg-blue-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-[8px] border-2 border-white shadow-sm">
                                                             <i class="fas fa-check"></i>
                                                         </div>
                                                     @endif
                                                 </div>
-
-                                                <div class="flex flex-col">
+                                                <div class="flex flex-col min-w-0">
                                                     <span
-                                                        class="text-sm font-bold text-slate-800 group-hover/user:text-indigo-600 transition">
-                                                        {{ Str::limit($service->user->name, 18) }}
+                                                        class="text-sm font-black text-slate-800 group-hover/user:text-indigo-600 transition truncate">
+                                                        {{ $service->user->name }}
                                                     </span>
-                                                    <span class="text-xs text-slate-500">Student Helper</span>
+                                                    <span
+                                                        class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Student
+                                                        Helper</span>
                                                 </div>
                                             </a>
 
-                                            <div class="flex items-center gap-4">
+                                            <div class="flex items-center gap-6">
                                                 @if ($service->basic_price)
                                                     <div class="text-right hidden sm:block">
-                                                        <p class="text-xs text-slate-400 font-medium">Starting at</p>
-                                                        <p class="text-lg font-bold text-indigo-600">
-                                                            RM{{ number_format($service->basic_price, 2) }}</p>
+                                                        <p
+                                                            class="text-[10px] text-slate-400 font-black uppercase tracking-tighter">
+                                                            Starts at</p>
+                                                        <p class="text-xl font-black text-slate-900">
+                                                            <span class="text-sm font-bold text-indigo-600">RM
+                                                            </span>{{ number_format($service->basic_price, 2) }}
+                                                        </p>
                                                     </div>
                                                 @endif
 
                                                 <a href="{{ route('services.details', $service->id) }}"
-                                                    class="bg-slate-900 hover:bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow hover:shadow-lg transform hover:-translate-y-0.5">
+                                                    class="bg-white text-slate-700 border border-slate-200 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 px-7 py-3 rounded-2xl text-sm font-bold transition-all duration-300 shadow-sm hover:shadow-indigo-200 hover:-translate-y-1 flex items-center justify-center">
                                                     View Details
                                                 </a>
                                             </div>
@@ -355,7 +417,6 @@
                             </div>
                         @endforeach
                     </div>
-
                     <div class="mt-10">
                         {{-- {{ $services->links() }} --}}
                     </div>

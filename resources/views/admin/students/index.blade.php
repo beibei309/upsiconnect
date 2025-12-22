@@ -1,150 +1,202 @@
 @extends('admin.layout')
 
+@php
+    use Illuminate\Support\Facades\Storage;
+@endphp
+
 @section('content')
     <div>
         <h1 class="text-3xl font-bold mb-4">Manage Students</h1>
 
         <!-- Search + Filters Row -->
-        <div class="flex items-center gap-3 mb-4">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5">
 
             <!-- Search -->
-            <form method="GET" class="flex items-center gap-2 flex-grow">
-                <input type="text" name="search" placeholder="Search student..." class="p-2 border rounded w-1/3"
+            <form method="GET" class="flex items-center gap-2 w-full md:w-auto">
+                <input type="text" name="search" placeholder="Search name, email, student ID..."
+                    class="w-full md:w-80 px-4 py-2 border border-gray-300 rounded-lg
+                      focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                     value="{{ request('search') }}">
 
-                <button class="px-4 py-2 bg-blue-600 text-white rounded">Search</button>
+                @if (request('status'))
+                    <input type="hidden" name="status" value="{{ request('status') }}">
+                @endif
+
+                <button
+                    class="px-5 py-2 bg-blue-600 text-white rounded-lg
+                       hover:bg-blue-700 transition text-sm font-medium">
+                    Search
+                </button>
             </form>
+
+            <!-- Export -->
+            <a href="{{ route('admin.students.export', ['format' => 'csv'] + request()->all()) }}"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-green-600
+              text-white rounded-lg hover:bg-green-700 transition text-sm">
+                <i class="fa-solid fa-file-csv"></i>
+                Export CSV
+            </a>
 
         </div>
 
-        <!-- Filter Pills -->
-        <div class="flex gap-3 mb-6">
-            <a href="{{ route('admin.students.index') }}"
-                class="px-5 py-2 rounded-full text-sm font-medium
-              {{ request('status') == '' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700' }}">
+
+        <!-- FILTER PILLS -->
+        <div class="flex flex-wrap gap-2 mb-6">
+
+            @php
+                $pill = 'px-4 py-2 rounded-full text-sm font-medium transition';
+                $active = 'bg-blue-600 text-white';
+                $inactive = 'bg-gray-100 text-gray-700 hover:bg-gray-200';
+            @endphp
+
+            <a href="{{ route('admin.students.index', request()->except('status')) }}"
+                class="{{ $pill }} {{ request('status') == null ? $active : $inactive }}">
                 All
             </a>
 
-            <a href="{{ route('admin.students.index', ['status' => 'active', 'search' => request('search')]) }}"
-                class="px-5 py-2 rounded-full text-sm font-medium
-              {{ request('status') == 'active' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700' }}">
-                Active
+            <a href="{{ route('admin.students.index', ['status' => 'student'] + request()->except('page')) }}"
+                class="{{ $pill }} {{ request('status') == 'student' ? $active : $inactive }}">
+                Students
             </a>
 
-            <a href="{{ route('admin.students.index', ['status' => 'banned', 'search' => request('search')]) }}"
-                class="px-5 py-2 rounded-full text-sm font-medium
-              {{ request('status') == 'banned' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700' }}">
+            <a href="{{ route('admin.students.index', ['status' => 'helper'] + request()->except('page')) }}"
+                class="{{ $pill }} {{ request('status') == 'helper' ? $active : $inactive }}">
+                Sellers
+            </a>
+
+            <a href="{{ route('admin.students.index', ['status' => 'banned'] + request()->except('page')) }}"
+                class="{{ $pill }} {{ request('status') == 'banned' ? $active : $inactive }}">
                 Banned
             </a>
-        </div>
-        <div class="flex items-center justify-end gap-2 mb-4">
-            <a href="{{ route('admin.students.export', ['format' => 'csv'] + request()->all()) }}" 
-            class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
-                Export CSV
-            </a>
-        </div>
 
+        </div>
 
         <div class="bg-white shadow rounded-lg p-6">
             <table class="w-full text-left">
                 <thead>
-                    <tr class="bg-gray-100">
+                    <tr class="bg-gray-100 text-sm text-gray-600">
                         <th class="py-3 px-4">Name</th>
                         <th class="py-3 px-4">Email</th>
                         <th class="py-3 px-4">Phone</th>
                         <th class="py-3 px-4">Student ID</th>
                         <th class="py-3 px-4">Status</th>
-                        <th class="py-3 px-4">Actions</th>
+                        <th class="py-3 px-4 text-center">Actions</th>
                     </tr>
                 </thead>
 
                 <tbody>
-                    @foreach ($students as $student)
+                    @forelse ($students as $student)
                         <tr class="border-b">
 
-                            <!-- NAME -->
-                            <td class="py-3 px-4 text-sm">{{ $student->name }}</td>
-
-                            <!-- EMAIL -->
-                            <td class="py-3 px-4 text-sm">{{ $student->email }}</td>
-
-                            <!-- PHONE -->
-                            <td class="py-3 px-4 text-sm">{{ $student->phone }}</td>
-
-                            <!-- STUDENT ID -->
-                            <td class="py-3 px-4 text-sm">{{ $student->student_id }}</td>
-
-                            <!-- STATUS COLUMN -->
                             <td class="py-3 px-4">
+                                <div class="flex items-center gap-3">
 
-                                @if ($student->is_suspended)
+                                    <!-- PROFILE IMAGE -->
+                                    <img class="h-10 w-10 rounded-full border border-gray-200"
+                                        src="{{ $student->profile_photo_path
+                                            ? asset('storage/' . $student->profile_photo_path)
+                                            : 'https://ui-avatars.com/api/?name=' . urlencode($student->name) }}"
+                                        alt="Profile">
+
+
+                                    <!-- NAME + ROLE -->
                                     <div>
-                                        <span class="px-3 py-1 text-sm bg-red-200 text-red-800 rounded-full">
-                                            Banned
-                                        </span>
+                                        <div class="font-medium text-gray-900">
+                                            {{ $student->name }}
+                                        </div>
 
-                                        @if ($student->blacklist_reason)
-                                            <p class="text-xs text-red-700 mt-1">{{ $student->blacklist_reason }}</p>
+                                        @if ($student->role === 'helper')
+                                            <span class="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700">
+                                                Seller
+                                            </span>
                                         @endif
                                     </div>
-                                @else
-                                    @if ($student->verification_status == 'approved')
-                                        <span class="px-3 py-1 text-sm bg-green-100 text-green-700 rounded-full">
-                                            Verified
-                                        </span>
-                                    @else
-                                        <span class="px-3 py-1 text-sm bg-yellow-100 text-yellow-700 rounded-full">
-                                            Not Verified
-                                        </span>
-                                    @endif
-                                @endif
 
+                                </div>
                             </td>
 
-                            <!-- ACTIONS -->
-                            <td class="py-3 px-4 flex gap-3">
+                            <td class="py-3 px-4 text-sm">{{ $student->email }}</td>
+                            <td class="py-3 px-4 text-sm">{{ $student->phone ?? '-' }}</td>
+                            <td class="py-3 px-4 text-sm">{{ $student->student_id ?? '-' }}</td>
 
-                                <!-- VIEW -->
-                                <a href="{{ route('admin.students.view', $student->id) }}"
-                                    class="text-blue-600 hover:underline">
-                                    View
-                                </a>
-
-                                <!-- EDIT -->
-                                <a href="{{ route('admin.students.edit', $student->id) }}"
-                                    class="text-blue-600 hover:underline">
-                                    Edit
-                                </a>
-
-                                <!-- BAN / UNBAN -->
+                            {{-- STATUS --}}
+                            <td class="py-3 px-4">
                                 @if ($student->is_suspended)
-                                    <!-- UNBAN BUTTON -->
-                                    <form action="{{ route('admin.students.unban', $student->id) }}" method="POST">
+                                    <span class="px-3 py-1 text-xs bg-red-100 text-red-700 rounded-full">
+                                        Banned
+                                    </span>
+                                @elseif ($student->verification_status === 'approved')
+                                    <span class="px-3 py-1 text-xs bg-green-100 text-green-700 rounded-full">
+                                        Verified
+                                    </span>
+                                @else
+                                    <span class="px-3 py-1 text-xs bg-yellow-100 text-yellow-700 rounded-full">
+                                        Pending
+                                    </span>
+                                @endif
+                            </td>
+
+                            {{-- ACTIONS --}}
+                            <td class="px-6 py-4 text-right">
+                                <div class="flex justify-end gap-3">
+
+                                    {{-- VIEW --}}
+                                    <a href="{{ route('admin.students.view', $student->id) }}"
+                                        class="text-indigo-600 hover:text-indigo-900 transition" title="View">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
+
+                                    {{-- EDIT --}}
+                                    <a href="{{ route('admin.students.edit', $student->id) }}"
+                                        class="text-blue-600 hover:text-blue-900 transition" title="Edit">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </a>
+
+                                    {{-- BAN / UNBAN --}}
+                                    @if ($student->is_suspended)
+                                        <form action="{{ route('admin.students.unban', $student->id) }}" method="POST"
+                                            class="inline">
+                                            @csrf
+                                            <button type="submit" class="text-green-600 hover:text-green-900 transition"
+                                                title="Unban">
+                                                <i class="fa-solid fa-unlock"></i>
+                                            </button>
+                                        </form>
+                                    @else
+                                        <button onclick="openBanModal({{ $student->id }})"
+                                            class="text-red-600 hover:text-red-900 transition" title="Ban">
+                                            <i class="fa-solid fa-ban"></i>
+                                        </button>
+                                    @endif
+
+                                    {{-- DELETE (SweetAlert-ready) --}}
+                                    <form id="delete-form-{{ $student->id }}"
+                                        action="{{ route('admin.students.delete', $student->id) }}" method="POST"
+                                        class="inline">
                                         @csrf
-                                        <button class="text-green-600 hover:underline">
-                                            Unban
+                                        @method('DELETE')
+
+                                        <button type="button" onclick="confirmDelete({{ $student->id }})"
+                                            class="text-red-700 hover:text-red-900 transition" title="Delete">
+                                            <i class="fa-solid fa-trash"></i>
                                         </button>
                                     </form>
-                                @else
-                                    <!-- BAN BUTTON (Opens Modal) -->
-                                    <button onclick="openBanModal({{ $student->id }})"
-                                        class="text-yellow-600 hover:underline">
-                                        Ban
-                                    </button>
-                                @endif
 
-                                <!-- DELETE -->
-                                <form action="{{ route('admin.students.delete', $student->id) }}" method="POST"
-                                    onsubmit="return confirm('Are you sure you want to delete this student?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="text-red-600 hover:underline">Delete</button>
-                                </form>
 
+                                </div>
+                            </td>
+
+
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="text-center py-6 text-gray-500">
+                                No records found.
                             </td>
                         </tr>
-                    @endforeach
+                    @endforelse
                 </tbody>
+
             </table>
 
             <div class="mt-4">
@@ -206,7 +258,12 @@
             }
 
             const form = document.getElementById("banForm");
-            form.action = "/admin/students/" + selectedStudentId + "/ban";
+
+            form.action = "{{ route('admin.students.ban', ':id') }}"
+                .replace(':id', selectedStudentId);
+
+            // clear previous input if exists
+            form.innerHTML = `@csrf`;
 
             const input = document.createElement("input");
             input.type = "hidden";
@@ -215,6 +272,13 @@
 
             form.appendChild(input);
             form.submit();
+        }
+
+        // DELETE CONFIRM (keep this too)
+        function confirmDelete(id) {
+            if (confirm('Are you sure you want to delete this student?')) {
+                document.getElementById('delete-form-' + id).submit();
+            }
         }
     </script>
 @endsection

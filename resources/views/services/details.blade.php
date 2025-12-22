@@ -139,224 +139,235 @@
                     </div>
                 </div>
 
-           <div class="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-md transition-all duration-300 hover:shadow-xl">
-    {{-- Image Container --}}
-    <div class="aspect-video h-[400px] w-full overflow-hidden bg-gray-100">
-        @if($service->image_path)
-            <img 
-                src="{{ Str::startsWith($service->image_path, 'services/') ? asset('storage/'.$service->image_path) : asset($service->image_path) }}" 
-                alt="{{ $service->name ?? 'Service Image' }}"
-                class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-            >
-        @else
-            <div class="flex h-full w-full flex-col items-center justify-center bg-gray-50 text-gray-400">
-                <svg class="mb-2 h-12 w-12 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <span class="text-xs font-medium uppercase tracking-wider">No Image Available</span>
-            </div>
-        @endif
+                <div
+                    class="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-md transition-all duration-300 hover:shadow-xl">
+                    {{-- Image Container --}}
+                    <div class="aspect-video h-[400px] w-full overflow-hidden bg-gray-100">
+                        @if ($service->image_path)
+                            <img src="{{ Str::startsWith($service->image_path, 'services/') ? asset('storage/' . $service->image_path) : asset($service->image_path) }}"
+                                alt="{{ $service->name ?? 'Service Image' }}"
+                                class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">
+                        @else
+                            <div
+                                class="flex h-full w-full flex-col items-center justify-center bg-gray-50 text-gray-400">
+                                <svg class="mb-2 h-12 w-12 opacity-50" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <span class="text-xs font-medium uppercase tracking-wider">No Image Available</span>
+                            </div>
+                        @endif
 
-        {{-- Optional: Gradient Overlay (Makes text easier to read if you add titles over the image later) --}}
-    </div>
-</div>
-                
+                        {{-- Optional: Gradient Overlay (Makes text easier to read if you add titles over the image later) --}}
+                    </div>
+                </div>
+
 
                 <section class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100">
                     <h2 class="text-xl font-bold text-slate-900 mb-4 border-b border-gray-100 pb-2">Description</h2>
                     <div class="prose prose-slate max-w-none text-gray-600 rich-text">{!! $service->description !!}</div>
                 </section>
 
-              {{-- Helper Profile Section --}}
-<section class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100 relative overflow-hidden">
-    <div class="flex flex-col md:flex-row gap-8 items-start">
+                {{-- Helper Profile Section --}}
+                <section
+                    class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100 relative overflow-hidden">
+                    <div class="flex flex-col md:flex-row gap-8 items-start">
 
-        {{-- Left: Profile Image & Badge --}}
-        <div class="relative mx-auto md:mx-0 flex-shrink-0 group">
-            
-            {{-- 1. WRAPPER FOR BLUR LOGIC --}}
-            <div class="relative">
-                @if ($service->user->profile_photo_path)
-                    <img src="{{ asset('storage/' . $service->user->profile_photo_path) }}"
-                        class="w-24 h-24 md:w-28 md:h-28 rounded-full object-cover border-4 border-white shadow-lg transition-all duration-300 
+                        {{-- Left: Profile Image & Badge --}}
+                        <div class="relative mx-auto md:mx-0 flex-shrink-0 group">
+
+                            {{-- 1. WRAPPER FOR BLUR LOGIC --}}
+                            <div class="relative">
+                                @if ($service->user->profile_photo_path)
+                                    <img src="{{ asset('storage/' . $service->user->profile_photo_path) }}"
+                                        class="w-24 h-24 md:w-28 md:h-28 rounded-full object-cover border-4 border-white shadow-lg transition-all duration-300 
                         {{-- BLUR IF GUEST --}}
                         @guest blur-md brightness-90 @endguest">
-                @else
-                    <div
-                        class="w-24 h-24 md:w-28 md:h-28 rounded-full bg-indigo-600 flex items-center justify-center text-3xl md:text-4xl text-white font-bold border-4 border-white shadow-lg 
+                                @else
+                                    <div
+                                        class="w-24 h-24 md:w-28 md:h-28 rounded-full bg-indigo-600 flex items-center justify-center text-3xl md:text-4xl text-white font-bold border-4 border-white shadow-lg 
                         {{-- BLUR IF GUEST --}}
                         @guest blur-md brightness-90 @endguest">
-                        {{ strtoupper(substr($service->user->name, 0, 1)) }}
-                    </div>
-                @endif
+                                        {{ strtoupper(substr($service->user->name, 0, 1)) }}
+                                    </div>
+                                @endif
 
-                {{-- LOCK ICON OVERLAY FOR GUESTS --}}
-                @guest
-                    <div class="absolute inset-0 flex items-center justify-center z-10">
-                        <div class="bg-black/30 p-2 rounded-full">
-                            <i class="fas fa-lock text-white text-lg"></i>
+                                {{-- LOCK ICON OVERLAY FOR GUESTS --}}
+                                @guest
+                                    <div class="absolute inset-0 flex items-center justify-center z-10">
+                                        <div class="bg-black/30 p-2 rounded-full">
+                                            <i class="fas fa-lock text-white text-lg"></i>
+                                        </div>
+                                    </div>
+                                @endguest
+                            </div>
+
+                            {{-- Verified Badge (Only show if logged in, or keep visible but on top of blur) --}}
+                            @if ($service->user->trust_badge ?? false)
+                                <div class="absolute bottom-1 right-1 bg-blue-500 text-white w-7 h-7 flex items-center justify-center rounded-full border-2 border-white shadow-sm z-20"
+                                    title="Verified Student">
+                                    <i class="fas fa-check text-xs"></i>
+                                </div>
+                            @endif
+                        </div>
+
+                        {{-- Right: Info & Stats --}}
+                        <div class="flex-1 w-full text-center md:text-left">
+                            <div class="mb-4">
+                                <h3 class="text-xl font-bold text-slate-900 mb-1">
+                                    {{-- Optional: Mask name for guests if you want extra privacy --}}
+                                    @guest
+                                        {{ Str::mask($service->user->name, '*', 3) }}
+                                    @else
+                                        {{ $service->user->name }}
+                                    @endguest
+                                </h3>
+                                <div class="flex flex-wrap items-center justify-center md:justify-start gap-2 text-sm">
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full font-medium bg-indigo-50 text-indigo-700">
+                                        <i class="fa-solid fa-graduation-cap mr-1.5 text-xs"></i>
+                                        {{ $service->user->faculty ?? 'Faculty of Computing' }}
+                                    </span>
+                                    <span class="text-gray-400 hidden sm:inline">•</span>
+                                    <span class="text-gray-500">Member since
+                                        {{ $service->user->created_at->format('M Y') }}</span>
+                                </div>
+                            </div>
+
+                            {{-- Bio Box --}}
+                            <div class="bg-slate-50 rounded-xl p-4 border border-slate-100 text-left relative">
+                                <i
+                                    class="fa-solid fa-quote-left text-slate-200 text-2xl absolute top-3 left-3 -z-0"></i>
+                                <p class="text-gray-600 italic text-sm relative z-10 pl-6">
+                                    "{{ $service->user->bio ?? 'Hi! I am a dedicated student at UPSI looking to help the community. I ensure all tasks are completed with care and punctuality.' }}"
+                                </p>
+                            </div>
+
+                            {{-- Quick Stats Row --}}
+                            <div class="grid grid-cols-2 gap-4 mt-5 pt-5 border-t border-gray-100">
+                                {{-- Stats content here --}}
+                            </div>
+
+                            <div class="mt-5 text-center md:text-left">
+                                {{-- 2. LOGIC FOR VIEW PROFILE LINK --}}
+                                @auth
+                                    {{-- User IS logged in --}}
+                                    <a href="{{ route('students.profile', $service->user) }}"
+                                        class="text-sm font-bold text-indigo-600 hover:text-indigo-800 hover:underline transition-colors">
+                                        View Full Profile <i class="fa-solid fa-arrow-right ml-1 text-xs"></i>
+                                    </a>
+                                @else
+                                    {{-- User is GUEST (Redirect to login) --}}
+                                    <a href="{{ route('login') }}"
+                                        onclick="return confirm('Please sign in to view the full profile details.')"
+                                        class="text-sm font-bold text-gray-500 hover:text-indigo-600 hover:underline transition-colors cursor-pointer">
+                                        <i class="fas fa-lock mr-1 text-xs"></i> Sign in to view profile
+                                    </a>
+                                @endauth
+                            </div>
                         </div>
                     </div>
-                @endguest
-            </div>
-
-            {{-- Verified Badge (Only show if logged in, or keep visible but on top of blur) --}}
-            @if ($service->user->trust_badge ?? false)
-                <div class="absolute bottom-1 right-1 bg-blue-500 text-white w-7 h-7 flex items-center justify-center rounded-full border-2 border-white shadow-sm z-20"
-                    title="Verified Student">
-                    <i class="fas fa-check text-xs"></i>
-                </div>
-            @endif
-        </div>
-
-        {{-- Right: Info & Stats --}}
-        <div class="flex-1 w-full text-center md:text-left">
-            <div class="mb-4">
-                <h3 class="text-xl font-bold text-slate-900 mb-1">
-                    {{-- Optional: Mask name for guests if you want extra privacy --}}
-                    @guest
-                        {{ Str::mask($service->user->name, '*', 3) }}
-                    @else
-                        {{ $service->user->name }}
-                    @endguest
-                </h3>
-                <div class="flex flex-wrap items-center justify-center md:justify-start gap-2 text-sm">
-                    <span
-                        class="inline-flex items-center px-2.5 py-0.5 rounded-full font-medium bg-indigo-50 text-indigo-700">
-                        <i class="fa-solid fa-graduation-cap mr-1.5 text-xs"></i>
-                        {{ $service->user->faculty ?? 'Faculty of Computing' }}
-                    </span>
-                    <span class="text-gray-400 hidden sm:inline">•</span>
-                    <span class="text-gray-500">Member since
-                        {{ $service->user->created_at->format('M Y') }}</span>
-                </div>
-            </div>
-
-            {{-- Bio Box --}}
-            <div class="bg-slate-50 rounded-xl p-4 border border-slate-100 text-left relative">
-                <i class="fa-solid fa-quote-left text-slate-200 text-2xl absolute top-3 left-3 -z-0"></i>
-                <p class="text-gray-600 italic text-sm relative z-10 pl-6">
-                    "{{ $service->user->bio ?? 'Hi! I am a dedicated student at UPSI looking to help the community. I ensure all tasks are completed with care and punctuality.' }}"
-                </p>
-            </div>
-
-            {{-- Quick Stats Row --}}
-            <div class="grid grid-cols-2 gap-4 mt-5 pt-5 border-t border-gray-100">
-                {{-- Stats content here --}}
-            </div>
-
-            <div class="mt-5 text-center md:text-left">
-                {{-- 2. LOGIC FOR VIEW PROFILE LINK --}}
-                @auth
-                    {{-- User IS logged in --}}
-                    <a href="{{ route('students.profile', $service->user) }}"
-                        class="text-sm font-bold text-indigo-600 hover:text-indigo-800 hover:underline transition-colors">
-                        View Full Profile <i class="fa-solid fa-arrow-right ml-1 text-xs"></i>
-                    </a>
-                @else
-                    {{-- User is GUEST (Redirect to login) --}}
-                    <a href="{{ route('login') }}" 
-                       onclick="return confirm('Please sign in to view the full profile details.')"
-                        class="text-sm font-bold text-gray-500 hover:text-indigo-600 hover:underline transition-colors cursor-pointer">
-                        <i class="fas fa-lock mr-1 text-xs"></i> Sign in to view profile
-                    </a>
-                @endauth
-            </div>
-        </div>
-    </div>
-</section>
+                </section>
 
                 {{-- Reviews Section --}}
-               <section class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100">
-    <div class="flex items-center justify-between mb-6">
-        <h2 class="text-xl font-bold text-slate-900">
-            Reviews ({{ $reviews->count() }})
-        </h2>
+                <section class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-bold text-slate-900">
+                            Reviews ({{ $reviews->count() }})
+                        </h2>
 
-        {{-- Show Service Rating Summary --}}
-        @if ($reviews->count() > 0)
-            <div class="flex items-center gap-2 bg-yellow-50 px-3 py-1 rounded-lg border border-yellow-100">
-                <i class="fas fa-star text-yellow-500"></i>
-                <span class="font-bold text-slate-800">{{ number_format($service->rating, 1) }}</span>
-                <span class="text-xs text-gray-500">/ 5.0</span>
-            </div>
-        @endif
-    </div>
-
-    @if (isset($reviews) && count($reviews) > 0)
-        <div class="space-y-6">
-            @foreach ($reviews as $review)
-                <div class="border-b border-gray-50 pb-6 last:border-0 last:pb-0">
-
-                    {{-- 1. Client Review --}}
-                    <div class="flex items-start gap-3">
-                        {{-- Avatar Client --}}
-                        <div class="flex-shrink-0">
-                            <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-bold text-sm uppercase">
-                                {{ substr($review->reviewer->name ?? 'U', 0, 1) }}
+                        {{-- Show Service Rating Summary --}}
+                        @if ($reviews->count() > 0)
+                            <div
+                                class="flex items-center gap-2 bg-yellow-50 px-3 py-1 rounded-lg border border-yellow-100">
+                                <i class="fas fa-star text-yellow-500"></i>
+                                <span class="font-bold text-slate-800">{{ number_format($service->rating, 1) }}</span>
+                                <span class="text-xs text-gray-500">/ 5.0</span>
                             </div>
-                        </div>
-
-                        <div class="flex-1">
-                            <div class="flex justify-between items-start">
-                                <span class="font-bold text-slate-900 text-sm">
-                                    {{-- LOGIC: CENSOR NAME IF NOT SIGNED IN --}}
-                                    @auth
-                                        {{-- User is signed in: Show full name --}}
-                                        {{ $review->reviewer->name ?? 'User' }}
-                                    @else
-                                        {{-- User is NOT signed in: Show First Letter + Stars (e.g. A****) --}}
-                                        {{ substr($review->reviewer->name ?? 'User', 0, 1) . '****' }}
-                                    @endauth
-                                </span>
-                                <span class="text-xs text-gray-400">{{ $review->created_at->diffForHumans() }}</span>
-                            </div>
-
-                            <div class="flex text-yellow-400 text-xs my-1">
-                                @for ($i = 1; $i <= 5; $i++)
-                                    <i class="{{ $i <= $review->rating ? 'fas' : 'far' }} fa-star"></i>
-                                @endfor
-                            </div>
-
-                            <p class="text-gray-600 text-sm leading-relaxed">{{ $review->comment }}</p>
-                        </div>
+                        @endif
                     </div>
 
-                    {{-- 2. Helper Reply (Display only if reply exists) --}}
-                    @if ($review->reply)
-                        <div class="mt-4 ml-2 pl-8 border-l-2 border-indigo-100 relative">
-                            <div class="bg-slate-50 p-4 rounded-r-xl rounded-bl-xl">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <span class="text-xs font-bold text-gray-700 flex items-center gap-1">
-                                        Reply from seller: {{ $service->user->name }}
-                                        @if ($service->user->trust_badge)
-                                            <i class="fas fa-check-circle text-[10px]"></i>
-                                        @endif
-                                    </span>
+                    @if (isset($reviews) && count($reviews) > 0)
+                        <div class="space-y-6">
+                            @foreach ($reviews as $review)
+                                <div class="border-b border-gray-50 pb-6 last:border-0 last:pb-0">
 
-                                    @if ($review->replied_at)
-                                        <span class="text-[10px] text-gray-400">•
-                                            {{ \Carbon\Carbon::parse($review->replied_at)->diffForHumans() }}</span>
+                                    {{-- 1. Client Review --}}
+                                    <div class="flex items-start gap-3">
+                                        {{-- Avatar Client --}}
+                                        <div class="flex-shrink-0">
+                                            <div
+                                                class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-bold text-sm uppercase">
+                                                {{ substr($review->reviewer->name ?? 'U', 0, 1) }}
+                                            </div>
+                                        </div>
+
+                                        <div class="flex-1">
+                                            <div class="flex justify-between items-start">
+                                                <span class="font-bold text-slate-900 text-sm">
+                                                    {{-- LOGIC: CENSOR NAME IF NOT SIGNED IN --}}
+                                                    @auth
+                                                        {{-- User is signed in: Show full name --}}
+                                                        {{ $review->reviewer->name ?? 'User' }}
+                                                    @else
+                                                        {{-- User is NOT signed in: Show First Letter + Stars (e.g. A****) --}}
+                                                        {{ substr($review->reviewer->name ?? 'User', 0, 1) . '****' }}
+                                                    @endauth
+                                                </span>
+                                                <span
+                                                    class="text-xs text-gray-400">{{ $review->created_at->diffForHumans() }}</span>
+                                            </div>
+
+                                            <div class="flex text-yellow-400 text-xs my-1">
+                                                @for ($i = 1; $i <= 5; $i++)
+                                                    <i
+                                                        class="{{ $i <= $review->rating ? 'fas' : 'far' }} fa-star"></i>
+                                                @endfor
+                                            </div>
+
+                                            <p class="text-gray-600 text-sm leading-relaxed">{{ $review->comment }}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {{-- 2. Helper Reply (Display only if reply exists) --}}
+                                    @if ($review->reply)
+                                        <div class="mt-4 ml-2 pl-8 border-l-2 border-indigo-100 relative">
+                                            <div class="bg-slate-50 p-4 rounded-r-xl rounded-bl-xl">
+                                                <div class="flex items-center gap-2 mb-2">
+                                                    <span
+                                                        class="text-xs font-bold text-gray-700 flex items-center gap-1">
+                                                        Reply from seller: {{ $service->user->name }}
+                                                        @if ($service->user->trust_badge)
+                                                            <i class="fas fa-check-circle text-[10px]"></i>
+                                                        @endif
+                                                    </span>
+
+                                                    @if ($review->replied_at)
+                                                        <span class="text-[10px] text-gray-400">•
+                                                            {{ \Carbon\Carbon::parse($review->replied_at)->diffForHumans() }}</span>
+                                                    @endif
+                                                </div>
+
+                                                <p class="text-sm text-gray-600 italic">"{{ $review->reply }}"</p>
+                                            </div>
+                                        </div>
                                     @endif
-                                </div>
 
-                                <p class="text-sm text-gray-600 italic">"{{ $review->reply }}"</p>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="text-center py-8">
+                            <div
+                                class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <i class="fa-regular fa-comments text-gray-300 text-xl"></i>
                             </div>
+                            <p class="text-gray-500 text-sm">No reviews yet for this service.</p>
                         </div>
                     @endif
-
-                </div>
-            @endforeach
-        </div>
-    @else
-        <div class="text-center py-8">
-            <div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
-                <i class="fa-regular fa-comments text-gray-300 text-xl"></i>
-            </div>
-            <p class="text-gray-500 text-sm">No reviews yet for this service.</p>
-        </div>
-    @endif
-</section>
+                </section>
             </div>
 
             {{-- RIGHT COLUMN (Booking System) --}}
@@ -437,7 +448,7 @@
                                     {{-- Show divider/text only if both exist --}}
                                     <span
                                         x-show="packages[currentPackage].duration && packages[currentPackage].frequency">
-                                        
+
                                     </span>
 
                                     <span x-text="packages[currentPackage].frequency"></span>
@@ -451,24 +462,25 @@
                             </div>
 
                             {{-- Duration (Session Based Only) --}}
-                            <div class="mb-6" x-show="isSessionBased">
-                                <div class="flex justify-between items-center mb-2">
-                                    <label class="text-xs font-bold text-gray-700 uppercase">Duration</label>
-                                    <span class="text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded"
-                                        x-text="selectedDuration + ' Hours'"></span>
-                                </div>
-                                <div class="grid grid-cols-4 gap-2">
-                                    <template x-for="h in [1, 2, 3, 4]" :key="h">
-                                        <button @click="selectDuration(h)" type="button"
-                                            class="py-2.5 rounded-xl border text-sm font-bold transition-all"
-                                            :class="selectedDuration === h ?
-                                                'bg-slate-800 text-white border-slate-800 shadow-md transform -translate-y-0.5' :
-                                                'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'">
-                                            <span x-text="h + 'h'"></span>
-                                        </button>
-                                    </template>
-                                </div>
-                            </div>
+                           {{-- Duration --}}
+<div class="mb-6" x-show="isSessionBased">
+    <div class="flex justify-between items-center mb-2">
+        <label class="text-xs font-bold text-gray-700 uppercase">Duration</label>
+        <span class="text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded"
+            x-text="selectedDuration + ' Hours'"></span>
+    </div>
+    <div class="grid grid-cols-5 gap-2"> {{-- Tukar grid-cols-5 --}}
+        <template x-for="h in [1, 2, 3, 4, 5]" :key="h"> {{-- Tambah 5 --}}
+            <button @click="selectDuration(h)" type="button"
+                class="py-2.5 rounded-xl border text-sm font-bold transition-all"
+                :class="selectedDuration === h ?
+                    'bg-slate-800 text-white border-slate-800 shadow-md transform -translate-y-0.5' :
+                    'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'">
+                <span x-text="h + 'h'"></span>
+            </button>
+        </template>
+    </div>
+</div>
 
                             <div class="w-full h-px bg-gray-100 mb-6"></div>
 
@@ -635,13 +647,13 @@
                                 <ul class="space-y-2 text-sm mt-3 pl-6 border-l-2 border-gray-50">
                                     @php
                                         $daysMap = [
-                                            'mon' => 'Mon',
-                                            'tue' => 'Tue',
-                                            'wed' => 'Wed',
-                                            'thu' => 'Thu',
-                                            'fri' => 'Fri',
-                                            'sat' => 'Sat',
-                                            'sun' => 'Sun',
+                                            'mon' => 'Monday',
+                                            'tue' => 'Tuesday',
+                                            'wed' => 'Wednesday',
+                                            'thu' => 'Thursday',
+                                            'fri' => 'Friday',
+                                            'sat' => 'Saturday',
+                                            'sun' => 'Sunday',
                                         ];
                                         $schedule = $service->operating_hours ?? [];
                                     @endphp
@@ -960,118 +972,91 @@
                     return `${h}:${m.toString().padStart(2, '0')} ${ampm}`;
                 },
                 calculateEndTime(startTime) {
-                    if (!startTime) return '00:00';
+    if (!startTime) return '00:00';
 
-                    // Split the time (e.g., "14:30")
-                    let [h, m] = startTime.split(':').map(Number);
+    let [h, m] = startTime.split(':').map(Number);
+    
+    // 🟢 Guna selectedDuration (jam) darab 60 minit
+    let totalMinutes = (h * 60) + m + (this.selectedDuration * 60);
 
-                    // Add the session duration (e.g., 60 mins)
-                    let totalMinutes = (h * 60) + m + this.sessionDuration;
+    let endH = Math.floor(totalMinutes / 60);
+    let endM = totalMinutes % 60;
 
-                    // Convert back to HH:MM
-                    let endH = Math.floor(totalMinutes / 60);
-                    let endM = totalMinutes % 60;
+    // Supaya tidak lebih 24 jam
+    endH = endH % 24;
 
-                    // Handle overflow (if it goes past midnight, theoretically)
-                    endH = endH % 24;
+    return `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
+},
 
-                    return `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
+               submitBooking() {
+    @auth
+    if (this.hasActiveRequest) {
+        // ... (kod amaran sedia ada)
+        return;
+    }
+
+    // Kira masa mengikut durasi dipilih
+    let sendStartTime = this.isSessionBased ? this.selectedTime : '00:00';
+    let sendEndTime = this.isSessionBased ? this.calculateEndTime(this.selectedTime) : '23:59';
+    
+    let displayTime = this.formatTimeDisplay(this.selectedTime);
+
+    // --- Build Modal HTML ---
+    let detailsHtml = `
+        <div class="text-left bg-gray-50 p-4 rounded-lg border border-gray-200 text-sm mb-4">
+            <p class="mb-1"><strong>Date:</strong> ${this.selectedDate}</p>
+            <p class="mb-1"><strong>Time:</strong> ${displayTime}</p>
+            <p class="mb-1"><strong>Duration:</strong> ${this.selectedDuration} Hours</p>
+            <p class="text-lg font-bold text-indigo-600 mt-2">Total: RM${this.calculateTotal()}</p>
+        </div>
+        <div class="text-left">
+            <label class="block text-sm font-bold text-gray-700 mb-1">Message to Helper</label>
+            <textarea id="swal-message-input" class="w-full border rounded-lg p-3 text-sm" rows="3"></textarea>
+        </div>`;
+
+    Swal.fire({
+        title: 'Confirm Booking?',
+        html: detailsHtml,
+        showCancelButton: true,
+        preConfirm: () => {
+            const msg = document.getElementById('swal-message-input').value;
+            if (!msg) Swal.showValidationMessage('Please write a message');
+            return msg;
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Gabungkan info sistem ke dalam mesej
+            const userNote = result.value;
+            const finalMessage = `BOOKING DETAILS:\nTime: ${displayTime}\nDuration: ${this.selectedDuration}h\n\nNote: ${userNote}`;
+
+            fetch("{{ route('service-requests.store') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
                 },
+                body: JSON.stringify({
+                    student_service_id: {{ $service->id }},
+                    selected_dates: this.selectedDate,
+                    start_time: sendStartTime,
+                    end_time: sendEndTime,
+                    message: finalMessage,
+                    selected_package: this.currentPackage,
+                    offered_price: this.calculateTotal()
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Success', 'Request sent!', 'success').then(() => location.reload());
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            });
+        }
+    });
+    @endauth
 
-                submitBooking() {
-                    @auth
-                    if (this.hasActiveRequest) {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Limit Reached',
-                            text: 'You already have an active request.',
-                            confirmButtonColor: '#f59e0b'
-                        });
-                        return;
-                    }
-
-                    // --- 1. Prepare Data for Task vs Session ---
-                    let displayTime = this.isSessionBased ? this.formatTimeDisplay(this.selectedTime) :
-                        'Anytime (Full Day)';
-                    let displayDuration = this.isSessionBased ? this.selectedDuration + ' Hours' : 'Task Based';
-
-                    // Define times to send to backend
-                    let sendStartTime = this.isSessionBased ? this.selectedTime : '00:00';
-                    let sendEndTime = this.isSessionBased ? this.calculateEndTime(this.selectedTime) : '23:59';
-
-                    // --- 2. Build Modal HTML ---
-                    let detailsHtml = `
-            <div class="text-left bg-gray-50 p-4 rounded-lg border border-gray-200 text-sm mb-4">
-                <p class="mb-1"><strong>Date:</strong> ${this.selectedDate}</p>`;
-
-                    // Only show Time row if session based
-                    if (this.isSessionBased) {
-                        detailsHtml += `<p class="mb-1"><strong>Time:</strong> ${displayTime}</p>
-                            <p class="mb-1"><strong>Duration:</strong> ${displayDuration}</p>`;
-                    } else {
-                        detailsHtml += `<p class="mb-1"><strong>Type:</strong> Daily Task Request</p>`;
-                    }
-
-                    detailsHtml += `
-                <p class="mb-1"><strong>Package:</strong> ${this.currentPackage.toUpperCase()}</p>
-                <p class="text-lg font-bold text-indigo-600 mt-2">Total: RM${this.calculateTotal()}</p>
-            </div>
-            <div class="text-left">
-                <label class="block text-sm font-bold text-gray-700 mb-1">Message to Helper (Required)</label>
-                <textarea id="swal-message-input" 
-                    class="w-full border border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-3" 
-                    rows="3" 
-                    placeholder="Please describe the task details here..."></textarea>
-            </div>`;
-
-                    Swal.fire({
-                        title: 'Confirm Request?',
-                        html: detailsHtml,
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonText: 'Yes, Send Request',
-                        confirmButtonColor: '#4f46e5',
-                        preConfirm: () => {
-                            const msg = document.getElementById('swal-message-input').value;
-                            if (!msg) Swal.showValidationMessage(
-                                'Please write a message describing your request');
-                            return msg;
-                        }
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            const userNote = result.value;
-                            const systemInfo = this.isSessionBased ? `Duration: ${this.selectedDuration} Hours` :
-                                'One-off Task Request';
-                            const finalMessage = `${systemInfo}\n\nUser Note: ${userNote}`;
-
-                            fetch("{{ route('service-requests.store') }}", {
-                                    method: "POST",
-                                    headers: {
-                                        "Content-Type": "application/json",
-                                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                                    },
-                                    body: JSON.stringify({
-                                        student_service_id: {{ $service->id }},
-                                        selected_dates: this.selectedDate,
-                                        start_time: sendStartTime, // Sends 00:00 if task based
-                                        end_time: sendEndTime, // Sends 23:59 if task based
-                                        message: finalMessage,
-                                        selected_package: this.currentPackage,
-                                        offered_price: this.calculateTotal()
-                                    })
-                                })
-                                .then(res => res.json())
-                                .then(data => {
-                                    if (data.success) {
-                                        Swal.fire('Success', 'Request sent!', 'success').then(() => location
-                                            .reload());
-                                    } else {
-                                        Swal.fire('Error', data.message || 'Error occurred.', 'error');
-                                    }
-                                });
-                        }
-                    });
-                @endauth
                 @guest window.location.href = "{{ route('login') }}";
             @endguest
 

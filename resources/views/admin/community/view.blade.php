@@ -132,6 +132,34 @@
             </div>
 
             <!-- Proof Document -->
+            <div class="bg-white shadow rounded-lg p-6 mt-6">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold">User Last Known Location</h2>
+        @if($user->latitude && $user->longitude)
+            <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Active Tracking</span>
+        @else
+            <span class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">No Location Data</span>
+        @endif
+    </div>
+
+    @if($user->latitude && $user->longitude)
+        <div id="map" class="w-full h-80 rounded-lg border shadow-sm z-0"></div>
+        
+        <div class="mt-3 flex gap-4 text-sm text-gray-600">
+            <p><strong>Lat:</strong> {{ $user->latitude }}</p>
+            <p><strong>Long:</strong> {{ $user->longitude }}</p>
+            <a href="https://www.google.com/maps/search/?api=1&query={{ $user->latitude }},{{ $user->longitude }}" 
+               target="_blank" 
+               class="text-blue-600 hover:underline ml-auto">
+                Open in Google Maps →
+            </a>
+        </div>
+    @else
+        <div class="bg-gray-50 border-2 border-dashed rounded-lg p-10 text-center">
+            <p class="text-gray-500">Location coordinates not available for this user.</p>
+        </div>
+    @endif
+</div>
             <div>
                 <h3 class="text-sm font-bold text-gray-500 uppercase mb-2">Proof Document</h3>
                 @if($user->verification_document_path)
@@ -157,16 +185,7 @@
                 @endif
             </div>
         </div>
-    </div>
-
-    <!-- BIO SECTION -->
-    <div class="bg-white shadow rounded-lg p-6 mt-6">
-        <h2 class="text-xl font-semibold mb-3">About</h2>
-
-        <p class="text-gray-700 leading-relaxed">
-            {{ $user->bio ?? 'This user did not provide a bio.' }}
-        </p>
-    </div>
+    </div>   
 
     <!-- ACCOUNT INFO -->
     <div class="bg-white shadow rounded-lg p-6 mt-6">
@@ -214,6 +233,35 @@ function openDocumentModal(userId) {
 function closeDocumentModal() {
     document.getElementById('documentModal').classList.add('hidden');
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Pastikan data lat/long wujud sebelum run script
+    const lat = {{ $user->latitude ?? 'null' }};
+    const lng = {{ $user->longitude ?? 'null' }};
+
+    if (lat && lng) {
+        // Initialize map
+        const map = L.map('map').setView([lat, lng], 15);
+
+        // Add OpenStreetMap layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Add Marker
+        const userIcon = L.icon({
+            iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png', // Icon marker
+            iconSize: [38, 38],
+            iconAnchor: [19, 38],
+            popupAnchor: [0, -38]
+        });
+
+        L.marker([lat, lng], {icon: userIcon})
+            .addTo(map)
+            .bindPopup("<b>{{ $user->name }}</b><br>Last seen here.")
+            .openPopup();
+    }
+});
 </script>
 
 @endsection

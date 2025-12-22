@@ -214,6 +214,12 @@ public function favoriteServices()
     return $this->hasMany(ServiceRequest::class, 'provider_id');
 }
 
+public function student_services()
+{
+    return $this->hasMany(StudentService::class, 'user_id');
+}
+
+
     
 
     

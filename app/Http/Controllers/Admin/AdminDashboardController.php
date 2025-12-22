@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\StudentService;
 use App\Models\ServiceApplication;
+use App\Models\StudentStatus;
 
 class AdminDashboardController extends Controller
 {
@@ -16,6 +17,30 @@ class AdminDashboardController extends Controller
     $totalCommunityUsers = User::where('role', 'community')->count();
     $totalServices = StudentService::count();
     $pendingRequests = ServiceApplication::where('status', 'pending')->count();
+
+    // ===============================
+        // 🔔 ADMIN ACTION REQUIRED
+        // ===============================
+
+        // Pending student verification
+        $pendingStudents = User::where('role', 'student')
+            ->where('verification_status', 'pending')
+            ->count();
+
+        // Pending helper verification
+        $pendingHelpers = User::where('role', 'helper')
+            ->where('verification_status', 'pending')
+            ->count();
+
+        // Pending services approval
+        $pendingServices = StudentService::where('status', 'pending')->count();
+
+        $studentsWithoutStatus = User::where('role', 'student')
+    ->whereNotIn('id', function ($query) {
+        $query->select('student_id')
+              ->from('student_statuses');
+    })
+    ->count();
 
     /* ---------------------------------------------
      |  MONTHLY STUDENT REGISTRATIONS (Line Chart)
@@ -48,8 +73,12 @@ class AdminDashboardController extends Controller
         'totalCommunityUsers',
         'totalServices',
         'pendingRequests',
+        'pendingStudents',
+        'pendingHelpers',  
+        'pendingServices',   
         'studentsPerMonth',
-        'servicesPerMonth'
+        'servicesPerMonth',
+        'studentsWithoutStatus',
     ));
 }
 

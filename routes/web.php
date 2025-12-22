@@ -40,7 +40,7 @@ use App\Http\Controllers\Admin\VerificationController as AdminVerificationContro
 
 // -- PUBLIC ROUTES --
 Route::get('/', [HomeController::class, 'home'])->name('home');
-Route::get('/about', function () { return view('about'); })->name('about');
+Route::get('/about', [HomeController::class, 'about'])->name('about');
 Route::get('/help', [HelpController::class, 'index'])->name('help');
 
 // Display the form to join as a part-timer

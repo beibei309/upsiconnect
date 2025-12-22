@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Models\Category;
+use App\Models\User;
 use App\Models\StudentService;
 
 class HomeController extends Controller
@@ -104,5 +105,24 @@ class HomeController extends Controller
 
     return response()->json(['services' => $result], 200);
 }
+
+public function about()
+    {
+        // 1. Ambil statistik untuk dipaparkan di halaman About
+        $totalUsers = User::count();
+        
+        $totalServices = StudentService::where('is_active', true)->count();
+        
+        $totalSellers = User::where('role', 'helper')
+            ->whereHas('services', function ($q) {
+                $q->where('is_active', true);
+            })->count();
+
+        // 2. Ambil senarai kategori (jika anda mahu tunjukkan kepelbagaian servis di page About)
+        $categories = Category::all();
+
+        // 3. Return ke view 'about' (Pastikan anda ada fail resources/views/about.blade.php)
+        return view('about', compact('totalUsers', 'totalServices', 'totalSellers', 'categories'));
+    }
 
 }
