@@ -240,7 +240,7 @@
                                         class="bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition-all group overflow-hidden flex flex-col h-full hover:-translate-y-1 duration-300">
 
                                         {{-- Service Image --}}
-                                        <a href="{{ route('student-services.show', $service) }}"
+                                        <a href="{{ route('services.details', $service) }}"
                                             class="block h-48 bg-gray-100 overflow-hidden relative">
                                             @if ($service->image_path)
                                                 <img src="{{ asset('storage/' . $service->image_path) }}"
@@ -269,7 +269,7 @@
                                                 </span>
                                             </div>
 
-                                            <a href="{{ route('student-services.show', $service) }}"
+                                        <a href="{{ route('services.details', $service) }}"
                                                 class="text-lg font-bold text-gray-900 hover:text-indigo-600 line-clamp-2 leading-tight mb-2">
                                                 {{ $service->title }}
                                             </a>
@@ -296,7 +296,7 @@
                                                         ({{ $service->reviews_count ?? 0 }})
                                                     </span>
                                                 </div>
-                                                <a href="{{ route('student-services.show', $service) }}"
+                                                <a href="{{ route('services.details', $service) }}"
                                                     class="text-sm font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 group-hover:gap-2 transition-all">
                                                     View Details <i class="fa-solid fa-arrow-right text-xs"></i>
                                                 </a>

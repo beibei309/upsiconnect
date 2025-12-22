@@ -2,266 +2,364 @@
 
 @section('content')
 
-<div class="max-w-4xl mx-auto">
+    <div class="max-w-4xl mx-auto">
 
-    <!-- Back Button -->
-    <a href="{{ route('admin.community.index') }}" class="text-blue-600 hover:underline text-sm mb-4 inline-block">
-        ← Back to Community List
-    </a>
+        <!-- Back Button -->
+        <a href="{{ route('admin.community.index') }}" class="text-blue-600 hover:underline text-sm mb-4 inline-block">
+            ← Back to Community List
+        </a>
 
-    <!-- Profile Header -->
-    <div class="bg-white shadow rounded-lg p-6 flex gap-6 items-center">
-        
-        <!-- Profile Photo -->
-        <img src="{{ $user->profile_photo_path ? asset('storage/' . $user->profile_photo_path) : asset('uploads/profile/default.png') }}"
-             class="w-32 h-32 rounded-full object-cover border" />
+        <!-- Profile Header -->
+        <div class="bg-white shadow rounded-lg p-6 flex gap-6 items-center">
 
-        <div class="flex-1">
+            <!-- Profile Photo -->
+            <img src="{{ $user->profile_photo_path ? asset('storage/' . $user->profile_photo_path) : asset('uploads/profile/default.png') }}"
+                class="w-32 h-32 rounded-full object-cover border" />
 
-            <!-- Name -->
-            <h1 class="text-3xl font-bold">{{ $user->name }}</h1>
+            <div class="flex-1">
 
-            <!-- Email + Phone -->
-            <p class="text-gray-600">{{ $user->email }}</p>
-            <p class="text-gray-600">{{ $user->phone ?? 'No phone provided' }}</p>
+                <!-- Name -->
+                <h1 class="text-3xl font-bold">{{ $user->name }}</h1>
 
-            <!-- Verification -->
-            <div class="mt-2">
-                @if($user->verification_status == 'approved')
-                    <span class="px-3 py-1 text-sm bg-green-100 text-green-700 rounded-full">
-                        Approved
-                    </span>
-                @elseif($user->verification_status == 'pending')
-                    <span class="px-3 py-1 text-sm bg-yellow-100 text-yellow-700 rounded-full">
-                        Pending
-                    </span>
-                @else
-                    <span class="px-3 py-1 text-sm bg-red-100 text-red-700 rounded-full">
-                        Rejected
-                    </span>
-                @endif
-            </div>
+                <!-- Email + Phone -->
+                <p class="text-gray-600">{{ $user->email }}</p>
+                <p class="text-gray-600">{{ $user->phone ?? 'No phone provided' }}</p>
 
-            <!-- Blacklist -->
-            @if($user->is_blacklisted)
+                <!-- Verification -->
                 <div class="mt-2">
-                    <span class="px-3 py-1 text-sm bg-red-200 text-red-800 rounded-full">
-                        Blacklisted
-                    </span>
-
-                    <p class="text-sm text-red-700 mt-1">
-                        Reason: {{ $user->blacklist_reason }}
-                    </p>
+                    @if ($user->verification_status == 'approved')
+                        <span class="px-3 py-1 text-sm bg-green-100 text-green-700 rounded-full">
+                            Approved
+                        </span>
+                    @elseif($user->verification_status == 'pending')
+                        <span class="px-3 py-1 text-sm bg-yellow-100 text-yellow-700 rounded-full">
+                            Pending
+                        </span>
+                    @else
+                        <span class="px-3 py-1 text-sm bg-red-100 text-red-700 rounded-full">
+                            Rejected
+                        </span>
+                    @endif
                 </div>
-            @endif
-        </div>
 
-        <!-- Action Buttons -->
-        <div class="flex flex-col gap-2">
+                <!-- Blacklist -->
+                @if ($user->is_blacklisted)
+                    <div class="mt-2">
+                        <span class="px-3 py-1 text-sm bg-red-200 text-red-800 rounded-full">
+                            Blacklisted
+                        </span>
 
-            <!-- Edit -->
-            <a href="{{ route('admin.community.edit', $user->id) }}"
-               class="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-sm">
-               Edit User
-            </a>
-
-            <!-- Blacklist / Unblacklist -->
-            @if($user->is_blacklisted)
-                <form action="{{ route('admin.community.unblacklist', $user->id) }}" method="POST">
-                    @csrf
-                    <button class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
-                        Remove Blacklist
-                    </button>
-                </form>
-            @else
-                <form action="{{ route('admin.community.blacklist', $user->id) }}" method="POST">
-                    @csrf
-                    <button class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm">
-                        Blacklist User
-                    </button>
-                </form>
-            @endif
-
-            <!-- Delete -->
-            <form action="{{ route('admin.community.delete', $user->id) }}" 
-                  method="POST"
-                  onsubmit="return confirm('Are you sure you want to delete this user?');">
-                @csrf
-                @method('DELETE')
-                <button class="px-4 py-2 bg-gray-700 text-white rounded hover:bg-black text-sm">
-                    Delete User
-                </button>
-            </form>
-
-        </div>
-
-    </div>
-
-    <!-- VERIFICATION DOCUMENTS (New Section) -->
-    <div class="bg-white shadow rounded-lg p-6 mt-6">
-        <h2 class="text-xl font-semibold mb-4">Verification Documents</h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- Live Selfie -->
-            <div>
-                <h3 class="text-sm font-bold text-gray-500 uppercase mb-2">Live Selfie Check</h3>
-                @if($user->selfie_media_path)
-                    <div class="border rounded-lg p-2 inline-block bg-gray-50">
-                        <img src="{{ route('admin.verifications.selfie', $user->id) }}" 
-                             class="h-64 rounded object-cover mb-2 border" 
-                             alt="Live Selfie">
-                        
-                        @if($user->verification_note)
-                            <div class="bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-1 rounded text-center border border-yellow-200">
-                                Challenge: {{ $user->verification_note }}
-                            </div>
-                        @else
-                            <div class="text-gray-500 text-xs text-center">No challenge note recorded</div>
-                        @endif
-                        
-                        <button onclick="openSelfieModal({{ $user->id }})" class="block text-center text-xs text-blue-600 hover:underline mt-2">
-                            View Full Size
-                        </button>
-                    </div>
-                @else
-                    <div class="flex items-center gap-2 text-red-600 bg-red-50 p-4 rounded border border-red-100">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                        <span class="text-sm font-medium">No selfie uploaded</span>
+                        <p class="text-sm text-red-700 mt-1">
+                            Reason: {{ $user->blacklist_reason }}
+                        </p>
                     </div>
                 @endif
             </div>
 
-            <!-- Proof Document -->
-            <div class="bg-white shadow rounded-lg p-6 mt-6">
-    <div class="flex justify-between items-center mb-4">
-        <h2 class="text-xl font-semibold">User Last Known Location</h2>
-        @if($user->latitude && $user->longitude)
-            <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Active Tracking</span>
-        @else
-            <span class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">No Location Data</span>
-        @endif
-    </div>
+            <!-- Action Buttons -->
+            <div class="flex flex-col gap-2">
 
-    @if($user->latitude && $user->longitude)
-        <div id="map" class="w-full h-80 rounded-lg border shadow-sm z-0"></div>
-        
-        <div class="mt-3 flex gap-4 text-sm text-gray-600">
-            <p><strong>Lat:</strong> {{ $user->latitude }}</p>
-            <p><strong>Long:</strong> {{ $user->longitude }}</p>
-            <a href="https://www.google.com/maps/search/?api=1&query={{ $user->latitude }},{{ $user->longitude }}" 
-               target="_blank" 
-               class="text-blue-600 hover:underline ml-auto">
-                Open in Google Maps →
-            </a>
+                <!-- Edit -->
+                <a href="{{ route('admin.community.edit', $user->id) }}"
+                    class="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-sm">
+                    Edit User
+                </a>
+
+                <!-- Blacklist / Unblacklist -->
+                @if ($user->is_blacklisted)
+                    <form action="{{ route('admin.community.unblacklist', $user->id) }}" method="POST">
+                        @csrf
+                        <button class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
+                            Remove Blacklist
+                        </button>
+                    </form>
+                @else
+                    <form action="{{ route('admin.community.blacklist', $user->id) }}" method="POST">
+                        @csrf
+                        <button class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm">
+                            Blacklist User
+                        </button>
+                    </form>
+                @endif
+
+                <!-- Delete -->
+                <form action="{{ route('admin.community.delete', $user->id) }}" method="POST"
+                    onsubmit="return confirm('Are you sure you want to delete this user?');">
+                    @csrf
+                    @method('DELETE')
+                    <button class="px-4 py-2 bg-gray-700 text-white rounded hover:bg-black text-sm">
+                        Delete User
+                    </button>
+                </form>
+
+            </div>
+
         </div>
-    @else
-        <div class="bg-gray-50 border-2 border-dashed rounded-lg p-10 text-center">
-            <p class="text-gray-500">Location coordinates not available for this user.</p>
-        </div>
-    @endif
-</div>
-            <div>
-                <h3 class="text-sm font-bold text-gray-500 uppercase mb-2">Proof Document</h3>
-                @if($user->verification_document_path)
-                    <div class="border rounded-lg p-4 bg-blue-50 border-blue-100">
-                        <div class="flex items-center gap-3 mb-3">
-                            <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                            <div>
-                                <p class="text-sm font-semibold text-blue-900">Document Submitted</p>
-                                <p class="text-xs text-blue-700">Protected File (Local Storage)</p>
+
+        <!-- VERIFICATION DOCUMENTS (New Section) -->
+        <div class="bg-white shadow-sm border border-slate-200 rounded-xl p-6 mt-6">
+            <div class="flex items-center gap-2 mb-6 border-b border-slate-100 pb-4">
+                <div class="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+                    <i class="fas fa-shield-check text-xl"></i>
+                </div>
+                <h2 class="text-xl font-bold text-slate-800">Verification Assets</h2>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="flex flex-col h-full">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <i class="fas fa-camera"></i> Live Selfie Check
+                    </h3>
+
+                    @if ($user->selfie_media_path)
+                        <div
+                            class="relative group border border-slate-200 rounded-xl overflow-hidden bg-slate-50 flex-grow">
+                            <img src="{{ route('admin.verifications.selfie', $user->id) }}"
+                                class="w-full h-72 object-cover transition duration-300 group-hover:scale-105"
+                                alt="Live Selfie">
+
+                            <div
+                                class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <button onclick="openSelfieModal('{{ route('admin.verifications.selfie', $user->id) }}')"
+                                    class="bg-white text-slate-900 px-4 py-2 rounded-full font-semibold text-sm shadow-xl">
+                                    <i class="fas fa-expand-arrows-alt mr-1"></i> View Full Size
+                                </button>
                             </div>
+
+                            @if ($user->verification_note)
+                                <div
+                                    class="absolute bottom-3 left-3 right-3 bg-amber-50/90 backdrop-blur border border-amber-200 p-2 rounded-lg">
+                                    <p class="text-[10px] uppercase font-bold text-amber-700 leading-tight">Verification
+                                        Challenge</p>
+                                    <p class="text-sm text-amber-900 font-medium">{{ $user->verification_note }}</p>
+                                </div>
+                            @endif
                         </div>
-                        
-                        <button onclick="openDocumentModal({{ $user->id }})" 
-                           class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition shadow-sm w-full justify-center">
-                            Open Document
-                        </button>
+                    @else
+                        <div
+                            class="flex flex-col items-center justify-center h-72 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50 text-slate-400">
+                            <i class="fas fa-user-slash text-4xl mb-2"></i>
+                            <p class="text-sm">No selfie uploaded</p>
+                        </div>
+                    @endif
+                </div>
+
+                <div class="flex flex-col h-full">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <i class="fas fa-file-invoice"></i> Official Proof Document
+                    </h3>
+
+                    @if ($user->verification_document_path)
+                        <div
+                            class="border border-slate-200 rounded-xl p-6 bg-white flex flex-col items-center justify-center h-72">
+                            <div
+                                class="w-20 h-20 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-4 shadow-inner">
+                                <i class="fas fa-file-alt text-3xl"></i>
+                            </div>
+                            <h4 class="text-slate-900 font-bold">Verification Document</h4>
+                            <p class="text-slate-500 text-xs mb-6">Stored securely in protected local storage</p>
+
+                            <button onclick="document.getElementById('modalDocumentFrame').src='{{ route('view.doc', $user->id) }}'; document.getElementById('documentModal').classList.remove('hidden')"
+        class="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white text-sm font-bold rounded-xl w-full justify-center">
+    <i class="fas fa-eye"></i> Preview Document
+</button>
+                        </div>
+                    @else
+                        <div
+                            class="flex flex-col items-center justify-center h-72 border-2 border-dashed border-red-100 rounded-xl bg-red-50 text-red-400">
+                            <i class="fas fa-file-excel text-4xl mb-2"></i>
+                            <p class="text-sm font-medium">No document uploaded</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            <div class="mt-8 border-t border-slate-100 pt-6">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800">Geographic Verification</h3>
+                        <p class="text-xs text-slate-500">Last known location based on IP or GPS coordinates</p>
+                    </div>
+                    @if ($user->latitude && $user->longitude)
+                        <span
+                            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            Active Tracking
+                        </span>
+                    @endif
+                </div>
+
+                @if ($user->latitude && $user->longitude)
+                    <div class="relative">
+                        <div id="map" class="w-full h-64 rounded-xl border border-slate-200 shadow-sm z-0"></div>
+                        <div
+                            class="mt-3 flex flex-wrap gap-4 text-xs font-mono text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <p><span class="text-slate-400">LAT:</span> {{ $user->latitude }}</p>
+                            <p><span class="text-slate-400">LNG:</span> {{ $user->longitude }}</p>
+                            <a href="https://www.google.com/maps/search/?api=1&query={{ $user->latitude }},{{ $user->longitude }}"
+                                target="_blank"
+                                class="text-indigo-600 font-bold hover:text-indigo-800 ml-auto flex items-center gap-1">
+                                VIEW ON GOOGLE MAPS <i class="fas fa-external-link-alt text-[10px]"></i>
+                            </a>
+                        </div>
                     </div>
                 @else
-                     <div class="flex items-center gap-2 text-red-600 bg-red-50 p-4 rounded border border-red-100">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                        <span class="text-sm font-medium">No document uploaded</span>
+                    <div
+                        class="bg-slate-50 border border-slate-200 border-dashed rounded-xl p-12 text-center text-slate-400">
+                        <i class="fas fa-map-marked-alt text-4xl mb-3 opacity-20"></i>
+                        <p class="text-sm italic">Location coordinates not available for this user.</p>
                     </div>
                 @endif
             </div>
         </div>
-    </div>   
+        <div id="documentModal"
+            class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/90 backdrop-blur-md p-4">
+            <div class="absolute inset-0" onclick="closeDocumentModal()"></div>
 
-    <!-- ACCOUNT INFO -->
-    <div class="bg-white shadow rounded-lg p-6 mt-6">
-        <h2 class="text-xl font-semibold mb-3">Account Information</h2>
+            <div class="relative max-w-5xl w-full h-[90vh] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+                <div class="p-4 border-b flex justify-between items-center bg-slate-50">
+                    <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fas fa-file-contract text-indigo-600"></i> Proof of Identity Document
+                    </h3>
+                    <button onclick="closeDocumentModal()" class="text-slate-400 hover:text-slate-600 transition p-2">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
 
-        <p class="text-gray-700"><strong>User ID:</strong> {{ $user->id }}</p>
-        <p class="text-gray-700"><strong>Registered On:</strong> {{ $user->created_at->format('d M Y, h:i A') }}</p>
-        <p class="text-gray-700"><strong>Last Updated:</strong> {{ $user->updated_at->format('d M Y, h:i A') }}</p>
+                <div class="flex-grow bg-slate-200 relative">
+                    <div id="docLoading" class="absolute inset-0 flex items-center justify-center bg-white z-10">
+                        <div class="animate-spin rounded-full h-10 w-10 border-4 border-slate-200 border-t-indigo-600">
+                        </div>
+                    </div>
+                    <iframe id="modalDocumentFrame" src="" class="w-full h-full border-none"
+                        onload="document.getElementById('docLoading').classList.add('hidden')"></iframe>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function openDocumentModal(userId) {
+                const modal = document.getElementById('documentModal');
+                const frame = document.getElementById('modalDocumentFrame');
+                const loader = document.getElementById('docLoading');
+
+                loader.classList.remove('hidden');
+                // Point this to your route that streams the file
+                frame.src = `/admin/verifications/${userId}`;
+
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeDocumentModal() {
+                const modal = document.getElementById('documentModal');
+                const frame = document.getElementById('modalDocumentFrame');
+                modal.classList.add('hidden');
+                frame.src = ''; // Clear src to stop loading/video
+                document.body.style.overflow = 'auto';
+            }
+        </script>
+        <div id="selfieModal"
+            class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-sm transition-all duration-300">
+
+            <div class="absolute inset-0 cursor-zoom-out" onclick="closeSelfieModal()"></div>
+
+            <div class="relative max-w-4xl w-full flex flex-col items-center">
+                <button onclick="closeSelfieModal()"
+                    class="absolute -top-14 right-0 md:-right-10 text-white/70 hover:text-white transition-colors flex items-center gap-2">
+                    <span class="text-xs font-bold uppercase tracking-widest">Close</span>
+                    <i class="fa-solid fa-xmark text-2xl"></i>
+                </button>
+
+                <div class="bg-white p-2 rounded-2xl shadow-2xl">
+                    <img id="modalSelfieImage" src=""
+                        class="w-full h-auto max-h-[80vh] rounded-xl object-contain shadow-inner" alt="Enlarged Selfie">
+                </div>
+
+                <div class="mt-4 text-center">
+                    <p class="text-white font-medium">Live Selfie Verification</p>
+                    <p class="text-slate-400 text-xs">Captured on: {{ $user->created_at->format('d M Y, H:i A') }}</p>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ACCOUNT INFO -->
+        <div class="bg-white shadow rounded-lg p-6 mt-6">
+            <h2 class="text-xl font-semibold mb-3">Account Information</h2>
+
+            <p class="text-gray-700"><strong>User ID:</strong> {{ $user->id }}</p>
+            <p class="text-gray-700"><strong>Registered On:</strong> {{ $user->created_at->format('d M Y, h:i A') }}</p>
+            <p class="text-gray-700"><strong>Last Updated:</strong> {{ $user->updated_at->format('d M Y, h:i A') }}</p>
+
+        </div>
 
     </div>
 
-</div>
 
-<!-- Selfie Modal -->
-<div id="selfieModal" class="hidden fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4" onclick="closeSelfieModal()">
-    <div class="relative max-w-4xl max-h-full" onclick="event.stopPropagation()">
-        <button onclick="closeSelfieModal()" class="absolute -top-10 right-0 text-white hover:text-gray-300 text-2xl font-bold">&times;</button>
-        <img id="selfieImage" src="" class="max-w-full max-h-[90vh] rounded-lg shadow-2xl" alt="Selfie">
-    </div>
-</div>
+    <script>
+        function openSelfieModal(imageUrl) {
+            const modal = document.getElementById('selfieModal');
+            const modalImg = document.getElementById('modalSelfieImage');
 
-<!-- Document Modal -->
-<div id="documentModal" class="hidden fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4" onclick="closeDocumentModal()">
-    <div class="relative max-w-6xl max-h-full w-full" onclick="event.stopPropagation()">
-        <button onclick="closeDocumentModal()" class="absolute -top-10 right-0 text-white hover:text-gray-300 text-2xl font-bold">&times;</button>
-        <iframe id="documentFrame" src="" class="w-full h-[90vh] bg-white rounded-lg shadow-2xl"></iframe>
-    </div>
-</div>
+            // 1. Set the source
+            modalImg.src = imageUrl;
 
-<script>
-function openSelfieModal(userId) {
-    document.getElementById('selfieImage').src = `/admin/verifications/${userId}/selfie`;
-    document.getElementById('selfieModal').classList.remove('hidden');
-}
+            // 2. Show the modal with a fade-in effect (Tailwind utility)
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
 
-function closeSelfieModal() {
-    document.getElementById('selfieModal').classList.add('hidden');
-}
+            // 3. Lock body scroll
+            document.body.style.overflow = 'hidden';
+        }
 
-function openDocumentModal(userId) {
-    document.getElementById('documentFrame').src = `/admin/verifications/${userId}/document`;
-    document.getElementById('documentModal').classList.remove('hidden');
-}
+        function closeSelfieModal() {
+            const modal = document.getElementById('selfieModal');
 
-function closeDocumentModal() {
-    document.getElementById('documentModal').classList.add('hidden');
-}
+            // 1. Hide modal
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Pastikan data lat/long wujud sebelum run script
-    const lat = {{ $user->latitude ?? 'null' }};
-    const lng = {{ $user->longitude ?? 'null' }};
+            // 2. Unlock body scroll
+            document.body.style.overflow = 'auto';
+        }
 
-    if (lat && lng) {
-        // Initialize map
-        const map = L.map('map').setView([lat, lng], 15);
-
-        // Add OpenStreetMap layer
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-
-        // Add Marker
-        const userIcon = L.icon({
-            iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png', // Icon marker
-            iconSize: [38, 38],
-            iconAnchor: [19, 38],
-            popupAnchor: [0, -38]
+        // Close on "Escape" key press
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "Escape") {
+                closeSelfieModal();
+            }
         });
+        document.addEventListener('DOMContentLoaded', function() {
+            // Pastikan data lat/long wujud sebelum run script
+            const lat = {{ $user->latitude ?? 'null' }};
+            const lng = {{ $user->longitude ?? 'null' }};
 
-        L.marker([lat, lng], {icon: userIcon})
-            .addTo(map)
-            .bindPopup("<b>{{ $user->name }}</b><br>Last seen here.")
-            .openPopup();
-    }
-});
-</script>
+            if (lat && lng) {
+                // Initialize map
+                const map = L.map('map').setView([lat, lng], 15);
+
+                // Add OpenStreetMap layer
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
+
+                // Add Marker
+                const userIcon = L.icon({
+                    iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png', // Icon marker
+                    iconSize: [38, 38],
+                    iconAnchor: [19, 38],
+                    popupAnchor: [0, -38]
+                });
+
+                L.marker([lat, lng], {
+                        icon: userIcon
+                    })
+                    .addTo(map)
+                    .bindPopup("<b>{{ $user->name }}</b><br>Last seen here.")
+                    .openPopup();
+            }
+        });
+    </script>
 
 @endsection

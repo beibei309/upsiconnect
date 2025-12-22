@@ -26,21 +26,19 @@ class AdminServicesController extends Controller
     $search     = $request->query('search');
     $categoryId = $request->query('category');
     $studentId  = $request->query('student');
-    $status = $request->query('status');
+    $status     = $request->query('status');
 
     $services = StudentService::with(['user', 'category'])
         ->withAvg('reviews', 'rating')
         ->withCount('reviews')
-        ->when($status, function ($query, $status) {
-            $query->where('approval_status', $status);
-        })
+        ->when($status, fn($q) => $q->where('approval_status', $status))
         ->when($search, function ($query, $search) {
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhereHas('user', function ($u) use ($search) {
-                      $u->where('name', 'like', "%{$search}%");
-                  });
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhereHas('user', function ($u) use ($search) {
+                        $u->where('name', 'like', "%{$search}%");
+                    });
             });
         })
         ->when($categoryId, fn($q) => $q->where('category_id', $categoryId))
@@ -48,12 +46,9 @@ class AdminServicesController extends Controller
         ->latest()
         ->paginate(10)
         ->withQueryString();
-        
 
     $categories = Category::orderBy('name')->get();
     $students   = User::where('role', 'helper')->orderBy('name')->get();
-    $status     = $request->query('status');
-
 
     return view('admin.services.index', compact(
         'services',
@@ -61,7 +56,6 @@ class AdminServicesController extends Controller
         'students'
     ));
 }
-
 
 
     // Approve a service

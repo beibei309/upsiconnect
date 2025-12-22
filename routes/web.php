@@ -35,7 +35,7 @@ use App\Http\Controllers\Admin\AdminCommunityController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminStudentStatusController;
 use App\Http\Controllers\NotificationController;
-
+use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\Admin\VerificationController as AdminVerificationController;
 
 // -- PUBLIC ROUTES --
@@ -375,7 +375,7 @@ Route::middleware(['auth:admin', 'prevent-back-history'])->prefix('admin')->grou
     Route::put('/students/{id}/update', [AdminStudentController::class, 'update'])->name('admin.students.update');
     
     // Delete student account
-    Route::delete('/students/{id}', [AdminStudentController::class, 'destroy'])->name('admin.students.delete');
+    Route::delete('/students/{id}', [AdminStudentController::class, 'destroy'])->name('admin.students.destroy');
     
     // Ban student (prevents login)
     Route::post('/students/{id}/ban', [AdminStudentController::class, 'ban'])->name('admin.students.ban');
@@ -548,6 +548,12 @@ Route::prefix('admin/student-status')->name('admin.student_status.')->group(func
     Route::put('/update/{id}', [AdminStudentStatusController::class, 'update'])->name('update');
     Route::delete('/delete/{id}', [AdminStudentStatusController::class, 'destroy'])->name('delete');
 });
+
+Route::get('/view-doc/{id}', function ($id) {
+    $user = \App\Models\User::findOrFail($id);
+    // Kita terus stream file tu keluar
+    return response()->file(storage_path('app/private/' . $user->verification_document_path));
+})->name('view.doc');
 
 Route::post('/admin/logout', [AdminAuthController::class, 'logout'])
     ->name('admin.logout');   

@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Models\User;
+use App\Mail\UserBlacklisted;
+use App\Mail\UserUnblacklisted;
+use Illuminate\Support\Facades\Mail;
 
 class AdminCommunityController extends Controller
 {
@@ -124,6 +127,8 @@ public function blacklist(Request $request, $id)
     $user->blacklist_reason = $request->blacklist_reason;
     $user->save();
 
+    Mail::to($user->email)->send(new UserBlacklisted($user, $request->blacklist_reason));
+
     return redirect()->route('admin.community.index')
                      ->with('success', 'User has been blacklisted.');
 }
@@ -135,6 +140,8 @@ public function unblacklist($id)
     $user->is_blacklisted = 0;
     $user->blacklist_reason = null;
     $user->save();
+
+    Mail::to($user->email)->send(new UserUnblacklisted($user));
 
     return redirect()->route('admin.community.index')
                      ->with('success', 'Blacklist removed.');

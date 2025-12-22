@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         /* Smooth transition for sidebar width and transforms */
         .sidebar-transition {
@@ -80,11 +81,6 @@
                                     class="block px-4 py-2 text-sm rounded-lg hover:bg-blue-50 hover:text-blue-600 text-gray-600">Help
                                     page</a>
                             </li>
-                            <li>
-                                <a href="#"
-                                    class="block px-4 py-2 text-sm rounded-lg hover:bg-blue-50 hover:text-blue-600 text-gray-600">Menu
-                                    Settings</a>
-                            </li>
                         </ul>
                     </li>
                     <li>
@@ -134,6 +130,18 @@
                         </a>
                     </li>
                     <li>
+                        <a href="{{ route('admin.categories.index') }}"
+                            class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
+                           {{ request()->routeIs('admin.categories.index') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-gray-600 hover:bg-gray-100 hover:text-blue-600' }}">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01">
+                                </path>
+                            </svg>
+                            Manage Categories
+                        </a>
+                    </li>
+                    <li>
                         <button onclick="toggleSubMenu('serviceMenu', 'serviceArrow')"
                             class="w-full flex items-center justify-between px-4 py-3 rounded-lg transition-colors
             {{ request()->routeIs('admin.services.*') || request()->routeIs('admin.services.*') ? 'text-blue-700 font-semibold bg-blue-50' : 'text-gray-600 hover:bg-gray-100 hover:text-blue-600' }}">
@@ -155,14 +163,10 @@
                         </button>
 
                         <ul id="serviceMenu"
-                            class="pl-11 mt-1 space-y-1 {{ request()->routeIs('admin.services.*') || request()->routeIs('admin.services.*') ? '' : 'hidden' }}">
-                            <li>
-                                <a href="{{ route('admin.categories.index') }}"
-                                    class="block px-4 py-2 text-sm rounded-lg hover:bg-blue-50 hover:text-blue-600 {{ request()->routeIs('admin.categories.*') ? 'text-blue-600 font-semibold' : 'text-gray-600' }}">Categories</a>
-                            </li>
+                            class="pl-11 mt-1 space-y-1 {{ request()->routeIs('admin.services.*') || request()->routeIs('admin.services.*') ? '' : 'hidden' }}">                      
                             <li>
                                 <a href="{{ route('admin.services.index') }}"
-                                    class="block px-4 py-2 text-sm rounded-lg hover:bg-blue-50 hover:text-blue-600 {{ request()->routeIs('admin.services.*') ? 'text-blue-600 font-semibold' : 'text-gray-600' }}">All
+                                    class="block px-4 py-2 text-sm rounded-lg hover:bg-blue-50 hover:text-blue-600 {{ request()->routeIs('admin.services.*') ? 'text-blue-600 font-semibold' : 'text-gray-600' }}">View
                                     Services</a>
                             </li>
                         </ul>
@@ -181,18 +185,6 @@
                         </a>
                     </li>
 
-                    <li>
-                        <a href="{{ route('admin.feedback.index') }}"
-                            class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
-                           {{ request()->routeIs('admin.feedback.index') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-gray-600 hover:bg-gray-100 hover:text-blue-600' }}">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z">
-                                </path>
-                            </svg>
-                            Feedback
-                        </a>
-                    </li>
 
                 </ul>
 

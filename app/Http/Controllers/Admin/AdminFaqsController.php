@@ -67,8 +67,7 @@ class AdminFaqsController extends Controller
     public function destroy(Faq $faq)
     {
         $faq->delete();
-        return back()->with('success', 'FAQ deleted');
-    }
+        return redirect()->route('admin.faqs.index')->with('success', 'FAQ deleted successfully!');    }
 
     public function toggle(Faq $faq)
     {

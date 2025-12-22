@@ -22,7 +22,7 @@
             /* Slate-50 */
         }
 
-    
+
 
         /* Custom Scrollbar for cleaner look */
         ::-webkit-scrollbar {
@@ -286,10 +286,17 @@
                                     {{-- IMAGE SECTION --}}
                                     <div
                                         class="md:w-72 h-64 md:h-auto flex-shrink-0 relative rounded-[1.5rem] overflow-hidden bg-slate-50">
-                                        @php $isStorageImage = Str::startsWith($service->image_path, 'services/'); @endphp
-                                        <img src="{{ $isStorageImage ? asset('storage/' . $service->image_path) : asset($service->image_path) }}"
+                                        @php
+                                            // Check if it's a local storage path or an external URL
+                                        $imageUrl = Str::startsWith($service->image_path, ['http://', 'https://'])
+                                            ? $service->image_path
+                                            : asset('storage/' . $service->image_path);
+                                                                                @endphp
+
+                                        <img src="{{ $imageUrl }}" alt="{{ $service->title }}"
                                             class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-                                            onerror="this.src='https://via.placeholder.com/400x300?text=S2U+Service'">
+                                            onerror="this.src='https://ui-avatars.com/api/?name=Service&color=7F9CF5&background=EBF4FF';">
+
 
                                         {{-- Category Badge --}}
                                         @if ($service->category)

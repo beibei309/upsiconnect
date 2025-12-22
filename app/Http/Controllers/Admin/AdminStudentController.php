@@ -8,6 +8,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+use App\Mail\AccountBannedMail;
+use App\Mail\AccountUnbannedMail;
+
 
 
 class AdminStudentController extends Controller
@@ -127,33 +132,28 @@ class AdminStudentController extends Controller
     // DELETE STUDENT
     public function destroy($id)
 {
-    // Only allow deleting student or helper
     $student = User::whereIn('role', ['student', 'helper'])->findOrFail($id);
 
-    // OPTIONAL SAFETY CHECK
-    // Prevent deleting active helper (recommended)
     if ($student->role === 'helper' && !$student->is_suspended) {
         return redirect()
             ->route('admin.students.index')
             ->with('error', 'Active helper cannot be deleted. Please ban the account first.');
     }
 
-    // DELETE RELATED STUDENT STATUS (if exists)
     if ($student->studentStatus) {
         $student->studentStatus->delete();
     }
 
-    // OPTIONAL: delete profile photo if exists
     if ($student->profile_photo_path) {
         \Illuminate\Support\Facades\Storage::delete($student->profile_photo_path);
     }
 
-    // DELETE USER
     $student->delete();
 
     return redirect()
         ->route('admin.students.index')
         ->with('success', 'Student account deleted successfully.');
+        
 }
 
 
@@ -174,9 +174,10 @@ class AdminStudentController extends Controller
         'blacklist_reason' => $request->blacklist_reason,
     ]);
 
-    return redirect()
-        ->route('admin.students.index')
-        ->with('success', 'User has been banned successfully.');
+    Mail::to($student->email)->send(new AccountBannedMail($student, $request->blacklist_reason));
+
+    return redirect()->route('admin.students.index')
+        ->with('success', 'User banned and email notification sent.');
 }
 
 
@@ -203,9 +204,10 @@ class AdminStudentController extends Controller
         'blacklist_reason' => null,
     ]);
 
-    return redirect()
-        ->route('admin.students.index')
-        ->with('success', 'User has been unbanned successfully.');
+    Mail::to($student->email)->send(new AccountUnbannedMail($student));
+
+    return redirect()->route('admin.students.index')
+        ->with('success', 'User unbanned and email notification sent.');
 }
 
 // Show helper verification selfie

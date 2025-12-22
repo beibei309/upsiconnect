@@ -254,17 +254,9 @@
                                     value="{{ $service->basic_price }}"
                                     class="w-full mt-1 border-gray-300 rounded-md focus:ring-gray-500 focus:border-gray-500">
                             </div>
-                            <div>
-                                <label class="text-xs font-bold text-gray-500 uppercase">Duration</label>
-                                <select name="packages[0][duration]" class="w-full mt-1 border-gray-300 rounded-md">
-                                    @php $durations = ['30 Minutes', '45 Minutes', '1 Hour', '1.5 Hours', '2 Hours', '3 Hours', 'Half Day (4 Hours)']; @endphp
-                                    @foreach ($durations as $d)
-                                        <option value="{{ $d }}"
-                                            {{ $service->basic_duration == $d ? 'selected' : '' }}>{{ $d }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
+                             <div><label class="text-xs font-bold text-gray-600 uppercase">Duration</label><input
+                                        type="text" name="packages[0][duration]" placeholder="e.g. 2 Hours"
+                                        class="w-full mt-1 border-gray-200 rounded-md"></div>
                             <div>
                                 <label class="text-xs font-bold text-gray-500 uppercase">Frequency</label>
                                 <input type="text" name="packages[0][frequency]" placeholder="e.g. per session"
@@ -301,15 +293,9 @@
                                 <div><label class="text-xs font-bold text-blue-600 uppercase">Price</label><input
                                         type="number" name="packages[1][price]" value="{{ $service->standard_price }}"
                                         class="w-full mt-1 border-blue-200 rounded-md"></div>
-                                <div><label class="text-xs font-bold text-blue-600 uppercase">Duration</label>
-                                    <select name="packages[1][duration]" class="w-full mt-1 border-blue-200 rounded-md">
-                                        @foreach ($durations as $d)
-                                            <option value="{{ $d }}"
-                                                {{ $service->standard_duration == $d ? 'selected' : '' }}>
-                                                {{ $d }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
+                                <div><label class="text-xs font-bold text-blue-600 uppercase">Duration</label><input
+                                        type="text" name="packages[1][duration]" placeholder="e.g. 2 Hours"
+                                        class="w-full mt-1 border-blue-200 rounded-md"></div>
                                 <div><label class="text-xs font-bold text-blue-600 uppercase">Frequency</label>
                                     <input type="text" name="packages[1][frequency]" placeholder="e.g. per session"
                                     class="w-full mt-1 border-blue-300 rounded-md">
@@ -330,15 +316,9 @@
                                 <div><label class="text-xs font-bold text-purple-600 uppercase">Price</label><input
                                         type="number" name="packages[2][price]" value="{{ $service->premium_price }}"
                                         class="w-full mt-1 border-purple-200 rounded-md"></div>
-                                <div><label class="text-xs font-bold text-purple-600 uppercase">Duration</label>
-                                    <select name="packages[2][duration]" class="w-full mt-1 border-purple-200 rounded-md">
-                                        @foreach ($durations as $d)
-                                            <option value="{{ $d }}"
-                                                {{ $service->premium_duration == $d ? 'selected' : '' }}>
-                                                {{ $d }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
+                                 <div><label class="text-xs font-bold text-purple-600 uppercase">Duration</label><input
+                                        type="text" name="packages[2][duration]" placeholder="e.g. 2 Hours"
+                                        class="w-full mt-1 border-blue-200 rounded-md"></div>
                                 <div><label class="text-xs font-bold text-purple-600 uppercase">Frequency</label>
                                      <input type="text" name="packages[2][frequency]" placeholder="e.g. per session"
                                     class="w-full mt-1 border-purple-300 rounded-md">

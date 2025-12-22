@@ -431,6 +431,43 @@
                 });
             });
         });
+
+         // Pastikan kod ini berada di dalam block script yang sama dengan logic yang lain
+    const mainForm = document.getElementById('verificationForm');
+    
+    if (mainForm) {
+        mainForm.addEventListener('submit', function(e) {
+            e.preventDefault(); // Stop form dari terus submit
+            
+            Swal.fire({
+                title: 'Confirm Submission',
+                text: "Are you sure you want to submit your final verification?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0f172a',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Yes, submit it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Tunjuk success message dulu
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Your verification has been submitted.',
+                        icon: 'success',
+                        confirmButtonColor: '#0f172a',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+
+                    // Submit form selepas 1.5 saat supaya user sempat nampak success alert
+                    setTimeout(() => {
+                        mainForm.submit();
+                    }, 1500);
+                }
+            });
+        });
+    }
     </script>
     @endpush
 </x-guest-layout>
