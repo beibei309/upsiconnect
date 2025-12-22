@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'S2U Login') }}</title>
+    <title>U-Serve | Upsi Service Circle</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
 
     {{-- SCRIPTS & STYLES --}}
     {{-- Ensure you have Tailwind running. If using Vite: --}}
@@ -46,14 +47,11 @@
         {{-- LOGO SECTION --}}
         <div class="mb-6 mt-16">
             <a href="/" class="flex items-center gap-2 group">
-                <div
-                    class="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-2xl shadow-lg group-hover:bg-indigo-500 transition-colors">
-                    S
-                </div>
-                {{-- Changed text to white to contrast with video --}}
-                <span class="text-3xl font-bold text-white tracking-tight drop-shadow-md">S2U</span>
+                <img src="/images/logo.png" alt=" Logo"
+                    class="w-25 h-20 rounded-xl shadow-lg group-hover:opacity-90 transition">
             </a>
         </div>
+
 
         {{-- LOGIN CARD --}}
         <div

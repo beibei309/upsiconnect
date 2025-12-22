@@ -1,10 +1,10 @@
 <x-guest-layout>
     <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-50">
         
-        <div class="mb-6">
-            <a href="/" class="flex items-center gap-2">
-                <div class="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">S</div>
-                <span class="text-2xl font-bold text-gray-900 tracking-tight">S2U</span>
+        <div class="mb-6 mt-16">
+            <a href="/" class="flex items-center gap-2 group">
+                <img src="/images/logo.png" alt=" Logo"
+                    class="w-25 h-20  rounded-xl shadow-lg group-hover:opacity-90 transition">
             </a>
         </div>
 

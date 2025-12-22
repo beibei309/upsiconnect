@@ -78,13 +78,16 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16 md:h-20">
 
-            <div class="flex-shrink-0 flex items-center cursor-pointer"
+            <div class="flex-shrink-0 flex items-center cursor-pointer gap-2"
                 onclick="window.location.href='{{ $isLoggedIn ? route('dashboard') : route('home') }}'">
-                <h1 class="text-3xl font-extrabold tracking-tight text-indigo-600">S2U</h1>
+
+                <img src="/images/logo-svg.png" alt="U-Serve Logo" class="h-20 w-auto object-contain">
+
                 @if ($viewMode === 'seller')
                     <span
-                        class="ml-2 px-2 py-0.5 rounded text-xs font-bold bg-green-100 text-green-700 uppercase tracking-wide">Seller
-                        Mode</span>
+                        class="ml-2 px-2 py-0.5 rounded text-xs font-bold bg-green-100 text-green-700 uppercase tracking-wide">
+                        Seller Mode
+                    </span>
                 @endif
             </div>
 
