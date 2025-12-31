@@ -907,23 +907,43 @@
                     let endMinutes = endH * 60 + endM;
 
                     // Step is determined by the Service's Session Duration (e.g., 60 mins)
-                    // But the USER's selected duration (e.g., 2 hours) determines if they fit in the gap
                     let stepMinutes = this.sessionDuration;
-                    let durationMinutes = this.selectedDuration * 60; // How long the student wants to book
+                    let durationMinutes = this.selectedDuration * 60; 
 
-                    // Filter real bookings for the selected date to optimize the loop
+                    // Filter real bookings for the selected date
                     let daysBookings = this.bookedSlots.filter(slot => slot.date === this.selectedDate);
+
+                    // --- 🟢 NEW: Get Current Real Time Data ---
+                    const now = new Date();
+                    // Create YYYY-MM-DD string for today to compare with selectedDate
+                    const todayStr = now.getFullYear() + '-' + 
+                                     String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                                     String(now.getDate()).padStart(2, '0');
+                    
+                    const isToday = (this.selectedDate === todayStr);
+                    // Get current time in minutes (e.g., 10:30am = 630 minutes)
+                    const currentRealTimeMinutes = now.getHours() * 60 + now.getMinutes();
+                    // ------------------------------------------
 
                     while (currentMinutes + durationMinutes <= endMinutes) {
 
                         let h = Math.floor(currentMinutes / 60);
                         let m = currentMinutes % 60;
-                        let timeStr = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`; // "14:00"
+                        let timeStr = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`; 
 
                         let proposedStart = currentMinutes;
                         let proposedEnd = currentMinutes + durationMinutes;
 
-                        // CHECK 1: Real Database Bookings (Overlap Check)
+                        // --- 🟢 NEW: Filter Past Times ---
+                        // If selected date is Today AND the slot start time is less than right now
+                        // We skip adding it to the list (Do not display)
+                        if (isToday && proposedStart <= currentRealTimeMinutes) {
+                            currentMinutes += stepMinutes;
+                            continue; // Skip to next slot
+                        }
+                        // --------------------------------
+
+                        // CHECK: Real Database Bookings (Overlap Check)
                         let isBooked = daysBookings.some(booking => {
                             let [bStartH, bStartM] = booking.start_time.split(':').map(Number);
                             let [bEndH, bEndM] = booking.end_time.split(':').map(Number);
@@ -931,21 +951,18 @@
                             let bookingStart = bStartH * 60 + bStartM;
                             let bookingEnd = bEndH * 60 + bEndM;
 
-                            // If the requested time overlaps with any part of a booked slot
                             return (proposedStart < bookingEnd) && (proposedEnd > bookingStart);
                         });
-                     
+                      
                         let blockKey = `${this.selectedDate} ${timeStr}`;
                         let isManuallyBlocked = this.manualBlocks.includes(blockKey);
 
                         if (!isManuallyBlocked) {
-                            // Check if any manual block falls inside our proposed time range
                             isManuallyBlocked = this.manualBlocks.some(blockedKey => {
                                 if (!blockedKey.startsWith(this.selectedDate)) return false;
-                                let blockedTime = blockedKey.split(' ')[1]; // "14:00"
+                                let blockedTime = blockedKey.split(' ')[1];
                                 let [blkH, blkM] = blockedTime.split(':').map(Number);
                                 let blkMin = blkH * 60 + blkM;
-                                // Assuming manual blocks are 1 'session_duration' unit long
                                 let blkEnd = blkMin + this.sessionDuration;
 
                                 return (proposedStart < blkEnd) && (proposedEnd > blkMin);

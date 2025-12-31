@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\ServiceRequest;
 use App\Models\StudentService;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Routing\Controller as BaseController;
@@ -13,6 +12,8 @@ use App\Notifications\NewServiceRequest;
 use App\Notifications\ServiceRequestStatusUpdated;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\NewServiceRequestNotification;
+use Carbon\Carbon;
+
 
 class ServiceRequestController extends BaseController
 {
@@ -315,27 +316,38 @@ public function index(Request $request)
     /**
      * Cancel a service request
      */
-    public function cancel(ServiceRequest $serviceRequest)
-    {
-        $user = Auth::user();
-        
-        // Both requester and provider can cancel
-        if ($serviceRequest->requester_id !== $user->id && $serviceRequest->provider_id !== $user->id) {
-            abort(403, 'You are not authorized to cancel this request.');
-        }
 
-        if ($serviceRequest->isCompleted()) {
-            return response()->json(['error' => 'Completed requests cannot be cancelled.'], 400);
-        }
+public function cancel(ServiceRequest $serviceRequest)
+{
+    $user = Auth::user();
 
-        $serviceRequest->update(['status' => 'cancelled']);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Service request cancelled.'
-        ]);
+    // 1. Authorization
+    if ($serviceRequest->requester_id !== $user->id && $serviceRequest->provider_id !== $user->id) {
+        abort(403, 'You are not authorized to cancel this request.');
     }
 
+    // 2. Block if Completed
+    if ($serviceRequest->status === 'completed') {
+        return response()->json(['error' => 'Completed requests cannot be cancelled.'], 400);
+    }
+
+    // 3. Block if In Progress (Seller started work)
+    if ($serviceRequest->status === 'in_progress') {
+        return response()->json([
+            'success' => false,
+            'title'   => 'Work Started',
+            'message' => 'The seller has already started working on this request. Please contact the seller directly to discuss cancellation.'
+        ], 400);
+    }
+
+    // 4. Allow Cancellation (for 'pending' or 'accepted')
+    $serviceRequest->update(['status' => 'cancelled']);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Service request cancelled successfully.'
+    ]);
+}
     public function updateStatus(Request $request, $id)
 {
     $serviceRequest = ServiceRequest::findOrFail($id);

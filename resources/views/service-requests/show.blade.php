@@ -392,12 +392,20 @@
                                             as Completed</button>
                                     @endif
 
-                                    @if ($isRequester && !$serviceRequest->isCompleted())
+                                    {{-- 1. Only show Cancel button if NOT Completed AND NOT In Progress --}}
+                                    @if ($isRequester && !$serviceRequest->isCompleted() && $serviceRequest->status !== 'in_progress')
                                         <button onclick="updateRequestStatus({{ $serviceRequest->id }}, 'cancel')"
-                                            class="w-full py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition">Cancel
-                                            Request</button>
-                                    @endif
+                                            class="w-full py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition">
+                                            Cancel Request
+                                        </button>
 
+                                        {{-- 2. Optional: Show a disabled button if In Progress (User Feedback) --}}
+                                    @elseif ($isRequester && ($serviceRequest->status === 'in_progress' || $serviceRequest->status === 'accepted'))
+                                        <button disabled
+                                            class="w-full py-2.5 bg-gray-100 border border-gray-200 text-gray-400 rounded-lg font-semibold cursor-not-allowed flex items-center justify-center gap-2">
+                                            <i class="fa-solid fa-play"></i> Work Started
+                                        </button>
+                                    @endif
                                     @if (
                                         $isRequester &&
                                             $serviceRequest->isCompleted() &&
