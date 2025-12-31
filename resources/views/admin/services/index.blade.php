@@ -156,20 +156,19 @@
                             </option>
                         @endforeach
                     </select>
-
                 </div>
-
-                {{-- Student Seller Filter --}}
+                {{-- Rating Filter --}}
                 <div>
-                    <select name="student" class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-                        <option value="">All Students</option>
-                        @foreach ($students as $student)
-                            <option value="{{ $student->id }}" {{ request('student') == $student->id ? 'selected' : '' }}>
-                                {{ $student->name }}
-                            </option>
-                        @endforeach
+                    <select name="rating" class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="">All Ratings</option>
+                        <option value="0-1" {{ request('rating') == '0-1' ? 'selected' : '' }}>0.0 – 1.0 ⭐</option>
+                        <option value="1-2" {{ request('rating') == '1-2' ? 'selected' : '' }}>1.0 – 2.0 ⭐</option>
+                        <option value="2-3" {{ request('rating') == '2-3' ? 'selected' : '' }}>2.0 – 3.0 ⭐</option>
+                        <option value="3-4" {{ request('rating') == '3-4' ? 'selected' : '' }}>3.0 – 4.0 ⭐</option>
+                        <option value="4-5" {{ request('rating') == '4-5' ? 'selected' : '' }}>4.0 – 5.0 ⭐</option>
                     </select>
                 </div>
+
 
                 {{-- Status Filter --}}
                 <div>

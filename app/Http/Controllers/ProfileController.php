@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Review;
+use App\Models\User;
 use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -12,13 +14,42 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
-    /**
-     * Display the user's profile form.
-     */
+   
+
+    public function showPublic(User $user)
+    {
+        
+        $reviews = Review::where('reviewee_id', $user->id)
+            ->with(['reviewer', 'studentService'])
+            ->latest()
+            ->get();
+
+        $totalReviews = $reviews->count();
+        $averageRating = $totalReviews > 0 ? $reviews->avg('rating') : 0;
+
+        return view('profile.show-public', compact('user', 'reviews', 'totalReviews', 'averageRating'));
+    }
+
     public function edit(Request $request): View
     {
+        $user = $request->user();
+
+        // 1. Fetch reviews received by this user
+        $reviews = Review::where('reviewee_id', $user->id)
+                            ->with(['reviewer', 'studentService']) // Load relations
+                            ->latest()
+                            ->get();
+
+        // 2. Calculate Statistics
+        $totalReviews = $reviews->count();
+        $averageRating = $totalReviews > 0 ? $reviews->avg('rating') : 0;
+
+        // 3. Pass data to view
         return view('profile.edit', [
-            'user' => $request->user(),
+            'user' => $user,
+            'reviews' => $reviews,
+            'totalReviews' => $totalReviews,
+            'averageRating' => $averageRating
         ]);
     }
 

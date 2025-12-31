@@ -107,7 +107,8 @@
                                                             class="mb-3 flex items-center justify-between border-b border-gray-100 pb-2">
                                                             <span
                                                                 class="text-sm font-bold text-indigo-900 uppercase tracking-wider">
-                                                                {{ $request->selected_package ?? 'Custom' }} Package
+                                                               {{ str_replace('"', '', $request->selected_package) ?? 'Custom' }} Package
+
                                                             </span>
                                                             @if ($request->offered_price)
                                                                 <span class="text-lg font-bold text-green-600">
@@ -219,15 +220,19 @@
                                                             action="{{ route('service-requests.accept', $request->id) }}"
                                                             method="POST" class="hidden">@csrf</form>
 
-                                                        <button onclick="rejectRequest({{ $request->id }})"
-                                                            class="flex w-full items-center justify-center gap-2 rounded-lg border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 shadow-sm transition-all hover:bg-red-50 hover:border-red-300 focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
-                                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                                                                stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                                            </svg>
-                                                            Reject
-                                                        </button>
+                                                        <button type="button" onclick="openRejectModal({{ $request->id }})"
+    class="flex w-full items-center justify-center gap-2 rounded-lg border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 shadow-sm transition-all hover:bg-red-50 hover:border-red-300">
+    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+    </svg>
+    Reject
+</button>
+
+<form id="reject-form-{{ $request->id }}" 
+      action="{{ route('service-requests.reject', $request->id) }}" 
+      method="POST" style="display: none;">
+    @csrf
+    </form>
 
                                                         <a href="https://wa.me/6{{ $request->requester->phone }}"
                                                             target="_blank"
@@ -316,7 +321,7 @@
                                                                         d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                                                                 </svg>
                                                                 <span
-                                                                    class="font-semibold text-gray-800">{{ ucfirst($request->selected_package ?? 'Custom') }}</span>
+                                                                    class="font-semibold text-gray-800">{{ ucfirst(trim($request->selected_package, '"') ?? 'Custom') }}</span>
                                                             </div>
 
                                                             @if ($request->offered_price)
@@ -533,7 +538,7 @@
                                                                 class="text-xs text-gray-400 uppercase font-bold tracking-wider">
                                                                 Package</p>
                                                             <p class="font-medium text-gray-900">
-                                                                {{ ucfirst($request->selected_package ?? 'Custom') }}</p>
+                                                                {{ ucfirst(trim($request->selected_package, '"') ?? 'Custom') }}</p>
                                                         </div>
                                                     </div>
 
@@ -557,8 +562,9 @@
 
                                                 {{-- Right Column: Dates & Actions --}}
                                                 <div class="space-y-3">
-                                                    {{-- Date --}}
+                                                    {{-- Date Section --}}
                                                     @if ($request->selected_dates)
+                                                        {{-- 1. Paparkan TARIKH Dulu --}}
                                                         <div class="flex items-center text-sm text-gray-600">
                                                             <div
                                                                 class="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50 text-orange-600 mr-3">
@@ -590,6 +596,60 @@
                                                                 </p>
                                                             </div>
                                                         </div>
+
+                                                        {{-- 2. Paparkan DURATION di Bawah Tarikh --}}
+                                                        @if ($request->status === 'completed' && $request->started_at && $request->completed_at)
+                                                            <div class="pt-3 mt-3 border-t border-gray-100">
+                                                                <div class="flex items-start gap-3">
+                                                                    {{-- Icon Jam --}}
+                                                                    <div
+                                                                        class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600 shrink-0">
+                                                                        <svg class="h-4 w-4" fill="none"
+                                                                            viewBox="0 0 24 24" stroke="currentColor">
+                                                                            <path stroke-linecap="round"
+                                                                                stroke-linejoin="round" stroke-width="2"
+                                                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                                        </svg>
+                                                                    </div>
+
+                                                                    <div class="flex-1">
+                                                                        <p
+                                                                            class="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">
+                                                                            Work Duration</p>
+
+                                                                        <div class="grid grid-cols-2 gap-2">
+                                                                            {{-- Start Time --}}
+                                                                            <div>
+                                                                                <span
+                                                                                    class="text-[10px] text-gray-500 block">Started:</span>
+                                                                                <span
+                                                                                    class="text-xs font-semibold text-gray-900">
+                                                                                    {{ $request->started_at->format('h:i A') }}
+                                                                                </span>
+                                                                                <span
+                                                                                    class="text-[10px] text-gray-400 block">
+                                                                                    {{ $request->started_at->format('d M') }}
+                                                                                </span>
+                                                                            </div>
+
+                                                                            {{-- End Time --}}
+                                                                            <div>
+                                                                                <span
+                                                                                    class="text-[10px] text-gray-500 block">Finished:</span>
+                                                                                <span
+                                                                                    class="text-xs font-semibold text-gray-900">
+                                                                                    {{ $request->completed_at->format('h:i A') }}
+                                                                                </span>
+                                                                                <span
+                                                                                    class="text-[10px] text-gray-400 block">
+                                                                                    {{ $request->completed_at->format('d M') }}
+                                                                                </span>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        @endif
                                                     @endif
                                                 </div>
                                             </div>
@@ -609,19 +669,23 @@
                                                 </a>
 
                                                 {{-- Review Action Logic --}}
-                                                <div class="w-full sm:w-auto">
-                                                    @if ($request->review)
+                                                {{-- Review Action Logic --}}
+                                                <div class="w-full sm:w-auto flex flex-col sm:flex-row gap-2">
+
+                                                    {{-- ⭐ CLIENT → SELLER REVIEW (Incoming) --}}
+                                                    @if ($request->reviewForHelper)
                                                         <button
-                                                            onclick='openReviewModal(@json($request->review), "{{ $request->requester->name }}")'
-                                                            class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-yellow-700 bg-yellow-50 hover:bg-yellow-100 border border-yellow-200 transition-all shadow-sm">
+                                                            onclick='openReviewModal(@json($request->reviewForHelper), "{{ $request->requester->name }}")'
+                                                            class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-yellow-700 bg-yellow-50 hover:bg-yellow-100 border border-yellow-200 transition-all shadow-sm">
                                                             <div class="flex gap-0.5 text-yellow-500">
                                                                 @for ($i = 1; $i <= 5; $i++)
                                                                     <i
-                                                                        class="{{ $i <= $request->review->rating ? 'fas' : 'far' }} fa-star text-xs"></i>
+                                                                        class="{{ $i <= $request->reviewForHelper->rating ? 'fas' : 'far' }} fa-star text-xs"></i>
                                                                 @endfor
                                                             </div>
-                                                            <span
-                                                                class="ml-1">{{ $request->review->reply ? 'See Reply' : 'Reply to Review' }}</span>
+                                                            <span class="ml-1">
+                                                                {{ $request->reviewForHelper->reply ? 'See Reply' : 'Reply to Review' }}
+                                                            </span>
                                                         </button>
                                                     @elseif($request->status === 'completed')
                                                         <div
@@ -635,7 +699,24 @@
                                                             Waiting for client review
                                                         </div>
                                                     @endif
+
+                                                    {{-- ⭐ SELLER → CLIENT REVIEW (Outgoing) --}}
+                                                    @if ($request->reviewByHelper)
+                                                        <span
+                                                            class="inline-flex items-center justify-center gap-2 px-3 py-1.5 text-xs rounded-md bg-green-50 text-green-700 border border-green-200">
+                                                            <i class="fas fa-check"></i> You reviewed this client
+                                                        </span>
+                                                    @elseif($request->status === 'completed')
+                                                        {{-- FIXED: Button now calls the correct function --}}
+                                                        <button onclick="openSellerReviewModal({{ $request->id }})"
+                                                            class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 border border-transparent transition-all shadow-sm">
+                                                            <i class="fas fa-star"></i>
+                                                            Rate Client
+                                                        </button>
+                                                    @endif
+
                                                 </div>
+
                                             </div>
                                         </div>
                                     @endforeach
@@ -733,6 +814,85 @@
                             </div>
                         </div>
 
+                        <div id="sellerReviewModal" class="relative z-50 hidden" aria-labelledby="modal-title"
+                            role="dialog" aria-modal="true">
+                            <div class="fixed inset-0 bg-gray-900/75 backdrop-blur-sm transition-opacity"></div>
+
+                            <div class="fixed inset-0 z-10 overflow-y-auto">
+                                <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+                                    <div
+                                        class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+
+                                        {{-- Modal Header --}}
+                                        <div class="bg-indigo-600 px-4 py-4 sm:px-6">
+                                            <div class="flex items-center justify-between">
+                                                <h3 class="text-base font-semibold leading-6 text-white">
+                                                    Rate This Client
+                                                </h3>
+                                                <button type="button" onclick="closeSellerReviewModal()"
+                                                    class="text-indigo-200 hover:text-white focus:outline-none">
+                                                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                                                        stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {{-- Modal Body --}}
+                                        <div class="px-4 pt-5 pb-4 sm:p-6">
+                                            <form id="sellerReviewForm" onsubmit="submitSellerReview(event)">
+                                                <input type="hidden" name="service_request_id"
+                                                    id="sellerReviewRequestId">
+                                                <input type="hidden" name="rating" id="sellerReviewRating">
+
+                                                {{-- Star Rating Input --}}
+                                                <div class="mb-6 text-center">
+                                                    <label class="block text-sm font-medium text-gray-700 mb-2">How was
+                                                        your experience?</label>
+                                                    <div class="flex justify-center gap-2 text-2xl cursor-pointer">
+                                                        @for ($i = 1; $i <= 5; $i++)
+                                                            <i class="far fa-star text-gray-300 hover:text-yellow-400 transition-colors seller-star-input"
+                                                                data-value="{{ $i }}"
+                                                                onclick="setSellerRating({{ $i }})"></i>
+                                                        @endfor
+                                                    </div>
+                                                    <p class="text-xs text-red-500 mt-1 hidden" id="ratingError">Please
+                                                        select a rating.</p>
+                                                </div>
+
+                                                {{-- Comment Input --}}
+                                                <div class="mb-4">
+                                                    <label for="sellerComment"
+                                                        class="block text-sm font-medium text-gray-700 mb-1">Comment
+                                                        (Optional)</label>
+                                                    <textarea id="sellerComment" name="comment" rows="4"
+                                                        class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm placeholder-gray-400"
+                                                        placeholder="Describe your experience working with this client..."></textarea>
+                                                </div>
+
+                                                {{-- Actions --}}
+                                                <div
+                                                    class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+                                                    <button type="submit"
+                                                        class="inline-flex w-full justify-center rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2">
+                                                        Submit Review
+                                                    </button>
+                                                    <button type="button" onclick="closeSellerReviewModal()"
+                                                        class="mt-3 inline-flex w-full justify-center rounded-lg bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0">
+                                                        Cancel
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+
                         <script>
                             function openReviewModal(review, requesterName) {
                                 // 1. Populate Client Review
@@ -774,6 +934,134 @@
                             function closeReviewModal() {
                                 document.getElementById('reviewModal').classList.add('hidden');
                             }
+
+                            function openSellerReviewModal(requestId) {
+                                // Reset form
+                                document.getElementById('sellerReviewForm').reset();
+                                document.getElementById('sellerReviewRequestId').value = requestId;
+                                document.getElementById('sellerReviewRating').value = '';
+                                document.getElementById('ratingError').classList.add('hidden');
+
+                                // Reset Stars visual
+                                document.querySelectorAll('.seller-star-input').forEach(star => {
+                                    star.classList.remove('fas', 'text-yellow-400');
+                                    star.classList.add('far', 'text-gray-300');
+                                });
+
+                                document.getElementById('sellerReviewModal').classList.remove('hidden');
+                            }
+
+                            function closeSellerReviewModal() {
+                                document.getElementById('sellerReviewModal').classList.add('hidden');
+                            }
+
+                            function setSellerRating(rating) {
+                                document.getElementById('sellerReviewRating').value = rating;
+                                document.getElementById('ratingError').classList.add('hidden');
+
+                                const stars = document.querySelectorAll('.seller-star-input');
+                                stars.forEach(star => {
+                                    const val = parseInt(star.getAttribute('data-value'));
+                                    if (val <= rating) {
+                                        star.classList.remove('far', 'text-gray-300');
+                                        star.classList.add('fas', 'text-yellow-400');
+                                    } else {
+                                        star.classList.remove('fas', 'text-yellow-400');
+                                        star.classList.add('far', 'text-gray-300');
+                                    }
+                                });
+                            }
+
+                            function submitSellerReview(event) {
+                                event.preventDefault();
+                                const rating = document.getElementById('sellerReviewRating').value;
+                                const requestId = document.getElementById('sellerReviewRequestId').value;
+                                const comment = document.getElementById('sellerComment').value;
+
+                                if (!rating) {
+                                    document.getElementById('ratingError').classList.remove('hidden');
+                                    return;
+                                }
+
+                                Swal.fire({
+                                    title: 'Submitting Review...',
+                                    allowOutsideClick: false,
+                                    didOpen: () => Swal.showLoading()
+                                });
+
+                                // Send AJAX Request to your existing Controller
+                                fetch("{{ route('reviews.store') }}", {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                                            "Accept": "application/json"
+                                        },
+                                        body: JSON.stringify({
+                                            service_request_id: requestId,
+                                            rating: rating,
+                                            comment: comment
+                                        })
+                                    })
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        if (data.success) {
+                                            closeSellerReviewModal();
+                                            Swal.fire({
+                                                title: 'Review Submitted!',
+                                                text: 'Thank you for rating the client.',
+                                                icon: 'success',
+                                                timer: 1500,
+                                                showConfirmButton: false
+                                            }).then(() => {
+                                                location.reload();
+                                            });
+                                        } else {
+                                            Swal.fire('Error', data.message || 'Could not submit review', 'error');
+                                        }
+                                    })
+                                    .catch(error => {
+                                        console.error(error);
+                                        Swal.fire('Error', 'An unexpected error occurred.', 'error');
+                                    });
+                            }
+
+                            function openRejectModal(requestId) {
+        Swal.fire({
+            title: 'Reject Request?',
+            text: "Please provide a reason for the requester.",
+            input: 'textarea', // Creates a text box
+            inputPlaceholder: 'e.g. I am fully booked on this date...',
+            inputAttributes: {
+                'aria-label': 'Type your rejection reason here'
+            },
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, Reject it',
+            preConfirm: (reason) => {
+                if (!reason) {
+                    Swal.showValidationMessage('You must provide a reason!')
+                }
+                return reason; // Returns the text value
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // 1. Get the form
+                const form = document.getElementById('reject-form-' + requestId);
+                
+                // 2. Create a hidden input for the reason
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'rejection_reason';
+                input.value = result.value; // The text from SweetAlert
+                
+                // 3. Append and Submit
+                form.appendChild(input);
+                form.submit();
+            }
+        });
+    }
                         </script>
 
                     </div>

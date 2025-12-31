@@ -43,6 +43,9 @@ Route::get('/', [HomeController::class, 'home'])->name('home');
 Route::get('/about', [HomeController::class, 'about'])->name('about');
 Route::get('/help', [HelpController::class, 'index'])->name('help');
 
+// Community profile
+Route::get('/user/{user}', [ProfileController::class, 'showPublic'])->name('profile.public');
+
 // Display the form to join as a part-timer
 Route::get('/students/create', [ProfileController::class, 'create'])->name('students.create');
 // Handle the profile form submission

@@ -1,4 +1,7 @@
 <x-app-layout>
+    {{-- Load FontAwesome if not already loaded in layout --}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <div class="min-h-screen bg-slate-50/50 py-16 font-sans">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             
@@ -9,16 +12,32 @@
                         S2U Dashboard
                     </span>
                 </nav>
-                <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Account Settings</h1>
-                <p class="mt-2 text-slate-500 font-medium">Manage your personal identity, security, and preferences on the S2U platform.</p>
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Account Settings</h1>
+                        <p class="mt-2 text-slate-500 font-medium">Manage your identity, security, and reputation.</p>
+                    </div>
+                    
+                    {{-- Quick Stat Badge --}}
+                    <div class="hidden md:flex items-center gap-3 bg-white px-5 py-3 rounded-2xl shadow-sm border border-slate-100">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-full bg-yellow-50 text-yellow-500">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">Rating</p>
+                            <p class="text-lg font-black text-slate-900">{{ number_format($averageRating ?? 0, 1) }} <span class="text-xs text-slate-400 font-medium">/ 5.0</span></p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div x-data="{ activeTab: 'profile' }" class="flex flex-col lg:flex-row gap-8 items-start">
+            <div x-data="{ activeTab: '{{ session('status') === 'password-updated' ? 'password' : 'profile' }}' }" class="flex flex-col lg:flex-row gap-8 items-start">
                 
                 {{-- SIDEBAR NAVIGATION --}}
                 <aside class="lg:w-72 flex-shrink-0 w-full sticky top-24">
                     <div class="bg-white p-3 rounded-[2rem] shadow-sm border border-slate-200/60">
                         <nav class="space-y-1">
+                            {{-- Profile Tab --}}
                             <button @click="activeTab = 'profile'" 
                                 :class="activeTab === 'profile' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'"
                                 class="flex items-center px-5 py-4 text-sm font-bold rounded-2xl transition-all duration-300 w-full group">
@@ -28,6 +47,18 @@
                                 Profile Details
                             </button>
 
+                            {{-- Reviews Tab (NEW) --}}
+                            <button @click="activeTab = 'reviews'" 
+                                :class="activeTab === 'reviews' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'"
+                                class="flex items-center px-5 py-4 text-sm font-bold rounded-2xl transition-all duration-300 w-full group">
+                                <svg class="mr-3 h-5 w-5 transition-transform group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                                </svg>
+                                My Reviews
+                                <span class="ml-auto bg-slate-100 text-slate-600 py-0.5 px-2 rounded-full text-[10px]">{{ $totalReviews ?? 0 }}</span>
+                            </button>
+
+                            {{-- Password Tab --}}
                             <button @click="activeTab = 'password'" 
                                 :class="activeTab === 'password' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'"
                                 class="flex items-center px-5 py-4 text-sm font-bold rounded-2xl transition-all duration-300 w-full group">
@@ -153,7 +184,123 @@
                         </div>
                     </div>
 
-                    {{-- TAB 2: PASSWORD UPDATE --}}
+                    {{-- TAB 2: REVIEWS (NEW - Carousell Style) --}}
+                    <div x-show="activeTab === 'reviews'" x-cloak 
+                         x-transition:enter="transition ease-out duration-300 transform" 
+                         x-transition:enter-start="opacity-0 translate-y-4" 
+                         x-transition:enter-end="opacity-100 translate-y-0" 
+                         class="bg-white shadow-sm rounded-[2.5rem] border border-slate-200/60 overflow-hidden">
+                        
+                        {{-- Review Header Summary --}}
+                        <div class="px-8 py-8 border-b border-slate-100 bg-slate-50/50">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div>
+                                    <h3 class="text-xl font-black text-slate-900 tracking-tight">Public Reviews</h3>
+                                    <p class="text-sm text-slate-500 font-medium">What others are saying about your services.</p>
+                                </div>
+                                
+                                {{-- Rating Big Badge --}}
+                                @if(isset($averageRating))
+                                <div class="flex items-center gap-4 bg-white px-5 py-3 rounded-2xl shadow-sm border border-slate-200">
+                                    <div class="text-3xl font-black text-indigo-600">{{ number_format($averageRating, 1) }}</div>
+                                    <div class="h-8 w-px bg-slate-200"></div>
+                                    <div class="flex flex-col">
+                                        <div class="flex text-yellow-400 text-xs mb-1">
+                                            @for($i=1; $i<=5; $i++)
+                                                <i class="{{ $i <= round($averageRating) ? 'fas' : 'far' }} fa-star"></i>
+                                            @endfor
+                                        </div>
+                                        <span class="text-xs text-slate-400 font-bold uppercase tracking-wider">{{ $totalReviews ?? 0 }} Reviews</span>
+                                    </div>
+                                </div>
+                                @endif
+                            </div>
+                        </div>
+
+                        {{-- Review List --}}
+                        <div class="divide-y divide-slate-100">
+                            @if(isset($reviews) && $reviews->count() > 0)
+                                @foreach($reviews as $review)
+                                <div class="p-8 hover:bg-slate-50/30 transition-colors">
+                                    <div class="flex items-start gap-4 md:gap-6">
+                                        {{-- Avatar --}}
+                                        <div class="flex-shrink-0">
+                                            @if($review->reviewer && $review->reviewer->profile_photo_path)
+                                                <img src="{{ asset('storage/' . $review->reviewer->profile_photo_path) }}" 
+                                                     class="w-12 h-12 md:w-14 md:h-14 rounded-full object-cover shadow-sm border-2 border-white ring-1 ring-slate-100">
+                                            @else
+                                                <div class="w-12 h-12 md:w-14 md:h-14 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-black text-lg shadow-sm border-2 border-white ring-1 ring-slate-100">
+                                                    {{ substr($review->reviewer->name ?? 'User', 0, 1) }}
+                                                </div>
+                                            @endif
+                                        </div>
+
+                                        {{-- Content --}}
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-2">
+                                                <h4 class="text-base font-bold text-slate-900 truncate">
+                                                    {{ $review->reviewer->name ?? 'Deleted User' }}
+                                                </h4>
+                                                <span class="text-xs font-medium text-slate-400 mt-1 sm:mt-0">
+                                                    {{ $review->created_at->diffForHumans() }}
+                                                </span>
+                                            </div>
+
+                                            {{-- Stars --}}
+                                            <div class="flex text-yellow-400 text-xs mb-3">
+                                                @for($i=1; $i<=5; $i++)
+                                                    <i class="{{ $i <= $review->rating ? 'fas' : 'far' }} fa-star"></i>
+                                                @endfor
+                                            </div>
+
+                                            {{-- Comment --}}
+                                            @if($review->comment)
+                                                <p class="text-slate-600 text-sm leading-relaxed mb-3">
+                                                    {{ $review->comment }}
+                                                </p>
+                                            @else
+                                                <p class="text-slate-400 text-sm italic mb-3">No written review provided.</p>
+                                            @endif
+
+                                            {{-- Context Badge (Carousell Style) --}}
+                                            @if($review->studentService)
+                                                <div class="inline-flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-lg">
+                                                    <div class="w-6 h-6 rounded bg-white flex items-center justify-center border border-slate-200">
+                                                        <i class="fas fa-shopping-bag text-[10px] text-slate-400"></i>
+                                                    </div>
+                                                    <div class="flex flex-col">
+                                                        <span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider leading-none">Bought</span>
+                                                        <span class="text-xs font-bold text-slate-700 leading-none mt-1">{{ Str::limit($review->studentService->title, 30) }}</span>
+                                                    </div>
+                                                </div>
+                                            @endif
+
+                                            {{-- Reply Section --}}
+                                            @if($review->reply)
+                                                <div class="mt-4 bg-indigo-50/50 border border-indigo-100 rounded-xl p-4 ml-0 md:ml-4">
+                                                    <p class="text-xs font-bold text-indigo-900 mb-1 flex items-center gap-1">
+                                                        <i class="fas fa-reply fa-rotate-180"></i> Your Reply:
+                                                    </p>
+                                                    <p class="text-sm text-indigo-800/80 italic">"{{ $review->reply }}"</p>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                                @endforeach
+                            @else
+                                <div class="p-16 text-center">
+                                    <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100">
+                                        <i class="fa-regular fa-star text-3xl text-slate-300"></i>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-slate-900">No reviews yet</h3>
+                                    <p class="text-slate-500 text-sm mt-1">Reviews will appear here once you complete services.</p>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    {{-- TAB 3: PASSWORD UPDATE --}}
                     <div x-show="activeTab === 'password'" x-cloak 
                          x-transition:enter="transition ease-out duration-300 transform" 
                          x-transition:enter-start="opacity-0 translate-y-4" 

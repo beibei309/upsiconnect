@@ -27,11 +27,17 @@ class AdminServicesController extends Controller
     $categoryId = $request->query('category');
     $studentId  = $request->query('student');
     $status     = $request->query('status');
+    $rating = $request->query('rating');
+
 
     $services = StudentService::with(['user', 'category'])
         ->withAvg('reviews', 'rating')
         ->withCount('reviews')
         ->when($status, fn($q) => $q->where('approval_status', $status))
+        ->when($rating, function ($q, $rating) {
+        [$min, $max] = explode('-', $rating);
+        $q->havingBetween('reviews_avg_rating', [(float) $min, (float) $max]);
+    })
         ->when($search, function ($query, $search) {
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")

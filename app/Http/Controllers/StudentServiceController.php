@@ -24,10 +24,13 @@ class StudentServiceController extends Controller
 
     $currentUserId = Auth::id();
 
-    // --- 2. Base Query Setup ---
     $query = StudentService::with(['student', 'category'])
-        ->withCount('reviews')          // <--- Tambah ini (Kira jumlah review)
-        ->withAvg('reviews', 'rating')  // <--- Tambah ini (Kira purata rating)
+        ->withCount(['reviews' => function ($query) {
+            $query->whereColumn('reviews.reviewee_id', 'student_services.user_id');
+        }])
+        ->withAvg(['reviews' => function ($query) {
+            $query->whereColumn('reviews.reviewee_id', 'student_services.user_id');
+        }], 'rating')
         ->where('approval_status', 'approved') // Kita hanya mahu yang approved, tapi status boleh available/unavailable
         ->whereHas('student', function ($q) {
             $q->where('role', 'helper');
@@ -498,7 +501,8 @@ $isUnavailable = $request->has('is_unavailable'); // Check checkbox status
             ->count();
 
         // Fetch Reviews
-        $reviews = Review::where('student_service_id', $service->id) // <--- PENTING
+       $reviews = Review::where('student_service_id', $service->id)
+            ->where('reviewee_id', $service->user_id)
             ->with('reviewer') 
             ->latest()
             ->get();

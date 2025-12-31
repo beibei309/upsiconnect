@@ -271,103 +271,118 @@
                 </section>
 
                 {{-- Reviews Section --}}
-                <section class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100">
-                    <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-xl font-bold text-slate-900">
-                            Reviews ({{ $reviews->count() }})
-                        </h2>
+               {{-- Reviews Section --}}
+<section class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100">
+    <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-bold text-slate-900">
+            {{-- OPTIONAL: You might want to filter the count in the controller to be accurate --}}
+            Reviews
+        </h2>
 
-                        {{-- Show Service Rating Summary --}}
-                        @if ($reviews->count() > 0)
-                            <div
-                                class="flex items-center gap-2 bg-yellow-50 px-3 py-1 rounded-lg border border-yellow-100">
-                                <i class="fas fa-star text-yellow-500"></i>
-                                <span class="font-bold text-slate-800">{{ number_format($service->rating, 1) }}</span>
-                                <span class="text-xs text-gray-500">/ 5.0</span>
-                            </div>
-                        @endif
+        {{-- Show Service Rating Summary --}}
+        @if ($reviews->count() > 0)
+            <div class="flex items-center gap-2 bg-yellow-50 px-3 py-1 rounded-lg border border-yellow-100">
+                <i class="fas fa-star text-yellow-500"></i>
+                <span class="font-bold text-slate-800">{{ number_format($service->rating, 1) }}</span>
+                <span class="text-xs text-gray-500">/ 5.0</span>
+            </div>
+        @endif
+    </div>
+
+   @if (isset($reviews) && count($reviews) > 0)
+    <div class="space-y-6">
+        @foreach ($reviews as $review)
+            
+            <div class="border-b border-gray-50 pb-6 last:border-0 last:pb-0">
+
+                {{-- 1. Client Review --}}
+                <div class="flex items-start gap-3">
+                    {{-- Avatar Client --}}
+                    <div class="flex-shrink-0">
+                        <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-bold text-sm uppercase overflow-hidden">
+                            @if($review->reviewer->profile_photo_path)
+                                <img src="{{ asset('storage/' . $review->reviewer->profile_photo_path) }}" class="w-full h-full object-cover">
+                            @else
+                                {{ substr($review->reviewer->name ?? 'U', 0, 1) }}
+                            @endif
+                        </div>
                     </div>
 
-                    @if (isset($reviews) && count($reviews) > 0)
-                        <div class="space-y-6">
-                            @foreach ($reviews as $review)
-                                <div class="border-b border-gray-50 pb-6 last:border-0 last:pb-0">
+                    <div class="flex-1">
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center gap-2">
+                                {{-- Name --}}
+                                <span class="font-bold text-slate-900 text-sm">
+                                    @auth
+                                        {{ $review->reviewer->name ?? 'User' }}
+                                    @else
+                                        {{ substr($review->reviewer->name ?? 'User', 0, 1) . '****' }}
+                                    @endauth
+                                </span>
 
-                                    {{-- 1. Client Review --}}
-                                    <div class="flex items-start gap-3">
-                                        {{-- Avatar Client --}}
-                                        <div class="flex-shrink-0">
-                                            <div
-                                                class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-bold text-sm uppercase">
-                                                {{ substr($review->reviewer->name ?? 'U', 0, 1) }}
-                                            </div>
-                                        </div>
-
-                                        <div class="flex-1">
-                                            <div class="flex justify-between items-start">
-                                                <span class="font-bold text-slate-900 text-sm">
-                                                    {{-- LOGIC: CENSOR NAME IF NOT SIGNED IN --}}
-                                                    @auth
-                                                        {{-- User is signed in: Show full name --}}
-                                                        {{ $review->reviewer->name ?? 'User' }}
-                                                    @else
-                                                        {{-- User is NOT signed in: Show First Letter + Stars (e.g. A****) --}}
-                                                        {{ substr($review->reviewer->name ?? 'User', 0, 1) . '****' }}
-                                                    @endauth
-                                                </span>
-                                                <span
-                                                    class="text-xs text-gray-400">{{ $review->created_at->diffForHumans() }}</span>
-                                            </div>
-
-                                            <div class="flex text-yellow-400 text-xs my-1">
-                                                @for ($i = 1; $i <= 5; $i++)
-                                                    <i
-                                                        class="{{ $i <= $review->rating ? 'fas' : 'far' }} fa-star"></i>
-                                                @endfor
-                                            </div>
-
-                                            <p class="text-gray-600 text-sm leading-relaxed">{{ $review->comment }}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    {{-- 2. Helper Reply (Display only if reply exists) --}}
-                                    @if ($review->reply)
-                                        <div class="mt-4 ml-2 pl-8 border-l-2 border-indigo-100 relative">
-                                            <div class="bg-slate-50 p-4 rounded-r-xl rounded-bl-xl">
-                                                <div class="flex items-center gap-2 mb-2">
-                                                    <span
-                                                        class="text-xs font-bold text-gray-700 flex items-center gap-1">
-                                                        Reply from seller: {{ $service->user->name }}
-                                                        @if ($service->user->trust_badge)
-                                                            <i class="fas fa-check-circle text-[10px]"></i>
-                                                        @endif
-                                                    </span>
-
-                                                    @if ($review->replied_at)
-                                                        <span class="text-[10px] text-gray-400">•
-                                                            {{ \Carbon\Carbon::parse($review->replied_at)->diffForHumans() }}</span>
-                                                    @endif
-                                                </div>
-
-                                                <p class="text-sm text-gray-600 italic">"{{ $review->reply }}"</p>
-                                            </div>
-                                        </div>
-                                    @endif
-
-                                </div>
-                            @endforeach
-                        </div>
-                    @else
-                        <div class="text-center py-8">
-                            <div
-                                class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
-                                <i class="fa-regular fa-comments text-gray-300 text-xl"></i>
+                                {{-- NEW: Role Badge (Student / Community) --}}
+                                @php
+                                    $reviewerRole = $review->reviewer->role ?? 'student';
+                                @endphp
+                                
+                                @if ($reviewerRole === 'student')
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-indigo-100 text-indigo-800 capitalize border border-indigo-200">
+                                        Student
+                                    </span>
+                                @elseif ($reviewerRole === 'community')
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-green-100 text-green-800 capitalize border border-green-200">
+                                        Community
+                                    </span>
+                                @endif
                             </div>
-                            <p class="text-gray-500 text-sm">No reviews yet for this service.</p>
+
+                            <span class="text-xs text-gray-400">{{ $review->created_at->diffForHumans() }}</span>
                         </div>
-                    @endif
-                </section>
+
+                        <div class="flex text-yellow-400 text-xs my-1">
+                            @for ($i = 1; $i <= 5; $i++)
+                                <i class="{{ $i <= $review->rating ? 'fas' : 'far' }} fa-star"></i>
+                            @endfor
+                        </div>
+
+                        <p class="text-gray-600 text-sm leading-relaxed">{{ $review->comment }}</p>
+                    </div>
+                </div>
+
+                {{-- 2. Helper Reply --}}
+                @if ($review->reply)
+                    <div class="mt-4 ml-2 pl-8 border-l-2 border-indigo-100 relative">
+                        <div class="bg-slate-50 p-4 rounded-r-xl rounded-bl-xl">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="text-xs font-bold text-gray-700 flex items-center gap-1">
+                                    Reply from seller: {{ $service->user->name }}
+                                    @if ($service->user->trust_badge)
+                                        <i class="fas fa-check-circle text-[10px] text-blue-500"></i>
+                                    @endif
+                                </span>
+                                @if ($review->replied_at)
+                                    <span class="text-[10px] text-gray-400">•
+                                        {{ \Carbon\Carbon::parse($review->replied_at)->diffForHumans() }}</span>
+                                @endif
+                            </div>
+                            <p class="text-sm text-gray-600 italic">"{{ $review->reply }}"</p>
+                        </div>
+                    </div>
+                @endif
+
+            </div>
+        @endforeach
+    </div>
+@else
+    <div class="text-center py-8">
+        <div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
+            <i class="fa-regular fa-comments text-gray-300 text-xl"></i>
+        </div>
+        <p class="text-gray-500 text-sm">No reviews yet for this service.</p>
+    </div>
+@endif
+       
+</section>
             </div>
 
             {{-- RIGHT COLUMN (Booking System) --}}
@@ -462,25 +477,26 @@
                             </div>
 
                             {{-- Duration (Session Based Only) --}}
-                           {{-- Duration --}}
-<div class="mb-6" x-show="isSessionBased">
-    <div class="flex justify-between items-center mb-2">
-        <label class="text-xs font-bold text-gray-700 uppercase">Duration</label>
-        <span class="text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded"
-            x-text="selectedDuration + ' Hours'"></span>
-    </div>
-    <div class="grid grid-cols-5 gap-2"> {{-- Tukar grid-cols-5 --}}
-        <template x-for="h in [1, 2, 3, 4, 5]" :key="h"> {{-- Tambah 5 --}}
-            <button @click="selectDuration(h)" type="button"
-                class="py-2.5 rounded-xl border text-sm font-bold transition-all"
-                :class="selectedDuration === h ?
-                    'bg-slate-800 text-white border-slate-800 shadow-md transform -translate-y-0.5' :
-                    'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'">
-                <span x-text="h + 'h'"></span>
-            </button>
-        </template>
-    </div>
-</div>
+                            {{-- Duration --}}
+                            <div class="mb-6" x-show="isSessionBased">
+                                <div class="flex justify-between items-center mb-2">
+                                    <label class="text-xs font-bold text-gray-700 uppercase">Duration</label>
+                                    <span class="text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded"
+                                        x-text="selectedDuration + ' Hours'"></span>
+                                </div>
+                                <div class="grid grid-cols-5 gap-2"> {{-- Tukar grid-cols-5 --}}
+                                    <template x-for="h in [1, 2, 3, 4, 5]" :key="h">
+                                        {{-- Tambah 5 --}}
+                                        <button @click="selectDuration(h)" type="button"
+                                            class="py-2.5 rounded-xl border text-sm font-bold transition-all"
+                                            :class="selectedDuration === h ?
+                                                'bg-slate-800 text-white border-slate-800 shadow-md transform -translate-y-0.5' :
+                                                'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'">
+                                            <span x-text="h + 'h'"></span>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
 
                             <div class="w-full h-px bg-gray-100 mb-6"></div>
 
@@ -752,7 +768,6 @@
                 bookedSlots: @json($bookedAppointments ?? []),
                 manualBlocks: @json($manualBlocks ?? []),
 
-                // 🟢 NEW: Full Package Objects
                 packages: {
                     basic: {
                         price: {{ $service->basic_price ?? 0 }},
@@ -909,17 +924,10 @@
                             // If the requested time overlaps with any part of a booked slot
                             return (proposedStart < bookingEnd) && (proposedEnd > bookingStart);
                         });
-
-                        // CHECK 2: Manual Blocks (Exact Start Time Match)
-                        // The Helper blocked "2025-12-20 14:00". If this slot is 14:00, block it.
+                     
                         let blockKey = `${this.selectedDate} ${timeStr}`;
                         let isManuallyBlocked = this.manualBlocks.includes(blockKey);
 
-                        // CHECK 3: Manual Blocks (Overlap Logic - Optional but recommended)
-                        // If the helper blocked 14:00 (1 hour block), and student wants 2 hours starting at 13:00,
-                        // the student's 13:00-15:00 overlaps with the blocked 14:00-15:00.
-                        // For simplicity, we stick to "Is the start time blocked?" usually, 
-                        // but checking if any blocked start time falls within our proposed duration is safer:
                         if (!isManuallyBlocked) {
                             // Check if any manual block falls inside our proposed time range
                             isManuallyBlocked = this.manualBlocks.some(blockedKey => {
@@ -972,90 +980,89 @@
                     return `${h}:${m.toString().padStart(2, '0')} ${ampm}`;
                 },
                 calculateEndTime(startTime) {
-    if (!startTime) return '00:00';
+                    if (!startTime) return '00:00';
 
-    let [h, m] = startTime.split(':').map(Number);
-    
-    // 🟢 Guna selectedDuration (jam) darab 60 minit
-    let totalMinutes = (h * 60) + m + (this.selectedDuration * 60);
+                    let [h, m] = startTime.split(':').map(Number);
 
-    let endH = Math.floor(totalMinutes / 60);
-    let endM = totalMinutes % 60;
+                    // 🟢 Guna selectedDuration (jam) darab 60 minit
+                    let totalMinutes = (h * 60) + m + (this.selectedDuration * 60);
 
-    // Supaya tidak lebih 24 jam
-    endH = endH % 24;
+                    let endH = Math.floor(totalMinutes / 60);
+                    let endM = totalMinutes % 60;
 
-    return `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
-},
+                    // Supaya tidak lebih 24 jam
+                    endH = endH % 24;
 
-               submitBooking() {
-    @auth
-    if (this.hasActiveRequest) {
-        // ... (kod amaran sedia ada)
-        return;
-    }
-
-    // Kira masa mengikut durasi dipilih
-    let sendStartTime = this.isSessionBased ? this.selectedTime : '00:00';
-    let sendEndTime = this.isSessionBased ? this.calculateEndTime(this.selectedTime) : '23:59';
-    
-    let displayTime = this.formatTimeDisplay(this.selectedTime);
-
-    // --- Build Modal HTML ---
-    let detailsHtml = `
-        <div class="text-left bg-gray-50 p-4 rounded-lg border border-gray-200 text-sm mb-4">
-            <p class="mb-1"><strong>Date:</strong> ${this.selectedDate}</p>
-            <p class="mb-1"><strong>Time:</strong> ${displayTime}</p>
-            <p class="mb-1"><strong>Duration:</strong> ${this.selectedDuration} Hours</p>
-            <p class="text-lg font-bold text-indigo-600 mt-2">Total: RM${this.calculateTotal()}</p>
-        </div>
-        <div class="text-left">
-            <label class="block text-sm font-bold text-gray-700 mb-1">Message to Helper</label>
-            <textarea id="swal-message-input" class="w-full border rounded-lg p-3 text-sm" rows="3"></textarea>
-        </div>`;
-
-    Swal.fire({
-        title: 'Confirm Booking?',
-        html: detailsHtml,
-        showCancelButton: true,
-        preConfirm: () => {
-            const msg = document.getElementById('swal-message-input').value;
-            if (!msg) Swal.showValidationMessage('Please write a message');
-            return msg;
-        }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Gabungkan info sistem ke dalam mesej
-            const userNote = result.value;
-            const finalMessage = `BOOKING DETAILS:\nTime: ${displayTime}\nDuration: ${this.selectedDuration}h\n\nNote: ${userNote}`;
-
-            fetch("{{ route('service-requests.store') }}", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                    return `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
                 },
-                body: JSON.stringify({
-                    student_service_id: {{ $service->id }},
-                    selected_dates: this.selectedDate,
-                    start_time: sendStartTime,
-                    end_time: sendEndTime,
-                    message: finalMessage,
-                    selected_package: this.currentPackage,
-                    offered_price: this.calculateTotal()
-                })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    Swal.fire('Success', 'Request sent!', 'success').then(() => location.reload());
-                } else {
-                    Swal.fire('Error', data.message, 'error');
-                }
-            });
-        }
-    });
-    @endauth
+
+                submitBooking() {
+                    @auth
+                    if (this.hasActiveRequest) {
+                        return;
+                    }
+
+                    let sendStartTime = this.isSessionBased ? this.selectedTime : '00:00';
+                    let sendEndTime = this.isSessionBased ? this.calculateEndTime(this.selectedTime) : '23:59';
+
+                    let displayTime = this.formatTimeDisplay(this.selectedTime);
+
+                    let detailsHtml = `
+                    <div class="text-left bg-gray-50 p-4 rounded-lg border border-gray-200 text-sm mb-4">
+                        <p class="mb-1"><strong>Date:</strong> ${this.selectedDate}</p>
+                        <p class="mb-1"><strong>Time:</strong> ${displayTime}</p>
+                        <p class="mb-1"><strong>Duration:</strong> ${this.selectedDuration} Hours</p>
+                        <p class="text-lg font-bold text-indigo-600 mt-2">Total: RM${this.calculateTotal()}</p>
+                    </div>
+                    <div class="text-left">
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Message to Seller</label>
+                        <textarea id="swal-message-input" class="w-full border rounded-lg p-3 text-sm" rows="3"></textarea>
+                    </div>`;
+
+                    Swal.fire({
+                        title: 'Confirm Booking?',
+                        html: detailsHtml,
+                        showCancelButton: true,
+                        preConfirm: () => {
+                            const msg = document.getElementById('swal-message-input').value;
+                            if (!msg) Swal.showValidationMessage('Please write a message');
+                            return msg;
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Gabungkan info sistem ke dalam mesej
+                            const userNote = result.value;
+                            const finalMessage =
+                                `BOOKING DETAILS:\nTime: ${displayTime}\nDuration: ${this.selectedDuration}h\n\nNote: ${userNote}`;
+
+                            fetch("{{ route('service-requests.store') }}", {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                                    },
+                                    body: JSON.stringify({
+                                        student_service_id: {{ $service->id }},
+                                        selected_dates: this.selectedDate,
+                                        start_time: sendStartTime,
+                                        end_time: sendEndTime,
+                                        message: finalMessage,
+                                        selected_package: this.currentPackage,
+                                        offered_price: this.calculateTotal()
+                                    })
+                                })
+                                .then(res => res.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        Swal.fire('Success', 'Request sent!', 'success').then(() => location
+                                            .reload());
+                                    } else {
+                                        Swal.fire('Error', data.message, 'error');
+                                    }
+                                });
+                        }
+                    });
+                @endauth
 
                 @guest window.location.href = "{{ route('login') }}";
             @endguest

@@ -21,13 +21,16 @@ class ServiceRequest extends Model
         'message',
         'offered_price',
         'status',
+        'rejection_reason',
         'accepted_at',
+        'started_at',
         'completed_at'
     ];
 
     protected $casts = [
         'offered_price' => 'decimal:2',
         'accepted_at' => 'datetime',
+        'started_at' => 'datetime',
         'completed_at' => 'datetime',
         'selected_time' => 'string',        
         'created_at' => 'datetime',
@@ -60,18 +63,57 @@ class ServiceRequest extends Model
         return $this->belongsTo(User::class, 'provider_id');
     }
 
-    /**
-     * Get reviews for this service request
-     */
+    public function receivedReviews()
+    {
+        return $this->hasMany(Review::class)
+                    ->where('reviewee_id', $this->user_id);
+    }
     public function reviews()
     {
-        return $this->hasMany(Review::class, 'service_request_id');
+        return $this->hasMany(Review::class);
+    }
+
+    public function getAverageRatingAttribute()
+    {
+        // We use 'receivedReviews' so we don't accidentally count reviews YOU wrote.
+        return $this->receivedReviews()->avg('rating') ?? 0;
+    }
+
+    public function getReviewCountAttribute()
+    {
+        return $this->receivedReviews()->count();
     }
 
         public function review()
     {
         return $this->hasOne(Review::class, 'service_request_id');
     }
+
+    public function reviewForHelper()
+{
+    return $this->hasOne(Review::class, 'service_request_id')
+        ->where('reviewee_id', $this->provider_id);
+}
+
+public function reviewByHelper()
+{
+    return $this->hasOne(Review::class, 'service_request_id')
+        ->where('reviewer_id', $this->provider_id);
+}
+
+
+public function reviewForClient()
+{
+    return $this->hasOne(Review::class, 'service_request_id')
+        ->where('reviewee_id', $this->requester_id);
+}
+
+public function reviewByClient()
+{
+    return $this->hasOne(Review::class, 'service_request_id')
+        ->where('reviewer_id', $this->requester_id);
+}
+
 
     /**
      * Scope for pending requests

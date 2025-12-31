@@ -81,13 +81,10 @@ class ServiceRequestController extends BaseController
                 return response()->json(['error' => 'This time slot is booked. Please select another.'], 400);
             }
         } else {
-            // Task Based (No session duration)
-            // Default to full day if not provided by frontend
             $startTime = $startTime ?? '00:00';
             $endTime   = $endTime ?? '23:59';
             
-            // Optional: Check if provider already has a task for this specific DATE?
-            // If you want to allow multiple tasks per day, do nothing here.
+    
         }
 
         // Create Request
@@ -215,30 +212,38 @@ public function index(Request $request)
     /**
      * Reject a service request
      */
-    public function reject(ServiceRequest $serviceRequest)
-    {
-        $user = Auth::user();
-        
-        // Only the provider can reject
-        if ($serviceRequest->provider_id !== $user->id) {
-            abort(403, 'You are not authorized to reject this request.');
-        }
-
-        if (!$serviceRequest->isPending()) {
-            return response()->json(['error' => 'This request cannot be rejected.'], 400);
-        }
-
-        $serviceRequest->reject();
-
-        // Notify Requester
-        $serviceRequest->requester->notify(new ServiceRequestStatusUpdated($serviceRequest, 'rejected'));
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Service request rejected.'
-        ]);
+    public function reject(Request $request, ServiceRequest $serviceRequest)
+{
+    $user = Auth::user();
+    
+    // Authorization check
+    if ($serviceRequest->provider_id !== $user->id) {
+        abort(403, 'You are not authorized to reject this request.');
     }
 
+    if (!$serviceRequest->isPending()) {
+        return response()->json(['error' => 'This request cannot be rejected.'], 400);
+    }
+
+    // 1. VALIDATE: Reason is mandatory
+    $request->validate([
+        'rejection_reason' => 'required|string|max:500',
+    ]);
+
+    // 2. UPDATE: Save status AND reason
+    $serviceRequest->update([
+        'status' => 'rejected',
+        'rejection_reason' => $request->rejection_reason
+    ]);
+
+    $serviceRequest->requester->notify(new ServiceRequestStatusUpdated($serviceRequest, 'rejected'));
+
+    return back()->with('success', 'Service request rejected.');
+}
+
+    /**
+     * Mark service request as in progress
+     */
     /**
      * Mark service request as in progress
      */
@@ -255,7 +260,13 @@ public function index(Request $request)
             return response()->json(['error' => 'This request must be accepted first.'], 400);
         }
 
-        $serviceRequest->markInProgress();
+        // --- UBAH KAT SINI ---
+        // Guna update() terus supaya kita boleh set status DAN started_at serentak
+        $serviceRequest->update([
+            'status' => 'in_progress',
+            'started_at' => now(), // Ini akan simpan masa sekarang sebagai Start Time
+        ]);
+        // ---------------------
 
         // Notify Requester
         $serviceRequest->requester->notify(new ServiceRequestStatusUpdated($serviceRequest, 'in_progress'));
@@ -266,6 +277,9 @@ public function index(Request $request)
         ]);
     }
 
+    /**
+     * Mark service request as completed
+     */
     /**
      * Mark service request as completed
      */
@@ -282,7 +296,12 @@ public function index(Request $request)
             return response()->json(['error' => 'This request must be in progress first.'], 400);
         }
 
-        $serviceRequest->markCompleted();
+        // --- UBAH KAT SINI ---
+        $serviceRequest->update([
+            'status' => 'completed',
+            'completed_at' => now(), // Rekod masa tamat kerja
+        ]);
+        // ---------------------
 
         // Notify Requester
         $serviceRequest->requester->notify(new ServiceRequestStatusUpdated($serviceRequest, 'completed'));
@@ -341,4 +360,33 @@ public function index(Request $request)
         'message' => 'Booking status updated to ' . $validated['status']
     ]);
 }
+
+public function storeBuyerReview(Request $request, ServiceRequest $serviceRequest)
+{
+    $request->validate([
+        'rating' => 'required|integer|min:1|max:5',
+        'comment' => 'required|string|max:500',
+    ]);
+
+    // ensure only provider can review requester
+    if ($serviceRequest->provider_id !== auth()->id()) {
+        abort(403);
+    }
+
+    // prevent duplicate review
+    if ($serviceRequest->reviewByHelper) {
+        return back()->with('error', 'You already reviewed this client.');
+    }
+
+    Review::create([
+        'service_request_id' => $serviceRequest->id,
+        'reviewer_id' => auth()->id(),
+        'reviewee_id' => $serviceRequest->requester_id,
+        'rating' => $request->rating,
+        'comment' => $request->comment,
+    ]);
+
+    return back()->with('success', 'Review submitted!');
+}
+
 }
