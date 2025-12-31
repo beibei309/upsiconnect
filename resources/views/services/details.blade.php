@@ -86,7 +86,7 @@
         $hasActiveRequest = false;
         if (auth()->check()) {
             $hasActiveRequest = \App\Models\ServiceRequest::where('requester_id', auth()->id())
-                ->where('provider_id', $service->user_id)
+                ->where('student_service_id', $service->id) // <--- FIXED: Checks specific service only
                 ->whereIn('status', ['pending', 'accepted', 'in_progress'])
                 ->exists();
         }
@@ -595,8 +595,18 @@
                             </div>
 
                             {{-- CTA Button --}}
-                            @auth
-                                @if ($service->status === 'available')
+                           @auth
+                                @if ($hasActiveRequest)
+                                    {{-- User already has an active request for THIS service --}}
+                                    <button disabled
+                                        class="w-full py-4 rounded-xl font-bold text-indigo-400 bg-indigo-50 border border-indigo-100 cursor-not-allowed flex items-center justify-center gap-2">
+                                        <i class="fa-solid fa-spinner animate-spin text-sm"></i> 
+                                        <span>Request Active</span>
+                                    </button>
+                                    <p class="text-xs text-center text-gray-400 mt-2">
+                                        You already have a pending or active order for this service.
+                                    </p>
+                                @elseif ($service->status === 'available')
                                     <button @click="submitBooking()"
                                         :disabled="!selectedDate || (isSessionBased && !selectedTime)"
                                         class="group w-full py-4 rounded-xl font-bold text-white shadow-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:shadow-none disabled:bg-gray-300 disabled:cursor-not-allowed hover:-translate-y-1"
@@ -996,76 +1006,99 @@
                     return `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
                 },
 
-                submitBooking() {
+              submitBooking() {
                     @auth
-                    if (this.hasActiveRequest) {
-                        return;
-                    }
-
-                    let sendStartTime = this.isSessionBased ? this.selectedTime : '00:00';
-                    let sendEndTime = this.isSessionBased ? this.calculateEndTime(this.selectedTime) : '23:59';
-
-                    let displayTime = this.formatTimeDisplay(this.selectedTime);
-
-                    let detailsHtml = `
-                    <div class="text-left bg-gray-50 p-4 rounded-lg border border-gray-200 text-sm mb-4">
-                        <p class="mb-1"><strong>Date:</strong> ${this.selectedDate}</p>
-                        <p class="mb-1"><strong>Time:</strong> ${displayTime}</p>
-                        <p class="mb-1"><strong>Duration:</strong> ${this.selectedDuration} Hours</p>
-                        <p class="text-lg font-bold text-indigo-600 mt-2">Total: RM${this.calculateTotal()}</p>
-                    </div>
-                    <div class="text-left">
-                        <label class="block text-sm font-bold text-gray-700 mb-1">Message to Seller</label>
-                        <textarea id="swal-message-input" class="w-full border rounded-lg p-3 text-sm" rows="3"></textarea>
-                    </div>`;
-
-                    Swal.fire({
-                        title: 'Confirm Booking?',
-                        html: detailsHtml,
-                        showCancelButton: true,
-                        preConfirm: () => {
-                            const msg = document.getElementById('swal-message-input').value;
-                            if (!msg) Swal.showValidationMessage('Please write a message');
-                            return msg;
+                        // Logic check: Prevents double submission if UI manipulation occurs
+                        if (this.hasActiveRequest) {
+                            Swal.fire('Request Exists', 'You already have an active request for this service.', 'warning');
+                            return;
                         }
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            // Gabungkan info sistem ke dalam mesej
-                            const userNote = result.value;
-                            const finalMessage =
-                                `BOOKING DETAILS:\nTime: ${displayTime}\nDuration: ${this.selectedDuration}h\n\nNote: ${userNote}`;
 
-                            fetch("{{ route('service-requests.store') }}", {
-                                    method: "POST",
-                                    headers: {
-                                        "Content-Type": "application/json",
-                                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                                    },
-                                    body: JSON.stringify({
-                                        student_service_id: {{ $service->id }},
-                                        selected_dates: this.selectedDate,
-                                        start_time: sendStartTime,
-                                        end_time: sendEndTime,
-                                        message: finalMessage,
-                                        selected_package: this.currentPackage,
-                                        offered_price: this.calculateTotal()
-                                    })
-                                })
-                                .then(res => res.json())
-                                .then(data => {
-                                    if (data.success) {
-                                        Swal.fire('Success', 'Request sent!', 'success').then(() => location
-                                            .reload());
-                                    } else {
-                                        Swal.fire('Error', data.message, 'error');
+                        let sendStartTime = this.isSessionBased ? this.selectedTime : '00:00';
+                        let sendEndTime = this.isSessionBased ? this.calculateEndTime(this.selectedTime) : '23:59';
+
+                        let displayTime = this.formatTimeDisplay(this.selectedTime);
+
+                        let detailsHtml = `
+                        <div class="text-left bg-gray-50 p-4 rounded-lg border border-gray-200 text-sm mb-4">
+                            <p class="mb-1"><strong>Date:</strong> ${this.selectedDate}</p>
+                            <p class="mb-1"><strong>Time:</strong> ${displayTime}</p>
+                            <p class="mb-1"><strong>Duration:</strong> ${this.selectedDuration} Hours</p>
+                            <p class="text-lg font-bold text-indigo-600 mt-2">Total: RM${this.calculateTotal()}</p>
+                        </div>
+                        <div class="text-left">
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Message to Seller</label>
+                            <textarea id="swal-message-input" class="w-full border rounded-lg p-3 text-sm" rows="3" placeholder="Describe your task..."></textarea>
+                        </div>`;
+
+                        Swal.fire({
+                            title: 'Confirm Booking?',
+                            html: detailsHtml,
+                            showCancelButton: true,
+                            confirmButtonText: 'Confirm Request',
+                            preConfirm: () => {
+                                const msg = document.getElementById('swal-message-input').value;
+                                if (!msg) Swal.showValidationMessage('Please write a message');
+                                return msg;
+                            }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // 1. SHOW PROCESSING ALERT
+                                Swal.fire({
+                                    title: 'Processing...',
+                                    text: 'Please wait while we place your order.',
+                                    allowOutsideClick: false,
+                                    didOpen: () => {
+                                        Swal.showLoading();
                                     }
                                 });
-                        }
-                    });
-                @endauth
 
-                @guest window.location.href = "{{ route('login') }}";
-            @endguest
+                                const userNote = result.value;
+                                const finalMessage = `BOOKING DETAILS:\nTime: ${displayTime}\nDuration: ${this.selectedDuration}h\n\nNote: ${userNote}`;
+
+                                fetch("{{ route('service-requests.store') }}", {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                                        },
+                                        body: JSON.stringify({
+                                            student_service_id: {{ $service->id }},
+                                            selected_dates: this.selectedDate,
+                                            start_time: sendStartTime,
+                                            end_time: sendEndTime,
+                                            message: finalMessage,
+                                            selected_package: this.currentPackage,
+                                            offered_price: this.calculateTotal()
+                                        })
+                                    })
+                                    .then(res => res.json())
+                                    .then(data => {
+                                        if (data.success) {
+                                            // 2. SHOW SUCCESS AND REDIRECT
+                                            Swal.fire({
+                                                title: 'Success!',
+                                                text: 'Your request has been sent successfully.',
+                                                icon: 'success',
+                                                confirmButtonText: 'Go to Orders'
+                                            }).then(() => {
+                                                window.location.href = "{{ route('service-requests.index') }}";
+                                            });
+                                        } else {
+                                            Swal.fire('Error', data.message, 'error');
+                                        }
+                                    })
+                                    .catch(error => {
+                                        console.error('Error:', error);
+                                        Swal.fire('Error', 'Something went wrong. Please try again.', 'error');
+                                    });
+                            }
+                        });
+                    @endauth
+
+                    @guest window.location.href = "{{ route('login') }}";
+                    @endguest
+                
 
         }
         }

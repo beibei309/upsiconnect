@@ -24,109 +24,109 @@ class ServiceRequestController extends BaseController
     /**
      * Store a new service request
      */
- public function store(Request $request)
-{
-    try {
-        $user = Auth::user();
-        
-        // 1. Validate basic fields (Make times nullable for flexibility)
-        $validated = $request->validate([
-            'student_service_id' => 'required|exists:student_services,id',
-            'selected_dates'     => 'required|date',
-            'start_time'         => 'nullable|string', 
-            'end_time'           => 'nullable|string',
-            'selected_package'   => 'required|string',
-            'message'            => 'nullable|string|max:1000',
-            'offered_price'      => 'nullable|numeric|min:0|max:99999.99'
-        ]);
+    public function store(Request $request)
+    {
+        try {
+            $user = Auth::user();
+            
+            // 1. Validate basic fields (Make times nullable for flexibility)
+            $validated = $request->validate([
+                'student_service_id' => 'required|exists:student_services,id',
+                'selected_dates'     => 'required|date',
+                'start_time'         => 'nullable|string', 
+                'end_time'           => 'nullable|string',
+                'selected_package'   => 'required|string',
+                'message'            => 'nullable|string|max:1000',
+                'offered_price'      => 'nullable|numeric|min:0|max:99999.99'
+            ]);
 
-        $studentService = StudentService::findOrFail($validated['student_service_id']);
+            $studentService = StudentService::findOrFail($validated['student_service_id']);
 
-        // Check availability
-        if (!$studentService->is_active || !$studentService->user->is_available) {
-            return response()->json(['error' => 'Service or provider unavailable.'], 400);
-        }
-
-        // Check for existing active requests from this user
-        $hasActiveRequest = ServiceRequest::where('requester_id', $user->id)
-            ->where('provider_id', $studentService->user_id)
-            ->whereIn('status', ['pending', 'accepted', 'in_progress'])
-            ->exists();
-
-        if ($hasActiveRequest) {
-            return response()->json(['error' => 'You already have an active request with this helper.'], 400);
-        }
-
-        // --- LOGIC SPLIT: Session vs Task ---
-        $startTime = $validated['start_time'];
-        $endTime   = $validated['end_time'];
-
-        // If it is Session Based, we MUST have times and check overlap
-        if ($studentService->session_duration) {
-            if (!$startTime || !$endTime) {
-                return response()->json(['error' => 'Start and End time are required for this service.'], 422);
+            // Check availability
+            if (!$studentService->is_active || !$studentService->user->is_available) {
+                return response()->json(['error' => 'Service or provider unavailable.'], 400);
             }
 
-            // Check Overlap logic ONLY for session-based services
-            $overlapping = ServiceRequest::where('student_service_id', $studentService->id)
-                ->where('selected_dates', $validated['selected_dates'])
-                ->whereIn('status', ['pending', 'accepted', 'in_progress', 'approved'])
-                ->where(function ($query) use ($startTime, $endTime) {
-                    $query->where('start_time', '<', $endTime)
-                          ->where('end_time', '>', $startTime);
-                })
+            // Check for existing active requests from this user
+           $hasActiveRequest = ServiceRequest::where('requester_id', $user->id)
+                ->where('student_service_id', $studentService->id) // <--- CHANGED: Check specific service ID
+                ->whereIn('status', ['pending', 'accepted', 'in_progress'])
                 ->exists();
 
-            if ($overlapping) {
-                return response()->json(['error' => 'This time slot is booked. Please select another.'], 400);
+            if ($hasActiveRequest) {
+                return response()->json(['error' => 'You already have an active request with this helper.'], 400);
             }
-        } else {
-            $startTime = $startTime ?? '00:00';
-            $endTime   = $endTime ?? '23:59';
-            
-    
-        }
 
-        // Create Request
-        $serviceRequest = ServiceRequest::create([
-            'student_service_id' => $studentService->id,
-            'requester_id'       => $user->id,
-            'provider_id'        => $studentService->user_id,
-            'selected_dates'     => $validated['selected_dates'],
-            'start_time'         => $startTime,
-            'end_time'           => $endTime,
-            'selected_package'   => json_encode($validated['selected_package']),
-            'message'            => $validated['message'],
-            'offered_price'      => $validated['offered_price'],
-            'status'             => 'pending'
-        ]);
+            // --- LOGIC SPLIT: Session vs Task ---
+            $startTime = $validated['start_time'];
+            $endTime   = $validated['end_time'];
 
-        // Notify Provider
-        $studentService->user->notify(new NewServiceRequest($serviceRequest));
-        // Through email
-        if ($studentService->user->email) {
-            Mail::to($studentService->user->email)
-                ->send(new NewServiceRequestNotification($serviceRequest, 'provider'));
-        }
+            // If it is Session Based, we MUST have times and check overlap
+            if ($studentService->session_duration) {
+                if (!$startTime || !$endTime) {
+                    return response()->json(['error' => 'Start and End time are required for this service.'], 422);
+                }
 
-        // Send Email to Student (Requester)
-        if ($user->email) {
-            Mail::to($user->email)
-                ->send(new NewServiceRequestNotification($serviceRequest, 'student'));
-        }
+                // Check Overlap logic ONLY for session-based services
+                $overlapping = ServiceRequest::where('student_service_id', $studentService->id)
+                    ->where('selected_dates', $validated['selected_dates'])
+                    ->whereIn('status', ['pending', 'accepted', 'in_progress', 'approved'])
+                    ->where(function ($query) use ($startTime, $endTime) {
+                        $query->where('start_time', '<', $endTime)
+                            ->where('end_time', '>', $startTime);
+                    })
+                    ->exists();
+
+                if ($overlapping) {
+                    return response()->json(['error' => 'This time slot is booked. Please select another.'], 400);
+                }
+            } else {
+                $startTime = $startTime ?? '00:00';
+                $endTime   = $endTime ?? '23:59';
+                
         
+            }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Service request sent successfully!',
-            'request_id' => $serviceRequest->id
-        ]);
+            // Create Request
+            $serviceRequest = ServiceRequest::create([
+                'student_service_id' => $studentService->id,
+                'requester_id'       => $user->id,
+                'provider_id'        => $studentService->user_id,
+                'selected_dates'     => $validated['selected_dates'],
+                'start_time'         => $startTime,
+                'end_time'           => $endTime,
+                'selected_package'   => json_encode($validated['selected_package']),
+                'message'            => $validated['message'],
+                'offered_price'      => $validated['offered_price'],
+                'status'             => 'pending'
+            ]);
 
-    } catch (\Exception $e) {
-        \Log::error('ServiceRequest store error: ' . $e->getMessage());
-        return response()->json(['error' => 'Server error occurred.'], 500);
+            // Notify Provider
+            $studentService->user->notify(new NewServiceRequest($serviceRequest));
+            // Through email
+            if ($studentService->user->email) {
+                Mail::to($studentService->user->email)
+                    ->send(new NewServiceRequestNotification($serviceRequest, 'provider'));
+            }
+
+            // Send Email to Student (Requester)
+            if ($user->email) {
+                Mail::to($user->email)
+                    ->send(new NewServiceRequestNotification($serviceRequest, 'student'));
+            }
+            
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Service request sent successfully!',
+                'request_id' => $serviceRequest->id
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('ServiceRequest store error: ' . $e->getMessage());
+            return response()->json(['error' => 'Server error occurred.'], 500);
+        }
     }
-}
 
 public function index(Request $request)
 {
