@@ -59,7 +59,7 @@
 
             <div class="text-center mb-8">
                 <h2 class="text-2xl font-bold text-gray-900 tracking-tight">Welcome back</h2>
-                <p class="mt-2 text-sm text-gray-500">Sign in to your UpsiConnect account.</p>
+                <p class="mt-2 text-sm text-gray-500">Sign in to your U-Serve account.</p>
             </div>
 
             <x-auth-session-status class="mb-4" :status="session('status')" />
@@ -120,7 +120,7 @@
                         <div class="w-full border-t border-gray-200"></div>
                     </div>
                     <div class="relative flex justify-center text-sm">
-                        <span class="px-3 bg-white text-gray-500 font-medium">New to S2U?</span>
+                        <span class="px-3 bg-white text-gray-500 font-medium">New to U-Serve?</span>
                     </div>
                 </div>
 
