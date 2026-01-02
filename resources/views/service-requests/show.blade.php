@@ -225,10 +225,10 @@
 
                                                 <div class="p-3 bg-green-50 rounded-lg border border-green-100">
                                                     <span
-                                                        class="block text-xs text-green-500 uppercase font-bold">Completed</span>
+                                                        class="block text-xs text-green-500 uppercase font-bold">Finished</span>
                                                     <span class="font-medium text-gray-700 text-sm">
-                                                        @if ($serviceRequest->completed_at)
-                                                            {{ $serviceRequest->completed_at->format('d M, h:i A') }}
+                                                        @if ($serviceRequest->finished_at)
+                                                            {{ $serviceRequest->finished_at->format('d M, h:i A') }}
                                                         @else
                                                             -
                                                         @endif
