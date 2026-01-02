@@ -48,7 +48,7 @@
 
             <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
 
-                <div class="relative bg-gradient-to-r from-indigo-600 to-blue-500 px-8 py-10 text-white">
+                <div class="relative bg-gradient-to-r from-gray-400 to-gray-500 px-8 py-10 text-white">
                     <div
                         class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div>
@@ -183,7 +183,7 @@
                                         <div class="sm:col-span-2">
                                             <label
                                                 class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Message
-                                                from Client</label>
+                                                from Buyer</label>
                                             <div
                                                 class="mt-2 p-4 bg-white rounded-lg border border-gray-200 text-gray-600">
                                                 {{ $serviceRequest->message }}
@@ -322,7 +322,7 @@
 
                                 {{-- 2. Requester (Buyer) --}}
                                 <div>
-                                    <span class="text-xs font-semibold text-blue-500 mb-2 block">Requester</span>
+                                    <span class="text-xs font-semibold text-blue-500 mb-2 block">Buyer</span>
                                     {{-- ADDED: A tag wrapping the content --}}
                                     <a href="{{ route('profile.public', $serviceRequest->requester->id) }}"
                                         class="flex items-center gap-3 p-2 -ml-2 rounded-lg hover:bg-gray-50 transition-colors group">
@@ -393,7 +393,7 @@
                                     @endif
 
                                     {{-- 1. Only show Cancel button if NOT Completed AND NOT In Progress --}}
-                                    @if ($isRequester && !$serviceRequest->isCompleted() && $serviceRequest->status !== 'in_progress')
+                                    @if ($isRequester && $serviceRequest->status === 'pending')
                                         <button onclick="updateRequestStatus({{ $serviceRequest->id }}, 'cancel')"
                                             class="w-full py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition">
                                             Cancel Request

@@ -13,18 +13,89 @@
 
             @php
                 // Default status tab is 'pending'
-                $defaultStatusTab = request('tab', 'pending');
+                $defaultStatusTab = request('tab', 'in-progress');
             @endphp
 
             <div id="received-content" class="sr-tab-content">
                 <div class="overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6 text-gray-900">
-                        <h3 class="text-lg font-medium mb-4">My Services Orders ({{ $receivedRequests->count() }} total)</h3>
+                    <div class="p-6 text-gray-800">
+                         <h3 class="font-medium mb-4 700" style="font-size: 25px;">My Services Orders ({{ $receivedRequests->count() }} total)</h3>
 
-                        <div class="mb-4">
-                            <input type="text" id="request-search" placeholder="Search requests..."
-                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-custom-teal focus:border-custom-teal">
-                        </div>
+                        <form method="GET" action="{{ url()->current() }}" class="mb-6">
+                            <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+
+                                {{-- 1. Search Bar (Takes up 4 columns) --}}
+                                <div class="md:col-span-4">
+                                    <label for="search" class="sr-only">Search</label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
+                                        </div>
+                                        <input type="text" name="search" id="request-search"
+                                            value="{{ request('search') }}" placeholder="Search requests..."
+                                            class="w-full border border-gray-300 rounded-lg pl-10 pr-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-custom-teal focus:border-custom-teal text-sm">
+                                    </div>
+                                </div>
+
+                                {{-- 2. Filter by Category (Takes up 3 columns) --}}
+                                <div class="md:col-span-3">
+                                    <select name="category" onchange="this.form.submit()"
+                                        class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-custom-teal focus:border-custom-teal text-sm text-gray-700 bg-white">
+                                        <option value="">-- All Categories --</option>
+                                        @foreach ($categories as $category)
+                                            <option value="{{ $category->id }}"
+                                                {{ request('category') == $category->id ? 'selected' : '' }}>
+                                                {{ $category->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                {{-- 3. Filter by Service Type (Takes up 3 columns) --}}
+                                <div class="md:col-span-3">
+                                    <select name="service_type" onchange="this.form.submit()"
+                                        class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-custom-teal focus:border-custom-teal text-sm text-gray-700 bg-white">
+                                        <option value="">-- All My Services --</option>
+                                        {{-- Assuming you pass a variable $serviceTypes from controller --}}
+                                        @foreach ($serviceTypes as $type)
+                                            <option value="{{ $type->id }}"
+                                                {{ request('service_type') == $type->id ? 'selected' : '' }}>
+                                                {{ $type->title }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                {{-- 4. Filter by Status (Replaces Sort) (Takes up 2 columns) --}}
+                                <div class="md:col-span-2">
+                                    <select name="status" onchange="this.form.submit()"
+                                        class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-custom-teal focus:border-custom-teal text-sm text-gray-700 bg-white">
+                                        <option value="">-- Status --</option>
+                                        <option value="waiting_payment"
+                                            {{ request('status') == 'waiting_payment' ? 'selected' : '' }}>Waiting Payment
+                                        </option>
+                                        <option value="disputed" {{ request('status') == 'disputed' ? 'selected' : '' }}>
+                                            Disputed</option>
+                                        <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>
+                                            Rejected</option>
+                                        <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>
+                                            Cancelled</option>
+                                        <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>
+                                            Completed</option>
+                                    </select>
+                                </div>
+
+                                {{-- Optional: Reset Button (Only shows if filters are active) --}}
+                                @if (request()->hasAny(['search', 'category', 'service_type', 'sort']))
+                                    <div class="md:col-span-12 flex justify-end">
+                                        <a href="{{ url()->current() }}"
+                                            class="text-xs text-red-500 hover:text-red-700 font-medium underline">
+                                            Clear Filters
+                                        </a>
+                                    </div>
+                                @endif
+                            </div>
+                        </form>
 
                         <div class="mb-6">
                             <div class="flex space-x-4 border-b border-gray-200">
@@ -43,687 +114,622 @@
                             </div>
                         </div>
 
-                        <div id="pending-content"
-                            class="sr-status-tab-content {{ $defaultStatusTab === 'pending' ? '' : 'hidden' }}">
-                            @if ($receivedRequests->where('status', 'pending')->isEmpty())
-                                <div class="text-center py-8">
-                                    <h3 class="mt-2 text-sm font-medium text-gray-900">No Pending Requests</h3>
-                                    <p class="mt-1 text-sm text-gray-500">You have no pending service requests.</p>
+                       <div id="pending-content" class="sr-status-tab-content {{ $defaultStatusTab === 'pending' ? '' : 'hidden' }}">
+    @if ($receivedRequests->where('status', 'pending')->isEmpty())
+        <div class="flex flex-col items-center justify-center py-16 text-center bg-white rounded-xl border border-dashed border-gray-300">
+            <div class="rounded-full bg-indigo-50 p-4 mb-4">
+                <svg class="w-10 h-10 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900">No Pending Requests</h3>
+            <p class="mt-2 text-sm text-gray-500">Good job! You've processed all your incoming requests.</p>
+        </div>
+    @else
+        <div class="space-y-6">
+            @foreach ($receivedRequests->where('status', 'pending') as $request)
+                @php
+                    // Data Setup
+                    $service = $request->studentService;
+                    $pkgType = strtolower($request->selected_package ?? 'basic');
+                    $pkgDescription = $service->{$pkgType . '_description'} ?? null;
+                    $pkgDuration = $service->{$pkgType . '_duration'} ?? null;
+                    $pkgFrequency = $service->{$pkgType . '_frequency'} ?? null;
+                    
+                    $dates = $request->selected_dates;
+                    $firstDate = is_array($dates) ? $dates[0] : $dates;
+                    $dateCount = is_array($dates) ? count($dates) : 1;
+                @endphp
+
+                <div class="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-md hover:border-indigo-300">
+                    
+                    <div class="absolute top-0 left-0 right-0 h-1 bg-indigo-500"></div>
+
+                    <div class="p-5 sm:p-6">
+                        
+                        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-6">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <span class="inline-flex items-center rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-bold text-indigo-700">
+                                        NEW REQUEST
+                                    </span>
+                                    <span class="text-xs text-gray-400">#{{ $request->id }}</span>
                                 </div>
-                            @else
-                                <div class="space-y-6">
-                                    @foreach ($receivedRequests->where('status', 'pending') as $request)
-                                        @php
-                                            $service = $request->studentService;
-                                            // Determine which package fields to show based on selection (default to basic if custom)
-                                            $pkgType = strtolower($request->selected_package ?? 'basic');
-
-                                            // Safe access using variable variables
-                                            $pkgDescription = $service->{$pkgType . '_description'} ?? null;
-                                            $pkgDuration = $service->{$pkgType . '_duration'} ?? null;
-                                            $pkgFrequency = $service->{$pkgType . '_frequency'} ?? null;
-                                        @endphp
-
-                                        <div
-                                            class="group relative overflow-hidden rounded-xl border border-gray-200 bg-gradient-to-br from-white to-gray-50 p-6 transition-all duration-300 hover:shadow-lg hover:border-indigo-100 sr-request-item">
-
-                                            <div class="absolute left-0 top-0 bottom-0 w-1 {{ $request->status_color }}">
-                                            </div>
-
-                                            <div class="flex flex-col gap-6 md:flex-row">
-
-                                                <div class="flex-1 space-y-4 pl-2">
-
-                                                    <div class="flex justify-between items-start">
-                                                        <div>
-                                                            <h4
-                                                                class="text-xl font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
-                                                                {{ optional($request->studentService)->title ?? 'Custom Request' }}
-                                                            </h4>
-                                                            <div class="mt-1 flex items-center gap-2 text-sm text-gray-500">
-                                                                <div
-                                                                    class="flex items-center gap-1 rounded-full bg-white px-2 py-0.5 border border-gray-200 shadow-sm">
-                                                                    <svg class="h-3 w-3 text-gray-400" fill="currentColor"
-                                                                        viewBox="0 0 24 24">
-                                                                        <path
-                                                                            d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                                                                    </svg>
-                                                                    <span
-                                                                        class="font-semibold text-gray-700">{{ $request->requester->name }}</span>
-                                                                </div>
-                                                                <span class="text-xs">•
-                                                                    {{ $request->created_at->diffForHumans() }}</span>
-                                                            </div>
-                                                        </div>
-                                                        <span
-                                                            class="inline-flex items-center rounded-full border border-yellow-200 bg-yellow-50 px-3 py-1 text-xs font-bold uppercase tracking-wide text-yellow-700 shadow-sm">
-                                                            {{ $request->formatted_status }}
-                                                        </span>
-                                                    </div>
-
-                                                    <div
-                                                        class="rounded-lg border border-gray-200 bg-white/50 p-4 shadow-sm backdrop-blur-sm">
-                                                        <div
-                                                            class="mb-3 flex items-center justify-between border-b border-gray-100 pb-2">
-                                                            <span
-                                                                class="text-sm font-bold text-indigo-900 uppercase tracking-wider">
-                                                               {{ str_replace('"', '', $request->selected_package) ?? 'Custom' }} Package
-
-                                                            </span>
-                                                            @if ($request->offered_price)
-                                                                <span class="text-lg font-bold text-green-600">
-                                                                    RM {{ number_format($request->offered_price, 2) }}
-                                                                </span>
-                                                            @endif
-                                                        </div>
-
-                                                        @if ($pkgDescription)
-                                                            <p class="mb-3 text-sm leading-relaxed text-gray-600">
-                                                                {{ $pkgDescription }}
-                                                            </p>
-                                                        @endif
-
-                                                        <div class="flex flex-wrap gap-2">
-                                                            @if ($pkgDuration)
-                                                                <span
-                                                                    class="inline-flex items-center gap-1 rounded-md bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700">
-                                                                    <svg class="h-3.5 w-3.5 text-gray-500" fill="none"
-                                                                        viewBox="0 0 24 24" stroke="currentColor">
-                                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                                            stroke-width="2"
-                                                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                                    </svg>
-                                                                    {{ $pkgDuration }}
-                                                                    Hour{{ $pkgDuration > 1 ? 's' : '' }}
-                                                                </span>
-                                                            @endif
-
-                                                            @if ($pkgFrequency)
-                                                                <span
-                                                                    class="inline-flex items-center gap-1 rounded-md bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700">
-                                                                    <svg class="h-3.5 w-3.5 text-gray-500" fill="none"
-                                                                        viewBox="0 0 24 24" stroke="currentColor">
-                                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                                            stroke-width="2"
-                                                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                                                    </svg>
-                                                                    {{ ucfirst($pkgFrequency) }}
-                                                                </span>
-                                                            @endif
-
-                                                            @if ($request->selected_dates)
-                                                                <span
-                                                                    class="inline-flex items-center gap-1 rounded-md bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">
-                                                                    <svg class="h-3.5 w-3.5 text-blue-500" fill="none"
-                                                                        viewBox="0 0 24 24" stroke="currentColor">
-                                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                                            stroke-width="2"
-                                                                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                                    </svg>
-                                                                    @php
-                                                                        $dates = $request->selected_dates;
-                                                                        $firstDate = is_array($dates)
-                                                                            ? $dates[0]
-                                                                            : $dates;
-                                                                        $count = is_array($dates) ? count($dates) : 1;
-                                                                    @endphp
-                                                                    {{ \Carbon\Carbon::parse($firstDate)->format('M j, Y') }}
-                                                                    @if ($count > 1)
-                                                                        <span class="ml-1">(+{{ $count - 1 }})</span>
-                                                                    @endif
-                                                                </span>
-                                                            @endif
-                                                        </div>
-                                                    </div>
-
-                                                    @if ($request->message)
-                                                        <div
-                                                            class="relative rounded-md bg-gray-50 p-3 pl-4 text-sm text-gray-600 italic">
-                                                            <div
-                                                                class="absolute left-0 top-0 bottom-0 w-1 rounded-l-md bg-gray-300">
-                                                            </div>
-                                                            "{{ $request->message }}"
-                                                        </div>
-                                                    @endif
-
-                                                    <div class="pt-1">
-                                                        <a href="{{ route('service-requests.show', $request) }}"
-                                                            class="group/link inline-flex items-center text-sm font-semibold text-indigo-600 hover:text-indigo-800">
-                                                            View Full Request Details
-                                                            <svg class="ml-1 h-4 w-4 transition-transform group-hover/link:translate-x-1"
-                                                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                                                            </svg>
-                                                        </a>
-                                                    </div>
-                                                </div>
-
-                                                <div
-                                                    class="flex min-w-[140px] flex-col justify-between gap-3 border-t border-gray-100 pt-4 md:border-l md:border-t-0 md:pl-6 md:pt-0">
-                                                    <div class="space-y-2">
-                                                        <span
-                                                            class="block text-xs font-semibold uppercase text-gray-400">Actions</span>
-
-
-
-                                                        <button onclick="acceptRequest({{ $request->id }})"
-                                                            class="flex w-full items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:bg-green-700 hover:shadow-lg focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
-                                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                                                                stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    stroke-width="2" d="M5 13l4 4L19 7" />
-                                                            </svg>
-                                                            Accept
-                                                        </button>
-                                                        <form id="accept-form-{{ $request->id }}"
-                                                            action="{{ route('service-requests.accept', $request->id) }}"
-                                                            method="POST" class="hidden">@csrf</form>
-
-                                                        <button type="button" onclick="openRejectModal({{ $request->id }})"
-    class="flex w-full items-center justify-center gap-2 rounded-lg border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 shadow-sm transition-all hover:bg-red-50 hover:border-red-300">
-    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-    </svg>
-    Reject
-</button>
-
-<form id="reject-form-{{ $request->id }}" 
-      action="{{ route('service-requests.reject', $request->id) }}" 
-      method="POST" style="display: none;">
-    @csrf
-    </form>
-
-                                                        <a href="https://wa.me/6{{ $request->requester->phone }}"
-                                                            target="_blank"
-                                                            class="flex w-full items-center justify-center gap-2 rounded-lg bg-green-500 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:bg-green-600 hover:shadow-lg hover:-translate-y-0.5 focus:ring-2 focus:ring-green-400 focus:ring-offset-2">
-                                                            <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-                                                                <path
-                                                                    d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" />
-                                                            </svg>
-                                                            WhatsApp
-                                                        </a>
-                                                        <form id="reject-form-{{ $request->id }}"
-                                                            action="{{ route('service-requests.reject', $request->id) }}"
-                                                            method="POST" class="hidden">@csrf</form>
-                                                    </div>
-
-                                                    <div class="text-center">
-                                                        <span class="text-[10px] text-gray-400">ID:
-                                                            #{{ $request->id }}</span>
-                                                    </div>
-                                                </div>
-
-                                            </div>
-                                        </div>
-                                    @endforeach
+                                <h4 class="text-lg font-bold text-gray-900 leading-tight">
+                                    {{ optional($request->studentService)->title ?? 'Custom Request' }}
+                                </h4>
+                                @if(optional($service)->category)
+                      <div class="mt-2 inline-flex items-center gap-1.5 rounded-md px-2 py-1" style="color:{{ $service->category->color }}; background-color: {{ $service->category->color }}10; border: 1px solid {{ $service->category->color }};">
+                                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                    </svg>
+                                    <span class="text-xs font-medium">
+                                        {{ $service->category->name }}
+                                    </span>
                                 </div>
-                            @endif
-                        </div>
-
-                        <div id="in-progress-content"
-                            class="sr-status-tab-content {{ $defaultStatusTab === 'in-progress' ? '' : 'hidden' }}">
-                            @if ($receivedRequests->whereIn('status', ['accepted', 'in_progress'])->isEmpty())
-                                <div class="text-center py-8">
-                                    <h3 class="mt-2 text-sm font-medium text-gray-900">No Ongoing Requests</h3>
-                                    <p class="mt-1 text-sm text-gray-500">You have no ongoing service requests.</p>
-                                </div>
-                            @else
-                                <div class="space-y-6">
-                                    @foreach ($receivedRequests->whereIn('status', ['accepted', 'in_progress']) as $request)
-                                        @php
-                                            $service = $request->studentService;
-                                            $pkgType = strtolower($request->selected_package ?? 'basic');
-                                            $pkgDescription = $service->{$pkgType . '_description'} ?? null;
-                                            $pkgDuration = $service->{$pkgType . '_duration'} ?? null;
-                                            $pkgFrequency = $service->{$pkgType . '_frequency'} ?? null;
-                                        @endphp
-
-                                        <div
-                                            class="group relative overflow-hidden rounded-xl border border-blue-100 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-blue-200 sr-request-item">
-
-                                            <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-500"></div>
-
-                                            <div class="flex flex-col gap-6 md:flex-row">
-
-                                                <div class="flex-1 space-y-4 pl-3">
-
-                                                    <div class="flex justify-between items-start">
-                                                        <div>
-                                                            <h4
-                                                                class="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
-                                                                {{ optional($request->studentService)->title ?? 'Custom Request' }}
-                                                            </h4>
-                                                            <div
-                                                                class="mt-1 flex items-center gap-2 text-sm text-gray-500">
-                                                                <span class="font-medium text-gray-700">Client:
-                                                                    {{ $request->requester->name }}</span>
-                                                                <span class="text-gray-300">|</span>
-                                                                <span class="text-xs">Started
-                                                                    {{ $request->updated_at->diffForHumans() }}</span>
-                                                            </div>
-                                                        </div>
-
-                                                        <span
-                                                            class="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-wide text-blue-700 shadow-sm animate-pulse">
-                                                            <span class="mr-1.5 h-2 w-2 rounded-full bg-blue-500"></span>
-                                                            {{ $request->formatted_status }}
-                                                        </span>
-                                                    </div>
-
-                                                    <div class="rounded-lg border border-gray-100 bg-gray-50/50 p-4">
-                                                        <div class="flex flex-wrap gap-4 text-sm text-gray-600 mb-3">
-                                                            <div class="flex items-center gap-1.5">
-                                                                <svg class="h-4 w-4 text-gray-400" fill="none"
-                                                                    viewBox="0 0 24 24" stroke="currentColor">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                                        stroke-width="2"
-                                                                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                                                                </svg>
-                                                                <span
-                                                                    class="font-semibold text-gray-800">{{ ucfirst(trim($request->selected_package, '"') ?? 'Custom') }}</span>
-                                                            </div>
-
-                                                            @if ($request->offered_price)
-                                                                <div class="flex items-center gap-1.5">
-                                                                    <svg class="h-4 w-4 text-gray-400" fill="none"
-                                                                        viewBox="0 0 24 24" stroke="currentColor">
-                                                                        <path stroke-linecap="round"
-                                                                            stroke-linejoin="round" stroke-width="2"
-                                                                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                                    </svg>
-                                                                    <span class="font-bold text-green-600">RM
-                                                                        {{ number_format($request->offered_price, 2) }}</span>
-                                                                </div>
-                                                            @endif
-
-                                                            @if ($request->selected_dates)
-                                                                <div class="flex items-center gap-1.5">
-                                                                    <svg class="h-4 w-4 text-gray-400" fill="none"
-                                                                        viewBox="0 0 24 24" stroke="currentColor">
-                                                                        <path stroke-linecap="round"
-                                                                            stroke-linejoin="round" stroke-width="2"
-                                                                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                                    </svg>
-                                                                    @php
-                                                                        $dates = $request->selected_dates;
-                                                                        $firstDate = is_array($dates)
-                                                                            ? $dates[0]
-                                                                            : $dates;
-                                                                        $count = is_array($dates) ? count($dates) : 1;
-                                                                    @endphp
-                                                                    <span>{{ \Carbon\Carbon::parse($firstDate)->format('M j, Y') }}</span>
-                                                                    @if ($count > 1)
-                                                                        <span
-                                                                            class="ml-1 text-xs">(+{{ $count - 1 }})</span>
-                                                                    @endif
-                                                                </div>
-                                                            @endif
-                                                        </div>
-
-                                                        @if ($pkgDescription)
-                                                            <p
-                                                                class="text-xs text-gray-500 line-clamp-2 border-t border-gray-200 pt-2 mt-2">
-                                                                {{ $pkgDescription }}
-                                                            </p>
-                                                        @endif
-                                                    </div>
-
-                                                    <div class="pt-1">
-                                                        <a href="{{ route('service-requests.show', $request) }}"
-                                                            class="group/link inline-flex items-center text-sm font-semibold text-blue-600 hover:text-blue-800">
-                                                            View Full Details
-                                                            <svg class="ml-1 h-4 w-4 transition-transform group-hover/link:translate-x-1"
-                                                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                                                            </svg>
-                                                        </a>
-                                                    </div>
-                                                </div>
-
-                                                <div
-                                                    class="flex min-w-[140px] flex-col justify-center gap-3 border-t border-gray-100 pt-4 md:border-l md:border-t-0 md:pl-6 md:pt-0">
-
-                                                    <a href="https://wa.me/6{{ $request->requester->phone }}"
-                                                        target="_blank"
-                                                        class="flex w-full items-center justify-center gap-2 rounded-lg bg-green-500 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:bg-green-600 hover:shadow-lg hover:-translate-y-0.5 focus:ring-2 focus:ring-green-400 focus:ring-offset-2">
-                                                        <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-                                                            <path
-                                                                d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" />
-                                                        </svg>
-                                                        WhatsApp
-                                                    </a>
-
-                                                    @if ($request->isAccepted())
-                                                        <button onclick="markInProgress({{ $request->id }})"
-                                                            class="flex w-full items-center justify-center gap-2 rounded-lg border border-blue-600 bg-white px-4 py-2.5 text-sm font-semibold text-blue-600 shadow-sm transition-all hover:bg-blue-50 hover:shadow-md focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                                                                stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    stroke-width="2"
-                                                                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    stroke-width="2"
-                                                                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                            </svg>
-                                                            Start Work
-                                                        </button>
-                                                        <form id="progress-form-{{ $request->id }}"
-                                                            action="{{ route('service-requests.mark-in-progress', $request->id) }}"
-                                                            method="POST" class="hidden">@csrf</form>
-                                                    @endif
-
-                                                    @if ($request->isInProgress())
-                                                        <button onclick="markCompleted({{ $request->id }})"
-                                                            class="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:bg-indigo-700 hover:shadow-lg focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                                                                stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    stroke-width="2"
-                                                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                            </svg>
-                                                            Complete
-                                                        </button>
-                                                        <form id="completed-form-{{ $request->id }}"
-                                                            action="{{ route('service-requests.mark-completed', $request->id) }}"
-                                                            method="POST" class="hidden">@csrf</form>
-                                                    @endif
-
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            @endif
-                        </div>
-
-                        <div id="completed-content"
-                            class="sr-status-tab-content {{ $defaultStatusTab === 'completed' ? '' : 'hidden' }}">
-
-                            @if ($receivedRequests->whereIn('status', ['completed', 'cancelled', 'rejected'])->isEmpty())
-                                {{-- Empty State --}}
-                                <div
-                                    class="flex flex-col items-center justify-center py-12 text-center rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50">
-                                    <div class="rounded-full bg-gray-100 p-4 mb-3">
-                                        <svg class="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24"
-                                            stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                                        </svg>
+                        @endif
+                                <p class="text-xs text-gray-400 mt-1">
+                                    Received {{ $request->created_at->diffForHumans() }}
+                                </p>
+                            </div>
+                            
+                            <div class="text-left sm:text-right mt-2 sm:mt-0">
+                                @if ($request->offered_price)
+                                    <div class="text-2xl font-bold text-gray-900">
+                                        RM {{ number_format($request->offered_price, 2) }}
                                     </div>
-                                    <h3 class="text-sm font-semibold text-gray-900">No Completed Requests</h3>
-                                    <p class="mt-1 text-sm text-gray-500">You don't have any past history yet.</p>
+                                    <div class="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                                        {{ str_replace('"', '', $request->selected_package) ?? 'Custom' }} Package
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="h-px w-full bg-gray-100 my-4"></div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                            
+                            <div class="flex items-start gap-3">
+                                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100">
+                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
                                 </div>
-                            @else
-                                <div class="grid grid-cols-1 gap-6">
-                                    @foreach ($receivedRequests->whereIn('status', ['completed', 'cancelled', 'rejected']) as $request)
-                                        @php
-                                            // Status Styling Logic
-                                            $statusStyles = match ($request->status) {
-                                                'completed' => [
-                                                    'bg' => 'bg-green-50',
-                                                    'text' => 'text-green-700',
-                                                    'dot' => 'bg-green-500',
-                                                    'border' => 'border-green-100',
-                                                ],
-                                                'cancelled' => [
-                                                    'bg' => 'bg-gray-100',
-                                                    'text' => 'text-gray-700',
-                                                    'dot' => 'bg-gray-500',
-                                                    'border' => 'border-gray-200',
-                                                ],
-                                                'rejected' => [
-                                                    'bg' => 'bg-red-50',
-                                                    'text' => 'text-red-700',
-                                                    'dot' => 'bg-red-500',
-                                                    'border' => 'border-red-100',
-                                                ],
-                                                default => [
-                                                    'bg' => 'bg-gray-50',
-                                                    'text' => 'text-gray-600',
-                                                    'dot' => 'bg-gray-400',
-                                                    'border' => 'border-gray-200',
-                                                ],
-                                            };
-                                        @endphp
+                                <div>
+                                    <p class="text-xs font-medium text-gray-500 uppercase">Requester</p>
+                                    <p class="text-sm font-bold text-gray-900">{{ $request->requester->name }}</p>
+                                    <a href="https://wa.me/6{{ $request->requester->phone }}" target="_blank" class="text-xs text-green-600 hover:text-green-700 font-medium inline-flex items-center gap-1 mt-0.5">
+                                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                                        Chat now
+                                    </a>
+                                </div>
+                            </div>
 
-                                        <div
-                                            class="group relative overflow-hidden rounded-xl border {{ $statusStyles['border'] }} bg-white shadow-sm transition-all duration-200 hover:shadow-md">
+                            @if ($request->selected_dates)
+                            <div class="flex items-start gap-3">
+                                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-medium text-gray-500 uppercase">Requested Date</p>
+                                    <p class="text-sm font-semibold text-gray-900">
+                                        {{ \Carbon\Carbon::parse($firstDate)->format('M j, Y') }}
+                                        @if ($dateCount > 1)
+                                            <span class="text-xs font-normal text-gray-500 ml-1">(+{{ $dateCount - 1 }} days)</span>
+                                        @endif
+                                    </p>
+                                </div>
+                            </div>
+                            @endif
 
-                                            {{-- Card Header: Service & Status --}}
-                                            <div
-                                                class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-5 pb-3 gap-4">
-                                                <div>
-                                                    <div class="flex items-center gap-2 mb-1">
-                                                        <h4 class="text-lg font-bold text-gray-900 line-clamp-1">
-                                                            {{ optional($request->studentService)->title ?? 'Custom Request' }}
-                                                        </h4>
-                                                    </div>
-                                                    <div class="flex items-center text-sm text-gray-500">
-                                                        <span class="font-medium text-gray-700 mr-1">Client:</span>
-                                                        {{ $request->requester->name }}
-                                                    </div>
-                                                </div>
+                            <div class="flex items-start gap-3">
+                                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500">
+                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-medium text-gray-500 uppercase">Requirements</p>
+                                    <p class="text-sm font-semibold text-gray-900">
+                                        {{ $pkgDuration ? $pkgDuration . ' Hrs' : 'N/A' }} 
+                                        <span class="text-gray-300 mx-1">|</span> 
+                                        {{ $pkgFrequency ? ucfirst($pkgFrequency) : 'One-time' }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
 
-                                                {{-- Status Pill --}}
-                                                <span
-                                                    class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold {{ $statusStyles['bg'] }} {{ $statusStyles['text'] }}">
-                                                    <span
-                                                        class="h-1.5 w-1.5 rounded-full {{ $statusStyles['dot'] }}"></span>
-                                                    {{ ucfirst($request->status) }}
-                                                </span>
-                                            </div>
+                        @if ($request->message)
+                            <div class="rounded-lg bg-gray-50 p-4 border border-gray-100 mb-6">
+                                <p class="text-xs font-bold text-gray-400 uppercase mb-1">Requester's Note</p>
+                                <p class="text-sm text-gray-600 italic">"{{ $request->message }}"</p>
+                            </div>
+                        @endif
 
-                                            <hr class="border-gray-100 mx-5">
+                        <div class="flex flex-col-reverse md:flex-row items-center justify-between gap-4 pt-2">
+                            
+                            <a href="{{ route('service-requests.show', $request) }}" class="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors w-full md:w-auto text-center">
+                                View Full Details
+                            </a>
 
-                                            {{-- Card Body: Details Grid --}}
-                                            <div class="p-5 pt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                                
+                                <button onclick="openRejectModal({{ $request->id }})" class="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 hover:border-red-300 transition-colors focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                    Reject
+                                </button>
+                                <form id="reject-form-{{ $request->id }}" action="{{ route('service-requests.reject', $request->id) }}" method="POST" class="hidden">@csrf</form>
 
-                                                {{-- Left Column: Request Meta --}}
-                                                <div class="space-y-3">
-                                                    {{-- Package --}}
-                                                    <div class="flex items-center text-sm text-gray-600">
-                                                        <div
-                                                            class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 mr-3">
-                                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                                                                stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    stroke-width="2"
-                                                                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                                                            </svg>
-                                                        </div>
-                                                        <div>
-                                                            <p
-                                                                class="text-xs text-gray-400 uppercase font-bold tracking-wider">
-                                                                Package</p>
-                                                            <p class="font-medium text-gray-900">
-                                                                {{ ucfirst(trim($request->selected_package, '"') ?? 'Custom') }}</p>
-                                                        </div>
-                                                    </div>
+                                <button onclick="acceptRequest({{ $request->id }})" class="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-6 py-2 text-sm font-bold text-white bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-700 hover:shadow-md transition-all focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Accept Request
+                                </button>
+                                <form id="accept-form-{{ $request->id }}" action="{{ route('service-requests.accept', $request->id) }}" method="POST" class="hidden">@csrf</form>
+                            </div>
+                        </div>
 
-                                                    {{-- Price --}}
-                                                    @if ($request->offered_price)
-                                                        <div class="flex items-center text-sm text-gray-600">
-                                                            <div
-                                                                class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 mr-3">
-                                                                <span class="font-bold text-xs">RM</span>
-                                                            </div>
-                                                            <div>
-                                                                <p
-                                                                    class="text-xs text-gray-400 uppercase font-bold tracking-wider">
-                                                                    Total Price</p>
-                                                                <p class="font-medium text-gray-900">RM
-                                                                    {{ number_format($request->offered_price, 2) }}</p>
-                                                            </div>
-                                                        </div>
-                                                    @endif
-                                                </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    @endif
+</div>
 
-                                                {{-- Right Column: Dates & Actions --}}
-                                                <div class="space-y-3">
-                                                    {{-- Date Section --}}
-                                                    @if ($request->selected_dates)
-                                                        {{-- 1. Paparkan TARIKH Dulu --}}
-                                                        <div class="flex items-center text-sm text-gray-600">
-                                                            <div
-                                                                class="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50 text-orange-600 mr-3">
-                                                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                                                                    stroke="currentColor">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                                        stroke-width="2"
-                                                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                                </svg>
-                                                            </div>
-                                                            <div>
-                                                                <p
-                                                                    class="text-xs text-gray-400 uppercase font-bold tracking-wider">
-                                                                    Date</p>
-                                                                <p class="font-medium text-gray-900">
-                                                                    @php
-                                                                        $dates = $request->selected_dates;
-                                                                        $firstDate = is_array($dates)
-                                                                            ? $dates[0]
-                                                                            : $dates;
-                                                                        $count = is_array($dates) ? count($dates) : 1;
-                                                                    @endphp
-                                                                    {{ \Carbon\Carbon::parse($firstDate)->format('d M Y') }}
-                                                                    @if ($count > 1)
-                                                                        <span
-                                                                            class="text-gray-400 text-xs">(+{{ $count - 1 }}
-                                                                            more)</span>
-                                                                    @endif
-                                                                </p>
-                                                            </div>
-                                                        </div>
+                        <div id="in-progress-content" class="sr-status-tab-content {{ $defaultStatusTab === 'in-progress' ? '' : 'hidden' }}">
+    @if ($receivedRequests->whereIn('status', ['accepted', 'in_progress', 'waiting_payment', 'disputed'])->isEmpty())
+        <div class="flex flex-col items-center justify-center py-16 text-center bg-white rounded-xl border border-dashed border-gray-300">
+            <div class="rounded-full bg-blue-50 p-4 mb-4">
+                <svg class="w-10 h-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900">No Ongoing Requests</h3>
+            <p class="mt-2 text-sm text-gray-500">You don't have any active jobs right now.</p>
+        </div>
+    @else
+        <div class="space-y-6">
+            @foreach ($receivedRequests->whereIn('status', ['accepted', 'in_progress', 'waiting_payment', 'disputed']) as $request)
+                @php
+                    // 1. Data Setup
+                    $service = $request->studentService;
+                    $displayId = str_pad($request->id, 5, '0', STR_PAD_LEFT);
+                    
+                    // 2. Dynamic Styling based on Status
+                    $statusTheme = match ($request->status) {
+                        'disputed' => ['color' => 'red', 'border' => 'border-red-200', 'bg' => 'bg-red-500'],
+                        'waiting_payment' => ['color' => 'yellow', 'border' => 'border-yellow-200', 'bg' => 'bg-yellow-400'],
+                        'in_progress' => ['color' => 'blue', 'border' => 'border-blue-200', 'bg' => 'bg-blue-500'],
+                        default => ['color' => 'gray', 'border' => 'border-gray-200', 'bg' => 'bg-gray-400'], // accepted
+                    };
+                @endphp
 
-                                                        {{-- 2. Paparkan DURATION di Bawah Tarikh --}}
-                                                        @if ($request->status === 'completed' && $request->started_at && $request->completed_at)
-                                                            <div class="pt-3 mt-3 border-t border-gray-100">
-                                                                <div class="flex items-start gap-3">
-                                                                    {{-- Icon Jam --}}
-                                                                    <div
-                                                                        class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600 shrink-0">
-                                                                        <svg class="h-4 w-4" fill="none"
-                                                                            viewBox="0 0 24 24" stroke="currentColor">
-                                                                            <path stroke-linecap="round"
-                                                                                stroke-linejoin="round" stroke-width="2"
-                                                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                                        </svg>
-                                                                    </div>
+                <div class="group relative overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md {{ $statusTheme['border'] }}">
+                    
+                    <div class="absolute top-0 left-0 right-0 h-1 {{ $statusTheme['bg'] }}"></div>
 
-                                                                    <div class="flex-1">
-                                                                        <p
-                                                                            class="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">
-                                                                            Work Duration</p>
-
-                                                                        <div class="grid grid-cols-2 gap-2">
-                                                                            {{-- Start Time --}}
-                                                                            <div>
-                                                                                <span
-                                                                                    class="text-[10px] text-gray-500 block">Started:</span>
-                                                                                <span
-                                                                                    class="text-xs font-semibold text-gray-900">
-                                                                                    {{ $request->started_at->format('h:i A') }}
-                                                                                </span>
-                                                                                <span
-                                                                                    class="text-[10px] text-gray-400 block">
-                                                                                    {{ $request->started_at->format('d M') }}
-                                                                                </span>
-                                                                            </div>
-
-                                                                            {{-- End Time --}}
-                                                                            <div>
-                                                                                <span
-                                                                                    class="text-[10px] text-gray-500 block">Finished:</span>
-                                                                                <span
-                                                                                    class="text-xs font-semibold text-gray-900">
-                                                                                    {{ $request->completed_at->format('h:i A') }}
-                                                                                </span>
-                                                                                <span
-                                                                                    class="text-[10px] text-gray-400 block">
-                                                                                    {{ $request->completed_at->format('d M') }}
-                                                                                </span>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        @endif
-                                                    @endif
-                                                </div>
-                                            </div>
-
-                                            {{-- Footer: Actions --}}
-                                            <div
-                                                class="bg-gray-50 px-5 py-3 flex flex-col sm:flex-row justify-between items-center gap-3 border-t border-gray-100">
-                                                {{-- Link to Details --}}
-                                                <a href="{{ route('service-requests.show', $request) }}"
-                                                    class="text-sm text-gray-600 hover:text-indigo-600 font-medium flex items-center transition-colors">
-                                                    View Full Details
-                                                    <svg class="ml-1 h-3 w-3" fill="none" viewBox="0 0 24 24"
-                                                        stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2" d="M9 5l7 7-7 7" />
-                                                    </svg>
-                                                </a>
-
-                                                {{-- Review Action Logic --}}
-                                                {{-- Review Action Logic --}}
-                                                <div class="w-full sm:w-auto flex flex-col sm:flex-row gap-2">
-
-                                                    {{-- ⭐ CLIENT → SELLER REVIEW (Incoming) --}}
-                                                    @if ($request->reviewForHelper)
-                                                        <button
-                                                            onclick='openReviewModal(@json($request->reviewForHelper), "{{ $request->requester->name }}")'
-                                                            class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-yellow-700 bg-yellow-50 hover:bg-yellow-100 border border-yellow-200 transition-all shadow-sm">
-                                                            <div class="flex gap-0.5 text-yellow-500">
-                                                                @for ($i = 1; $i <= 5; $i++)
-                                                                    <i
-                                                                        class="{{ $i <= $request->reviewForHelper->rating ? 'fas' : 'far' }} fa-star text-xs"></i>
-                                                                @endfor
-                                                            </div>
-                                                            <span class="ml-1">
-                                                                {{ $request->reviewForHelper->reply ? 'See Reply' : 'Reply to Review' }}
-                                                            </span>
-                                                        </button>
-                                                    @elseif($request->status === 'completed')
-                                                        <div
-                                                            class="inline-flex items-center gap-2 text-xs text-gray-400 bg-white px-3 py-1.5 rounded-md border border-gray-200">
-                                                            <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24"
-                                                                stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    stroke-width="2"
-                                                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                            </svg>
-                                                            Waiting for client review
-                                                        </div>
-                                                    @endif
-
-                                                    {{-- ⭐ SELLER → CLIENT REVIEW (Outgoing) --}}
-                                                    @if ($request->reviewByHelper)
-                                                        <span
-                                                            class="inline-flex items-center justify-center gap-2 px-3 py-1.5 text-xs rounded-md bg-green-50 text-green-700 border border-green-200">
-                                                            <i class="fas fa-check"></i> You reviewed this client
-                                                        </span>
-                                                    @elseif($request->status === 'completed')
-                                                        {{-- FIXED: Button now calls the correct function --}}
-                                                        <button onclick="openSellerReviewModal({{ $request->id }})"
-                                                            class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 border border-transparent transition-all shadow-sm">
-                                                            <i class="fas fa-star"></i>
-                                                            Rate Client
-                                                        </button>
-                                                    @endif
-
-                                                </div>
-
-                                            </div>
-                                        </div>
-                                    @endforeach
+                    <div class="p-5 sm:p-6">
+                        
+                        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-4">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide bg-{{ $statusTheme['color'] }}-50 text-{{ $statusTheme['color'] }}-700 border border-{{ $statusTheme['color'] }}-100">
+                                        {{ $request->formatted_status }}
+                                    </span>
+                                    <span class="text-xs text-gray-400 font-mono">#{{ $displayId }}</span>
+                                </div>
+                                <h4 class="text-lg font-bold text-gray-900 leading-tight group-hover:text-indigo-600 transition-colors">
+                                    {{ optional($request->studentService)->title ?? 'Custom Request' }}
+                                </h4>
+                                @if(optional($service)->category)
+                      <div class="mt-2 inline-flex items-center gap-1.5 rounded-md px-2 py-1" style="color:{{ $service->category->color }}; background-color: {{ $service->category->color }}10; border: 1px solid {{ $service->category->color }};">
+                                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                    </svg>
+                                    <span class="text-xs font-medium">
+                                        {{ $service->category->name }}
+                                    </span>
+                                </div>
+                        @endif
+                            </div>
+                            
+                            @if ($request->offered_price)
+                                <div class="text-left sm:text-right">
+                                     <span class="text-xs text-gray-500 uppercase tracking-wide">Estimated</span>
+                                    <span class="block text-2xl font-bold text-gray-900">
+                                        RM {{ number_format($request->offered_price, 2) }}
+                                    </span>
+                                    <div class="text-xs font-medium text-gray-400 uppercase tracking-wide">
+                                          {{ str_replace('"', '', $request->selected_package) ?? 'Custom'}} Package
+                                    </div>
                                 </div>
                             @endif
                         </div>
 
+                        <div class="flex items-center gap-4 text-sm text-gray-600 mb-6 pb-4 border-b border-gray-100">
+                            <div class="flex items-center gap-2">
+                                <div class="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
+                                    <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                                </div>
+                                <span class="font-medium">{{ $request->requester->name }}</span>
+                            </div>
+                            <span class="text-gray-300">|</span>
+                            <div class="flex items-center gap-2">
+                                <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                <span>{{ $request->created_at->format('M d, Y') }}</span>
+                            </div>
+                        </div>
+
+                        {{-- ================================================= --}}
+                        {{--  ACTION ZONES                                     --}}
+                        {{-- ================================================= --}}
+
+                        <div class="space-y-4">
+                            
+                            {{-- 1. WAITING FOR PAYMENT --}}
+                            @if ($request->status === 'waiting_payment')
+                                
+                                {{-- Case A: Verification Needed --}}
+                                @if ($request->payment_status === 'verification_status')
+                                    <div class="rounded-lg border border-blue-200 bg-blue-50 p-3">
+                                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                            <div class="flex items-center gap-2 text-blue-800">
+                                                <svg class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                <span class="font-bold text-sm">Payment Proof Uploaded</span>
+                                            </div>
+                                            
+                                            {{-- Button: Normal Width --}}
+                                            <button onclick="openProofModal('{{ asset('storage/' . $request->payment_proof) }}', {{ $request->id }})" 
+                                                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-blue-700 transition-all">
+                                                Check Proof
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                {{-- Case B: Waiting for buyer --}}
+                                @else
+                                    <div class="rounded-lg border border-yellow-200 bg-yellow-50 p-3 flex flex-col md:flex-row items-center justify-between gap-3">
+                                        <div class="flex items-center gap-3">
+                                            <p class="text-sm font-bold text-yellow-800">Waiting for Payment</p>
+                                        </div>
+                                        
+                                        {{-- Button: Normal Width --}}
+                                        <button onclick="finalizeOrder({{ $request->id }}, 'paid')"
+                                            class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-yellow-300 bg-white text-xs font-bold text-yellow-700 hover:bg-yellow-50 transition-all">
+                                            Mark Paid Manually
+                                        </button>
+                                        <form id="finalize-form-{{ $request->id }}" action="{{ route('service-requests.finalize', $request->id) }}" method="POST" class="hidden">@csrf<input type="hidden" name="outcome" id="finalize-outcome-{{ $request->id }}"></form>
+                                    </div>
+                                @endif
+
+                            {{-- 2. DISPUTE ACTIVE --}}
+                            @elseif ($request->status === 'disputed')
+                                <div class="rounded-lg border border-red-200 bg-red-50 p-4">
+                                    <div class="flex items-start gap-3 mb-3">
+                                        <svg class="h-5 w-5 text-red-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                                        <div>
+                                            <h5 class="text-sm font-bold text-red-800">Order Disputed</h5>
+                                            <p class="text-xs text-red-600 mt-1">Reason: "{{ $request->dispute_reason ?? 'Admin review required' }}"</p>
+                                        </div>
+                                    </div>
+                                    <form id="cancel-dispute-form-{{ $request->id }}" action="{{ route('service-requests.cancel-dispute', $request->id) }}" method="POST">
+                                        @csrf
+                                        {{-- Button: Normal Width --}}
+                                        <button type="button" onclick="confirmCancelDispute({{ $request->id }})"
+                                            class="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-white border border-red-200 text-xs font-bold text-red-600 hover:bg-red-50 transition-all shadow-sm">
+                                            Resolve & Complete
+                                        </button>
+                                    </form>
+                                </div>
+
+                            {{-- 3. ACCEPTED (Start Work) --}}
+                            @elseif ($request->status === 'accepted')
+                                {{-- Button: Normal Width --}}
+                                <button onclick="markInProgress({{ $request->id }})"
+                                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-md hover:bg-blue-700 transition-all">
+                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    Start Work
+                                </button>
+                                <form id="progress-form-{{ $request->id }}" action="{{ route('service-requests.mark-in-progress', $request->id) }}" method="POST" class="hidden">@csrf</form>
+
+                            {{-- 4. IN PROGRESS (Finish Work) --}}
+                            @elseif ($request->status === 'in_progress')
+                                {{-- Button: Normal Width --}}
+                                <button onclick="markWorkFinished({{ $request->id }})"
+                                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-md hover:bg-indigo-700 transition-all">
+                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                                    Finish Work
+                                </button>
+                                <form id="finish-work-form-{{ $request->id }}" action="{{ route('service-requests.mark-work-finished', $request->id) }}" method="POST" class="hidden">@csrf</form>
+                            @endif
+
+                            {{-- Secondary Actions Row (Short Buttons) --}}
+                            <div class="flex items-center gap-2 pt-2">
+                                {{-- Short Button: WhatsApp --}}
+                                <a href="https://wa.me/6{{ $request->requester->phone }}" target="_blank" 
+                                    class="inline-flex items-center justify-center gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-xs font-bold text-green-700 hover:bg-green-100 transition-colors">
+                                    <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" /></svg>
+                                    WhatsApp
+                                </a>
+                                
+                                {{-- Short Button: Details --}}
+                                <a href="{{ route('service-requests.show', $request) }}" class="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-600 hover:bg-gray-50 transition-colors">
+                                    Details
+                                </a>
+
+                                {{-- Short Square Button: Report (Only if needed) --}}
+                                @if ($request->isWorkFinished() && $request->status !== 'disputed')
+                                    <button onclick="openDisputeModal({{ $request->id }})" class="h-[34px] w-[34px] flex items-center justify-center rounded-lg border border-red-200 bg-white text-red-500 hover:bg-red-50 transition-colors" title="Report Issue">
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                                    </button>
+                                    <form id="dispute-form-{{ $request->id }}" action="{{ route('service-requests.report', $request->id) }}" method="POST" class="hidden">@csrf<input type="hidden" name="reason" id="dispute-reason-{{ $request->id }}"></form>
+                                @endif
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    @endif
+</div>
+
+                       <div id="completed-content" class="sr-status-tab-content {{ $defaultStatusTab === 'completed' ? '' : 'hidden' }}">
+    @if ($receivedRequests->whereIn('status', ['completed', 'cancelled', 'rejected'])->isEmpty())
+        <div class="flex flex-col items-center justify-center py-16 text-center bg-white rounded-xl border border-dashed border-gray-300">
+            <div class="rounded-full bg-gray-50 p-4 mb-4">
+                <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900">No Request History</h3>
+            <p class="mt-2 text-sm text-gray-500">Completed and cancelled jobs will appear here.</p>
+        </div>
+    @else
+        <div class="space-y-6">
+            @foreach ($receivedRequests->whereIn('status', ['completed', 'cancelled', 'rejected']) as $request)
+                @php
+                    // 1. Data Setup
+                    $service = $request->studentService;
+                    $displayId = str_pad($request->id, 5, '0', STR_PAD_LEFT);
+
+                    // 2. Styling Logic
+                    $theme = match ($request->status) {
+                        'completed' => [
+                            'border' => 'border-green-200 hover:border-green-300',
+                            'strip' => 'bg-green-500',
+                            'badge' => 'bg-green-100 text-green-700',
+                            'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />'
+                        ],
+                        'cancelled' => [
+                            'border' => 'border-gray-200 hover:border-gray-300',
+                            'strip' => 'bg-gray-400',
+                            'badge' => 'bg-gray-100 text-gray-600',
+                            'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />'
+                        ],
+                        'rejected' => [
+                            'border' => 'border-red-200 hover:border-red-300',
+                            'strip' => 'bg-red-500',
+                            'badge' => 'bg-red-100 text-red-700',
+                            'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />'
+                        ],
+                        default => [
+                            'border' => 'border-gray-200', 'strip' => 'bg-gray-400', 'badge' => 'bg-gray-100 text-gray-600', 'icon' => ''
+                        ]
+                    };
+                @endphp
+
+                <div class="group relative overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md {{ $theme['border'] }}">
+                    
+                    <div class="absolute top-0 left-0 right-0 h-1 {{ $theme['strip'] }}"></div>
+
+                    <div class="p-5 sm:p-6">
+                        
+                        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-4">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide {{ $theme['badge'] }}">
+                                        {{ strtoupper($request->status) }}
+                                    </span>
+                                    <span class="text-xs text-gray-400 font-mono">#{{ $displayId }}</span>
+                                </div>
+                                <h4 class="text-lg font-bold text-gray-900 leading-tight">
+                                    {{ optional($request->studentService)->title ?? 'Custom Request' }}
+                                </h4>
+                                @if(optional($service)->category)
+                      <div class="mt-2 inline-flex items-center gap-1.5 rounded-md px-2 py-1" style="color:{{ $service->category->color }}; background-color: {{ $service->category->color }}10; border: 1px solid {{ $service->category->color }};">
+                                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                    </svg>
+                                    <span class="text-xs font-medium">
+                                        {{ $service->category->name }}
+                                    </span>
+                                </div>
+                        @endif
+                            </div>
+                            
+                            @if ($request->offered_price)
+                                <div class="text-left sm:text-right">
+                                                                         <span class="text-xs text-gray-500 uppercase tracking-wide">Estimated</span>
+
+                                    <span class="block text-2xl font-bold text-gray-900">
+                                        RM {{ number_format($request->offered_price, 2) }}
+                                    </span>
+                                    <div class="text-xs font-medium text-gray-400 uppercase tracking-wide">
+                                          {{ str_replace('"', '', $request->selected_package) ?? 'Custom'}} Package
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+
+                        <hr class="border-gray-100 my-4">
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                            
+                            <div class="flex items-start gap-3">
+                                <div class="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 shrink-0">
+                                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Buyer</p>
+                                    <p class="font-semibold text-gray-900">{{ $request->requester->name }}</p>
+                                    <p class="text-xs text-gray-500">{{ $request->created_at->format('M d, Y') }}</p>
+                                </div>
+                            </div>
+
+                            @if ($request->status === 'completed' && $request->started_at && $request->completed_at)
+                                <div class="flex items-start gap-3">
+                                    <div class="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
+                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Work Log</p>
+                                        <div class="flex gap-4 text-sm mt-0.5">
+                                            <div>
+                                                <span class="text-xs text-gray-500 block">Start</span>
+                                                <span class="font-mono font-semibold">{{ $request->started_at->format('H:i') }}</span>
+                                            </div>
+                                            <div class="border-l border-gray-200"></div>
+                                            <div>
+                                                <span class="text-xs text-gray-500 block">End</span>
+                                                <span class="font-mono font-semibold">{{ $request->completed_at->format('H:i') }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-2 border-t border-gray-50 mt-4">
+                            
+                            <a href="{{ route('service-requests.show', $request) }}" class="text-sm font-medium text-gray-500 hover:text-indigo-600 transition-colors flex items-center gap-1">
+                                View Full Details
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                            </a>
+
+                            <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                                
+                                {{-- 1. Buyer's Review (Incoming) --}}
+                                @if ($request->reviewForHelper)
+                                    <button onclick='openReviewModal(@json($request->reviewForHelper), "{{ $request->requester->name }}")' 
+                                        class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-yellow-700 bg-yellow-50 hover:bg-yellow-100 border border-yellow-200 transition-all">
+                                        <div class="flex gap-0.5 text-yellow-500">
+                                            @for ($i = 1; $i <= 5; $i++)
+                                                <i class="{{ $i <= $request->reviewForHelper->rating ? 'fas' : 'far' }} fa-star text-xs"></i>
+                                            @endfor
+                                        </div>
+                                        <span>{{ $request->reviewForHelper->reply ? 'See Reply' : 'Reply' }}</span>
+                                    </button>
+                                @elseif($request->status === 'completed')
+                                    <span class="text-xs text-gray-400 italic py-2">Waiting for buyer review...</span>
+                                @endif
+
+                                {{-- 2. Seller's Review (Outgoing) --}}
+                                @if ($request->reviewByHelper)
+                                    <div class="inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium rounded-lg bg-green-50 text-green-700 border border-green-200">
+                                        <i class="fas fa-check"></i> You rated buyer
+                                    </div>
+                                @elseif($request->status === 'completed')
+                                    <button onclick="openSellerReviewModal({{ $request->id }})" 
+                                        class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition-all hover:shadow-md">
+                                        <i class="fas fa-star"></i> Rate Buyer
+                                    </button>
+                                @endif
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    @endif
+</div>
+
+                        {{-- MODAL --}}
+
+                        {{-- Payment proof modal --}}
+                        <div id="proofModal"
+                            class="fixed inset-0 bg-gray-900 bg-opacity-75 overflow-y-auto h-full w-full hidden z-50 backdrop-blur-sm flex items-center justify-center">
+                            <div
+                                class="relative bg-white rounded-xl shadow-2xl max-w-2xl w-full m-4 flex flex-col max-h-[90vh]">
+
+                                {{-- Header --}}
+                                <div class="flex justify-between items-center p-4 border-b">
+                                    <h3 class="text-lg font-bold text-gray-900">Verify Payment Proof</h3>
+                                    <button onclick="closeProofModal()"
+                                        class="text-gray-400 hover:text-gray-600 transition-colors">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                {{-- Body: The Viewer --}}
+                                <div class="flex-1 p-4 bg-gray-100 flex justify-center items-center overflow-auto">
+
+                                    {{-- 1. Image Viewer --}}
+                                    <img id="proofImage" src="" alt="Payment Proof"
+                                        class="max-h-[60vh] w-auto rounded shadow-sm border border-gray-200 hidden object-contain">
+
+                                    {{-- 2. PDF Viewer (Iframe) --}}
+                                    <iframe id="proofPdf" src=""
+                                        class="w-full h-[60vh] rounded shadow-sm border border-gray-200 hidden">
+                                    </iframe>
+
+                                    {{-- 3. Fallback / Error --}}
+                                    <div id="proofFallback" class="hidden text-center p-6">
+                                        <div class="mb-3 text-red-500">
+                                            <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                                                </path>
+                                            </svg>
+                                        </div>
+                                        <p class="text-gray-900 font-medium">Unable to preview file.</p>
+                                        <a id="proofLink" href="#" target="_blank"
+                                            class="mt-3 inline-block text-blue-600 underline text-sm hover:text-blue-800">
+                                            Download File to View
+                                        </a>
+                                    </div>
+                                </div>
+
+                                {{-- Footer: Decisions --}}
+                                <div class="p-4 border-t bg-gray-50 rounded-b-xl flex gap-3 shrink-0">
+                                    <button onclick="submitDecision('unpaid_problem')"
+                                        class="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-white border border-red-200 text-red-600 rounded-lg font-semibold hover:bg-red-50 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        Reject / Report
+                                    </button>
+
+                                    <button onclick="submitDecision('paid')"
+                                        class="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 shadow-md transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                        Confirm Payment
+                                    </button>
+                                </div>
+
+                                {{-- Hidden Form --}}
+                                <form id="finalizeOrderForm" method="POST" class="hidden">
+                                    @csrf
+                                    <input type="hidden" name="outcome" id="finalizeOutcome">
+                                </form>
+                            </div>
+                        </div>
+                        {{-- Review modal --}}
                         <div id="reviewModal" class="relative z-50 hidden" aria-labelledby="modal-title" role="dialog"
                             aria-modal="true">
                             <div class="fixed inset-0 bg-gray-900/75 backdrop-blur-sm transition-opacity"></div>
@@ -737,7 +743,7 @@
                                         <div class="bg-indigo-600 px-4 py-4 sm:px-6">
                                             <div class="flex items-center justify-between">
                                                 <h3 class="text-base font-semibold leading-6 text-white" id="modal-title">
-                                                    Client Review</h3>
+                                                    Buyer Review</h3>
                                                 <button type="button" onclick="closeReviewModal()"
                                                     class="text-indigo-200 hover:text-white">
                                                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24"
@@ -750,12 +756,12 @@
                                         </div>
 
                                         <div class="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                                            {{-- Client Review Box --}}
+                                            {{-- Buyer Review Box --}}
                                             <div class="rounded-xl bg-yellow-50 p-4 border border-yellow-100 mb-6">
                                                 <div class="flex justify-between items-start mb-2">
                                                     <div>
                                                         <h4 class="font-bold text-gray-900 text-sm"
-                                                            id="modalRequesterName">Client Name</h4>
+                                                            id="modalRequesterName">Buyer Name</h4>
                                                         <p class="text-xs text-gray-500" id="modalDate">Date</p>
                                                     </div>
                                                     <div class="text-yellow-400 text-sm flex gap-1" id="modalStars"></div>
@@ -798,7 +804,7 @@
                                                     <div class="relative">
                                                         <textarea name="reply" rows="4"
                                                             class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3"
-                                                            placeholder="Thank the client for their feedback..."></textarea>
+                                                            placeholder="Thank the Buyer for their feedback..."></textarea>
                                                     </div>
                                                     <div class="mt-4 flex justify-end">
                                                         <button type="submit"
@@ -827,7 +833,7 @@
                                         <div class="bg-indigo-600 px-4 py-4 sm:px-6">
                                             <div class="flex items-center justify-between">
                                                 <h3 class="text-base font-semibold leading-6 text-white">
-                                                    Rate This Client
+                                                    Rate This Buyer
                                                 </h3>
                                                 <button type="button" onclick="closeSellerReviewModal()"
                                                     class="text-indigo-200 hover:text-white focus:outline-none">
@@ -869,7 +875,7 @@
                                                         (Optional)</label>
                                                     <textarea id="sellerComment" name="comment" rows="4"
                                                         class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm placeholder-gray-400"
-                                                        placeholder="Describe your experience working with this client..."></textarea>
+                                                        placeholder="Describe your experience working with this Buyer..."></textarea>
                                                 </div>
 
                                                 {{-- Actions --}}
@@ -891,11 +897,9 @@
                             </div>
                         </div>
 
-
-
                         <script>
                             function openReviewModal(review, requesterName) {
-                                // 1. Populate Client Review
+                                // 1. Populate Buyer Review
                                 document.getElementById('modalRequesterName').innerText = requesterName;
                                 document.getElementById('modalComment').innerText = review.comment || 'No textual comment provided.';
                                 document.getElementById('modalDate').innerText = new Date(review.created_at).toLocaleDateString(undefined, {
@@ -929,6 +933,200 @@
                                 }
 
                                 document.getElementById('reviewModal').classList.remove('hidden');
+                            }
+
+                            function finalizeOrder(id, outcome) {
+                                // 1. Define Text based on outcome
+                                let title = outcome === 'paid' ? 'Mark as Paid & Complete?' : 'Report Unpaid?';
+                                let text = outcome === 'paid' ?
+                                    "By proceeding, you confirm that the payment has been received. This action is irreversible and cannot be changed later." :
+                                    "This will close the order as Unpaid. Are you sure?";
+                                let btnColor = outcome === 'paid' ? '#16a34a' : '#dc2626';
+
+                                // 2. Show Confirmation
+                                Swal.fire({
+                                    title: title,
+                                    text: text,
+                                    icon: 'warning',
+                                    showCancelButton: true,
+                                    confirmButtonColor: btnColor,
+                                    confirmButtonText: 'Yes, Proceed'
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        // 3. Set the hidden input value ('paid' or 'unpaid_problem')
+                                        document.getElementById('finalize-outcome-' + id).value = outcome;
+
+                                        // 4. Submit the form
+                                        document.getElementById('finalize-form-' + id).submit();
+                                    }
+                                });
+                            }
+
+                            function openDisputeModal(requestId) {
+                                Swal.fire({
+                                    title: 'Report / Dispute Transaction',
+                                    html: `
+                <div class="text-left text-sm text-gray-600 mb-4">
+                    Please select a reason for reporting this buyer:
+                </div>
+                
+                <div class="flex flex-col gap-3 text-left">
+                    <label class="flex items-start gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded border border-transparent hover:border-gray-200">
+                        <input type="radio" name="dispute_reason" value="Buyer did not confirm payment after services complete" class="mt-1" onchange="toggleOtherField(false)">
+                        <span>Buyer did not confirm payment after services complete</span>
+                    </label>
+
+                    <label class="flex items-start gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded border border-transparent hover:border-gray-200">
+                        <input type="radio" name="dispute_reason" value="Buyer is unresponsive (Ghosting)" class="mt-1" onchange="toggleOtherField(false)">
+                        <span>Buyer is unresponsive (Ghosting)</span>
+                    </label>
+
+                    <label class="flex items-start gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded border border-transparent hover:border-gray-200">
+                        <input type="radio" name="dispute_reason" value="Buyer refuses to pay the agreed amount" class="mt-1" onchange="toggleOtherField(false)">
+                        <span>Buyer refuses to pay the agreed amount</span>
+                    </label>
+
+                    <label class="flex items-start gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded border border-transparent hover:border-gray-200">
+                        <input type="radio" name="dispute_reason" value="Buyer is demanding extra work not in agreement" class="mt-1" onchange="toggleOtherField(false)">
+                        <span>Buyer is demanding extra work not in agreement</span>
+                    </label>
+
+                    <label class="flex items-start gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded border border-transparent hover:border-gray-200">
+                        <input type="radio" name="dispute_reason" value="Inappropriate behavior from buyer" class="mt-1" onchange="toggleOtherField(false)">
+                        <span>Inappropriate behavior from buyer</span>
+                    </label>
+
+                    <label class="flex items-start gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded border border-transparent hover:border-gray-200">
+                        <input type="radio" name="dispute_reason" value="other" class="mt-1" onchange="toggleOtherField(true)">
+                        <span class="font-semibold">Other (Specify below)</span>
+                    </label>
+                </div>
+
+                <textarea id="swal-other-reason" class="swal2-textarea hidden" placeholder="Please describe the issue in detail..." style="display:none; margin-top: 15px; font-size: 0.9em;"></textarea>
+            `,
+                                    showCancelButton: true,
+                                    confirmButtonText: 'Submit Report',
+                                    confirmButtonColor: '#d33',
+                                    cancelButtonColor: '#3085d6',
+                                    focusConfirm: false,
+                                    preConfirm: () => {
+                                        const selectedOption = document.querySelector('input[name="dispute_reason"]:checked');
+                                        const otherText = document.getElementById('swal-other-reason').value;
+
+                                        if (!selectedOption) {
+                                            Swal.showValidationMessage('Please select a reason');
+                                            return false;
+                                        }
+
+                                        if (selectedOption.value === 'other') {
+                                            if (!otherText.trim()) {
+                                                Swal.showValidationMessage('Please specify the reason for "Other"');
+                                                return false;
+                                            }
+                                            return otherText; // Return the typed text
+                                        }
+
+                                        return selectedOption.value; // Return the predefined text
+                                    }
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        // 1. Put the result into the hidden input
+                                        document.getElementById('dispute-reason-' + requestId).value = result.value;
+
+                                        // 2. Submit the form
+                                        document.getElementById('dispute-form-' + requestId).submit();
+                                    }
+                                });
+                            }
+
+                            // Helper function to show/hide the textarea
+                            function toggleOtherField(show) {
+                                const textArea = document.getElementById('swal-other-reason');
+                                if (show) {
+                                    textArea.style.display = 'block';
+                                    textArea.focus();
+                                } else {
+                                    textArea.style.display = 'none';
+                                }
+                            }
+
+                            function confirmCancelDispute(requestId) {
+                                Swal.fire({
+                                    title: 'Are you sure?',
+                                    text: "This will withdraw your report and immediately mark the order as Completed.",
+                                    icon: 'warning',
+                                    showCancelButton: true,
+                                    confirmButtonColor: '#10B981', // Green color
+                                    cancelButtonColor: '#d33', // Red color
+                                    confirmButtonText: 'Yes, Complete Order',
+                                    cancelButtonText: 'No'
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        // Submit the specific form based on ID
+                                        document.getElementById('cancel-dispute-form-' + requestId).submit();
+                                    }
+                                });
+                            }
+
+                            // 1. OPEN PROOF MODAL
+                            function openProofModal(fileUrl, requestId) {
+                                const modal = document.getElementById('proofModal');
+                                const img = document.getElementById('proofImage');
+                                const fallback = document.getElementById('proofFallback');
+                                const link = document.getElementById('proofLink');
+                                const form = document.getElementById('finalizeOrderForm');
+
+                                // Set Form Action Dynamically
+                                // Ensure you have this route defined: Route::post('/service-requests/{id}/finalize', ...)
+                                form.action = `/service-requests/${requestId}/finalize`;
+
+                                // Handle File Type (Simple check)
+                                const isImage = fileUrl.match(/\.(jpeg|jpg|gif|png)$/) != null;
+
+                                if (isImage) {
+                                    img.src = fileUrl;
+                                    img.classList.remove('hidden');
+                                    fallback.classList.add('hidden');
+                                } else {
+                                    img.classList.add('hidden');
+                                    fallback.classList.remove('hidden');
+                                    link.href = fileUrl;
+                                }
+
+                                modal.classList.remove('hidden');
+                            }
+
+                            // 2. CLOSE MODAL
+                            function closeProofModal() {
+                                document.getElementById('proofModal').classList.add('hidden');
+                            }
+
+                            // 3. SUBMIT DECISION (Paid or Unpaid)
+                            function submitDecision(outcome) {
+                                const form = document.getElementById('finalizeOrderForm');
+                                const input = document.getElementById('finalizeOutcome');
+
+                                input.value = outcome; // 'paid' or 'unpaid_problem'
+
+                                let title = outcome === 'paid' ? 'Confirm Payment?' : 'Report Issue?';
+                                let text = outcome === 'paid' ?
+                                    'This will complete the order.' :
+                                    'This will flag the order as unpaid. Are you sure?';
+                                let color = outcome === 'paid' ? '#16a34a' : '#dc2626';
+
+                                // SweetAlert Confirmation
+                                Swal.fire({
+                                    title: title,
+                                    text: text,
+                                    icon: outcome === 'paid' ? 'question' : 'warning',
+                                    showCancelButton: true,
+                                    confirmButtonColor: color,
+                                    confirmButtonText: 'Yes, Proceed'
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        form.submit();
+                                    }
+                                });
                             }
 
                             function closeReviewModal() {
@@ -1009,7 +1207,7 @@
                                             closeSellerReviewModal();
                                             Swal.fire({
                                                 title: 'Review Submitted!',
-                                                text: 'Thank you for rating the client.',
+                                                text: 'Thank you for rating the Buyer.',
                                                 icon: 'success',
                                                 timer: 1500,
                                                 showConfirmButton: false
@@ -1027,41 +1225,41 @@
                             }
 
                             function openRejectModal(requestId) {
-        Swal.fire({
-            title: 'Reject Request?',
-            text: "Please provide a reason for the requester.",
-            input: 'textarea', // Creates a text box
-            inputPlaceholder: 'e.g. I am fully booked on this date...',
-            inputAttributes: {
-                'aria-label': 'Type your rejection reason here'
-            },
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, Reject it',
-            preConfirm: (reason) => {
-                if (!reason) {
-                    Swal.showValidationMessage('You must provide a reason!')
-                }
-                return reason; // Returns the text value
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // 1. Get the form
-                const form = document.getElementById('reject-form-' + requestId);
-                
-                // 2. Create a hidden input for the reason
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'rejection_reason';
-                input.value = result.value; // The text from SweetAlert
-                
-                // 3. Append and Submit
-                form.appendChild(input);
-                form.submit();
-            }
-        });
-    }
+                                Swal.fire({
+                                    title: 'Reject Request?',
+                                    text: "Please provide a reason for the requester.",
+                                    input: 'textarea', // Creates a text box
+                                    inputPlaceholder: 'e.g. I am fully booked on this date...',
+                                    inputAttributes: {
+                                        'aria-label': 'Type your rejection reason here'
+                                    },
+                                    showCancelButton: true,
+                                    confirmButtonColor: '#d33',
+                                    cancelButtonColor: '#3085d6',
+                                    confirmButtonText: 'Yes, Reject it',
+                                    preConfirm: (reason) => {
+                                        if (!reason) {
+                                            Swal.showValidationMessage('You must provide a reason!')
+                                        }
+                                        return reason; // Returns the text value
+                                    }
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        // 1. Get the form
+                                        const form = document.getElementById('reject-form-' + requestId);
+
+                                        // 2. Create a hidden input for the reason
+                                        const input = document.createElement('input');
+                                        input.type = 'hidden';
+                                        input.name = 'rejection_reason';
+                                        input.value = result.value; // The text from SweetAlert
+
+                                        // 3. Append and Submit
+                                        form.appendChild(input);
+                                        form.submit();
+                                    }
+                                });
+                            }
                         </script>
 
                     </div>
@@ -1139,8 +1337,14 @@
                 'Yes, Start');
         }
 
+        async function markWorkFinished(id) {
+            confirmAction(id, 'finish-work', 'Finish Work?',
+                'This will notify Buyer the work is done and waiting for payment.', '#2563eb',
+                'Yes, Finish');
+        }
+
         async function markCompleted(id) {
-            confirmAction(id, 'completed', 'Mark as Completed?', 'This will notify the client the work is done.',
+            confirmAction(id, 'completed', 'Mark as Completed?', 'This will notify the Buyer the work is done.',
                 '#4f46e5', 'Yes, Complete');
         }
 

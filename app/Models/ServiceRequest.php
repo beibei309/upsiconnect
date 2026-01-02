@@ -21,9 +21,14 @@ class ServiceRequest extends Model
         'message',
         'offered_price',
         'status',
+        'payment_status',
+        'payment_proof',
+        'dispute_reason',
+        'reported_by',
         'rejection_reason',
         'accepted_at',
         'started_at',
+        'finished_at',
         'completed_at'
     ];
 
@@ -31,6 +36,7 @@ class ServiceRequest extends Model
         'offered_price' => 'decimal:2',
         'accepted_at' => 'datetime',
         'started_at' => 'datetime',
+        'finished_at' => 'datetime',
         'completed_at' => 'datetime',
         'selected_time' => 'string',        
         'created_at' => 'datetime',
@@ -90,30 +96,29 @@ class ServiceRequest extends Model
     }
 
     public function reviewForHelper()
-{
-    return $this->hasOne(Review::class, 'service_request_id')
-        ->where('reviewee_id', $this->provider_id);
-}
+    {
+        return $this->hasOne(Review::class, 'service_request_id')
+            ->where('reviewee_id', $this->provider_id);
+    }
 
-public function reviewByHelper()
-{
-    return $this->hasOne(Review::class, 'service_request_id')
-        ->where('reviewer_id', $this->provider_id);
-}
+    public function reviewByHelper()
+    {
+        return $this->hasOne(Review::class, 'service_request_id')
+            ->where('reviewer_id', $this->provider_id);
+    }
 
 
-public function reviewForClient()
-{
-    return $this->hasOne(Review::class, 'service_request_id')
-        ->where('reviewee_id', $this->requester_id);
-}
+    public function reviewForClient()
+    {
+        return $this->hasOne(Review::class, 'service_request_id')
+            ->where('reviewee_id', $this->requester_id);
+    }
 
-public function reviewByClient()
-{
-    return $this->hasOne(Review::class, 'service_request_id')
-        ->where('reviewer_id', $this->requester_id);
-}
-
+    public function reviewByClient()
+    {
+        return $this->hasOne(Review::class, 'service_request_id')
+            ->where('reviewer_id', $this->requester_id);
+    }
 
     /**
      * Scope for pending requests
@@ -161,6 +166,21 @@ public function reviewByClient()
     public function isInProgress()
     {
         return $this->status === 'in_progress';
+    }
+
+    public function isWorkFinished()
+    {
+        return $this->status === 'waiting_payment';
+    }
+
+    public function isPaid()
+    {
+        return $this->payment_status === 'verification_status';
+    }
+
+     public function PaidApproved()
+    {
+        return $this->payment_status === 'paid';
     }
 
     /**

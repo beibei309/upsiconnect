@@ -123,7 +123,18 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/service-requests/{serviceRequest}', [ServiceRequestController::class, 'show'])->name('service-requests.show');
     Route::post('/service-requests/{serviceRequest}/accept', [ServiceRequestController::class, 'accept'])->name('service-requests.accept');
     Route::post('/service-requests/{serviceRequest}/reject', [ServiceRequestController::class, 'reject'])->name('service-requests.reject');
+    // start work
     Route::post('/service-requests/{serviceRequest}/mark-in-progress', [ServiceRequestController::class, 'markInProgress'])->name('service-requests.mark-in-progress');
+    // finished work
+    Route::post('/service-requests/{serviceRequest}/mark-work-finished',[ServiceRequestController::class, 'markWorkFinished'])->name('service-requests.mark-work-finished');
+    Route::post('/service-requests/{serviceRequest}/buyer-confirm-payment', [ServiceRequestController::class, 'buyerConfirmPayment'])->name('service-requests.buyer-confirm-payment');
+    Route::post('/service-requests/{serviceRequest}/finalize', [App\Http\Controllers\ServiceRequestController::class, 'finalizeOrder'])->name('service-requests.finalize');    
+    Route::post('/service-requests/{id}/mark-paid', [ServiceRequestController::class, 'markAsPaid'])->name('service-requests.mark-paid');
+    Route::post('/service-requests/{serviceRequest}/report', [ServiceRequestController::class, 'report']) ->name('service-requests.report');
+    Route::post('/service-requests/{id}/cancel-dispute', [ServiceRequestController::class, 'cancelDispute'])
+    ->name('service-requests.cancel-dispute');
+    Route::post('/service-requests/{id}/report-issue', [App\Http\Controllers\ServiceRequestController::class, 'reportIssue'])->name('service-requests.report-issue');
+ 
     Route::post('/service-requests/{serviceRequest}/mark-completed', [ServiceRequestController::class, 'markCompleted'])->name('service-requests.mark-completed');
     Route::post('/service-requests/{serviceRequest}/cancel', [ServiceRequestController::class, 'cancel'])->name('service-requests.cancel');
 });
@@ -321,6 +332,7 @@ Route::middleware(['auth:admin', 'prevent-back-history'])->prefix('admin')->grou
 Route::get('admin/requests/export', [App\Http\Controllers\Admin\AdminRequestController::class, 'export'])
     ->name('admin.requests.export');
 
+    Route::post('/requests/{id}/resolve', [AdminRequestController::class, 'resolveDispute'])->name('admin.requests.resolve');
 /// Admin Login (public)
 Route::get('/admin/login', [AdminAuthController::class, 'showLogin'])
     ->name('admin.login');

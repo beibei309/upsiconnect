@@ -12,32 +12,66 @@ use Illuminate\Support\Facades\Mail;
 
 class AdminCommunityController extends Controller
 {
-    public function index(Request $request)
+   public function index(Request $request)
 {
     $search = $request->input('search');
-    $status = $request->input('status'); // add this
+    $status = $request->input('status');
+    $ratingRange = $request->input('rating_range'); // 1. Get the range input
 
     $communityUsers = User::where('role', 'community')
+        // Calculate average rating (creates 'reviews_received_avg_rating')
+        ->withAvg('reviewsReceived', 'rating')
+        ->withCount('reviewsReceived')
+        ->with(['reviewsReceived' => function($query) {
+            $query->latest()->limit(10)->with('reviewer'); 
+        }])
+        
+        // Search Logic
         ->when($search, function ($query, $search) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                  ->orWhere('phone', 'like', "%{$search}%");
             });
         })
-        ->when($status === 'active', function ($query) {
-            $query->where('is_blacklisted', 0);
+
+        // Status Logic
+        ->when($status === 'active', fn($q) => $q->where('is_blacklisted', 0))
+        ->when($status === 'blacklisted', fn($q) => $q->where('is_blacklisted', 1))
+
+        // 2. ADDED: Rating Range Logic
+        ->when($ratingRange, function ($query, $range) {
+            switch ($range) {
+                case '4-5':
+                    $query->having('reviews_received_avg_rating', '>=', 4.0)
+                          ->having('reviews_received_avg_rating', '<=', 5.0);
+                    break;
+                case '3-4':
+                    $query->having('reviews_received_avg_rating', '>=', 3.0)
+                          ->having('reviews_received_avg_rating', '<', 4.0);
+                    break;
+                case '2-3':
+                    $query->having('reviews_received_avg_rating', '>=', 2.0)
+                          ->having('reviews_received_avg_rating', '<', 3.0);
+                    break;
+                case '1-2':
+                    $query->having('reviews_received_avg_rating', '>=', 1.0)
+                          ->having('reviews_received_avg_rating', '<', 2.0);
+                    break;
+                case '0-1':
+                    // Includes users with 0 ratings or very low ratings
+                    $query->havingRaw('(reviews_received_avg_rating >= 0 AND reviews_received_avg_rating < 1) OR reviews_received_avg_rating IS NULL');
+                    break;
+            }
         })
-        ->when($status === 'blacklisted', function ($query) {
-            $query->where('is_blacklisted', 1);
-        })
+
         ->orderBy('created_at', 'desc')
         ->paginate(10);
 
-    $communityUsers->appends($request->only('search', 'status'));
+    // Keep params in URL
+    $communityUsers->appends($request->only('search', 'status', 'rating_range'));
 
-    // Summary Stats
+    // Stats
     $stats = [
         'total' => User::where('role', 'community')->count(),
         'approved' => User::where('role', 'community')->where('verification_status', 'approved')->count(),
@@ -45,7 +79,7 @@ class AdminCommunityController extends Controller
         'blacklisted' => User::where('role', 'community')->where('is_blacklisted', 1)->count(),
     ];
 
-    return view('admin.community.index', compact('communityUsers', 'stats', 'search', 'status'));
+    return view('admin.community.index', compact('communityUsers', 'stats'));
 }
 
 

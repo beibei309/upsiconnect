@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ServiceRequest;
 use App\Models\StudentService;
+use App\Models\Cat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -133,31 +134,125 @@ public function index(Request $request)
 {
     $user = Auth::user();
     
-    // Determine the mode. If not set, default based on role logic or 'buyer'
-    $viewMode = session('view_mode', 'buyer');
+    // --- 1. DATA FOR DROPDOWNS ---
+    $categories = \App\Models\Category::all();
+    
+    // --- 2. CAPTURE INPUTS ---
+    $search = $request->input('search');
+    $categoryId = $request->input('category');
+    $selectedServiceId = $request->input('service_type'); 
+    $status = $request->input('status'); // NEW: Capture Status
 
-    // 1. HELPER MODE (Seller View)
-    // Only show if user is actually a helper AND is in 'seller' mode
-    if ($user->role === 'helper' && $viewMode === 'seller') {
-        
-        $receivedRequests = \App\Models\ServiceRequest::where('provider_id', $user->id)
-            ->with(['requester', 'studentService'])
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        return view('service-requests.helper', compact('receivedRequests'));
+    // Safety: Reset service ID if it's invalid
+    if (is_array($selectedServiceId) || json_decode((string)$selectedServiceId)) {
+        $selectedServiceId = null;
     }
 
-    // 2. BUYER MODE (Student View)
-    // Default for 'student' role OR 'helper' role in 'buyer' mode
-    else {
-        
-        $sentRequests = \App\Models\ServiceRequest::where('requester_id', $user->id)
-            ->with(['provider', 'studentService'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+    $viewMode = session('view_mode', 'buyer');
 
-        return view('service-requests.index', compact('sentRequests'));
+    // ==========================================
+    // 3. HELPER MODE (Seller View)
+    // ==========================================
+    if ($user->role === 'helper' && $viewMode === 'seller') {
+        
+        // Fetch only THIS seller's services for the dropdown
+        $myServices = \App\Models\StudentService::where('user_id', $user->id)
+                        ->select('id', 'title')
+                        ->get();
+
+        $query = \App\Models\ServiceRequest::where('provider_id', $user->id)
+            ->with(['requester', 'studentService']);
+
+        // A. Search
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->whereHas('studentService', function($subQ) use ($search) {
+                    $subQ->where('title', 'LIKE', "%{$search}%");
+                })
+                ->orWhereHas('requester', function($subQ) use ($search) {
+                    $subQ->where('name', 'LIKE', "%{$search}%");
+                });
+            });
+        }
+
+        // B. Category Filter
+        if ($categoryId) {
+            $query->whereHas('studentService', function($q) use ($categoryId) {
+                $q->where('category_id', $categoryId);
+            });
+        }
+
+        // C. Service Type Filter
+        if ($selectedServiceId) {
+            $query->where('student_service_id', $selectedServiceId);
+        }
+
+        // D. Status Filter (NEW)
+        if ($status) {
+            $query->where('status', $status);
+        }
+
+        // Default Sort: Always Newest First
+        $query->orderBy('created_at', 'desc');
+
+        $receivedRequests = $query->get();
+
+        return view('service-requests.helper', [
+            'receivedRequests' => $receivedRequests,
+            'categories' => $categories,
+            'serviceTypes' => $myServices 
+        ]);
+    }
+
+    // ==========================================
+    // 4. BUYER MODE (Student View)
+    // ==========================================
+    else {
+        // Buyers see all services in the dropdown
+        $allServiceTypes = \App\Models\StudentService::select('id', 'title')->get();
+
+        $query = \App\Models\ServiceRequest::where('requester_id', $user->id)
+            ->with(['provider', 'studentService']);
+
+        // A. Search
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->whereHas('studentService', function($subQ) use ($search) {
+                    $subQ->where('title', 'LIKE', "%{$search}%");
+                })
+                ->orWhereHas('provider', function($subQ) use ($search) {
+                    $subQ->where('name', 'LIKE', "%{$search}%");
+                });
+            });
+        }
+
+        // B. Category Filter
+        if ($categoryId) {
+            $query->whereHas('studentService', function($q) use ($categoryId) {
+                $q->where('category_id', $categoryId);
+            });
+        }
+
+        // C. Service Type Filter
+        if ($selectedServiceId) {
+            $query->where('student_service_id', $selectedServiceId);
+        }
+
+        // D. Status Filter (NEW)
+        if ($status) {
+            $query->where('status', $status);
+        }
+
+        // Default Sort: Always Newest First
+        $query->orderBy('created_at', 'desc');
+
+        $sentRequests = $query->get();
+
+        return view('service-requests.index', [
+            'sentRequests' => $sentRequests,
+            'categories' => $categories,
+            'serviceTypes' => $allServiceTypes
+        ]);
     }
 }
 
@@ -214,40 +309,34 @@ public function index(Request $request)
      * Reject a service request
      */
     public function reject(Request $request, ServiceRequest $serviceRequest)
-{
-    $user = Auth::user();
-    
-    // Authorization check
-    if ($serviceRequest->provider_id !== $user->id) {
-        abort(403, 'You are not authorized to reject this request.');
+    {
+        $user = Auth::user();
+        
+        // Authorization check
+        if ($serviceRequest->provider_id !== $user->id) {
+            abort(403, 'You are not authorized to reject this request.');
+        }
+
+        if (!$serviceRequest->isPending()) {
+            return response()->json(['error' => 'This request cannot be rejected.'], 400);
+        }
+
+        // 1. VALIDATE: Reason is mandatory
+        $request->validate([
+            'rejection_reason' => 'required|string|max:500',
+        ]);
+
+        // 2. UPDATE: Save status AND reason
+        $serviceRequest->update([
+            'status' => 'rejected',
+            'rejection_reason' => $request->rejection_reason
+        ]);
+
+        $serviceRequest->requester->notify(new ServiceRequestStatusUpdated($serviceRequest, 'rejected'));
+
+        return back()->with('success', 'Service request rejected.');
     }
 
-    if (!$serviceRequest->isPending()) {
-        return response()->json(['error' => 'This request cannot be rejected.'], 400);
-    }
-
-    // 1. VALIDATE: Reason is mandatory
-    $request->validate([
-        'rejection_reason' => 'required|string|max:500',
-    ]);
-
-    // 2. UPDATE: Save status AND reason
-    $serviceRequest->update([
-        'status' => 'rejected',
-        'rejection_reason' => $request->rejection_reason
-    ]);
-
-    $serviceRequest->requester->notify(new ServiceRequestStatusUpdated($serviceRequest, 'rejected'));
-
-    return back()->with('success', 'Service request rejected.');
-}
-
-    /**
-     * Mark service request as in progress
-     */
-    /**
-     * Mark service request as in progress
-     */
     public function markInProgress(ServiceRequest $serviceRequest)
     {
         $user = Auth::user();
@@ -261,15 +350,12 @@ public function index(Request $request)
             return response()->json(['error' => 'This request must be accepted first.'], 400);
         }
 
-        // --- UBAH KAT SINI ---
-        // Guna update() terus supaya kita boleh set status DAN started_at serentak
+        
         $serviceRequest->update([
             'status' => 'in_progress',
-            'started_at' => now(), // Ini akan simpan masa sekarang sebagai Start Time
+            'started_at' => now(), 
         ]);
-        // ---------------------
-
-        // Notify Requester
+       
         $serviceRequest->requester->notify(new ServiceRequestStatusUpdated($serviceRequest, 'in_progress'));
 
         return response()->json([
@@ -278,12 +364,165 @@ public function index(Request $request)
         ]);
     }
 
-    /**
-     * Mark service request as completed
-     */
-    /**
-     * Mark service request as completed
-     */
+    public function markWorkFinished(ServiceRequest $serviceRequest)
+    {
+        $user = Auth::user();
+        
+        // Only the provider can mark as in progress
+        if ($serviceRequest->provider_id !== $user->id) {
+            abort(403, 'You are not authorized to update this request.');
+        }
+
+        if (!$serviceRequest->isInProgress()) {
+            return response()->json(['error' => 'This request must be in progress first.'], 400);
+        }
+
+        
+        $serviceRequest->update([
+            'status' => 'waiting_payment',
+            'finished_at' => now(), 
+        ]);
+       
+        $serviceRequest->requester->notify(new ServiceRequestStatusUpdated($serviceRequest, 'waiting_payment'));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Service marked as finished!'
+        ]);
+    }
+
+    // BUYER/REQUESTER SIDE TO MAKE PAKMENT
+   public function buyerConfirmPayment(Request $request, ServiceRequest $serviceRequest)
+    {
+        // 1. Authorization
+        if (auth()->id() !== $serviceRequest->requester_id) {
+            abort(403);
+        }
+
+        // 2. Validate (File is optional, but if present must be an image/pdf)
+        $request->validate([
+            'payment_proof' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048', // Max 2MB
+        ]);
+
+        // 3. Handle File Upload
+        if ($request->hasFile('payment_proof')) {
+            // Stores in storage/app/public/payment_proofs
+            $path = $request->file('payment_proof')->store('payment_proofs', 'public');
+            
+            // Save path to DB
+            $serviceRequest->update(['payment_proof' => $path]);
+        }
+
+        // 4. Update Status
+        $serviceRequest->update([
+            'payment_status' => 'verification_status'
+        ]);
+
+        return back()->with('success', 'Payment confirmed! Waiting for seller verification.');
+    }
+
+    public function finalizeOrder(Request $request, ServiceRequest $serviceRequest)
+    {
+        // 1. Authorization
+        if (auth()->id() !== $serviceRequest->provider_id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $outcome = $request->input('outcome'); // 'paid' or 'unpaid_problem'
+
+        if ($outcome === 'paid') {
+            // ✅ SCENARIO A: Success
+            // This updates BOTH status columns at once
+            $serviceRequest->update([
+                'status' => 'completed',          // Moves order to History
+                'payment_status' => 'paid',       // Marks payment as Green/Paid
+                'paid_at' => now(),               // Record payment time
+                'completed_at' => now(),          // Record completion time
+            ]);
+
+            // Notify Buyer
+            $serviceRequest->requester->notify(new ServiceRequestStatusUpdated($serviceRequest, 'completed'));
+
+            return back()->with('success', 'Payment confirmed and Order marked as Completed!');
+        } 
+        
+        else {
+            $serviceRequest->update([
+                'status' => 'waiting_payment',          // We still close the order
+                'payment_status' => 'unpaid', // But flag it as a problem
+                'completed_at' => now(),
+            ]);
+
+            return back()->with('error', 'Order closed as Unpaid. Buyer reported.');
+        }
+    }
+
+    // FOR BUYER REPORT
+    public function reportIssue(Request $request, $id)
+    {
+        $serviceRequest = ServiceRequest::findOrFail($id);
+
+        // Validate
+        $request->validate([
+            'dispute_reason' => 'required|string',
+        ]);
+
+        // Concatenate reason if notes exist
+        $reason = $request->dispute_reason;
+        if($request->additional_notes) {
+            $reason .= " - Note: " . $request->additional_notes;
+        }
+
+        // Update status to 'disputed'
+        $serviceRequest->update([
+            'status' => 'disputed',
+            'dispute_reason' => $reason,
+            'reported_by' => auth()->id()
+        ]);
+
+        return back()->with('success', 'Report submitted. Admin will review the case.');
+    }
+
+    public function report(Request $request, ServiceRequest $serviceRequest)
+    {
+        $request->validate([
+            'reason' => 'required|string|max:1000',
+        ]);
+
+        // 1. Update the Request Status
+        $serviceRequest->update([
+            'status' => 'disputed', 
+            'payment_status' => 'dispute', 
+            'dispute_reason' => $request->reason,
+            'reported_by' => auth()->id()
+        ]);
+
+        $buyerId = $serviceRequest->requester_id;
+
+        if ($buyerId) {
+            \App\Models\User::where('id', $buyerId)->increment('reports_count');
+        }
+
+        return back()->with('success', 'Report submitted. Buyer has been flagged.');
+    }
+
+    public function cancelDispute($id)
+    {
+        $request = ServiceRequest::findOrFail($id);
+
+        // Optional: Security check to ensure only the creator of the dispute or admin can do this
+        // if (auth()->id() !== $request->user_id) { abort(403); }
+
+        if ($request->status === 'disputed') {
+            $request->status = 'completed'; // Set directly to completed as requested
+            $request->save();
+            
+            return back()->with('success', 'Report cancelled. Order marked as completed.');
+        }
+
+        return back()->with('error', 'Cannot cancel report at this stage.');
+    }
+
     public function markCompleted(ServiceRequest $serviceRequest)
     {
         $user = Auth::user();
@@ -302,7 +541,6 @@ public function index(Request $request)
             'status' => 'completed',
             'completed_at' => now(), // Rekod masa tamat kerja
         ]);
-        // ---------------------
 
         // Notify Requester
         $serviceRequest->requester->notify(new ServiceRequestStatusUpdated($serviceRequest, 'completed'));
@@ -313,92 +551,94 @@ public function index(Request $request)
         ]);
     }
 
-    /**
-     * Cancel a service request
-     */
-
-public function cancel(ServiceRequest $serviceRequest)
-{
-    $user = Auth::user();
-
-    // 1. Authorization
-    if ($serviceRequest->requester_id !== $user->id && $serviceRequest->provider_id !== $user->id) {
-        abort(403, 'You are not authorized to cancel this request.');
+        public function markAsPaid($id) {
+        $request = ServiceRequest::findOrFail($id);
+        $request->update(['is_paid' => true]);
+        return back()->with('success', 'Payment status updated.');
     }
 
-    // 2. Block if Completed
-    if ($serviceRequest->status === 'completed') {
-        return response()->json(['error' => 'Completed requests cannot be cancelled.'], 400);
-    }
+    public function cancel(ServiceRequest $serviceRequest)
+    {
+        $user = Auth::user();
 
-    // 3. Block if In Progress (Seller started work)
-    if ($serviceRequest->status === 'in_progress') {
+        // 1. Authorization
+        if ($serviceRequest->requester_id !== $user->id && $serviceRequest->provider_id !== $user->id) {
+            abort(403, 'You are not authorized to cancel this request.');
+        }
+
+        // 2. Block if Completed
+        if ($serviceRequest->status === 'completed') {
+            return response()->json(['error' => 'Completed requests cannot be cancelled.'], 400);
+        }
+
+        // 3. Block if In Progress (Seller started work)
+        if ($serviceRequest->status === 'in_progress') {
+            return response()->json([
+                'success' => false,
+                'title'   => 'Work Started',
+                'message' => 'The seller has already started working on this request. Please contact the seller directly to discuss cancellation.'
+            ], 400);
+        }
+
+        // 4. Allow Cancellation (for 'pending' or 'accepted')
+        $serviceRequest->update(['status' => 'cancelled']);
+
         return response()->json([
-            'success' => false,
-            'title'   => 'Work Started',
-            'message' => 'The seller has already started working on this request. Please contact the seller directly to discuss cancellation.'
-        ], 400);
+            'success' => true,
+            'message' => 'Service request cancelled successfully.'
+        ]);
+    }
+        public function updateStatus(Request $request, $id)
+    {
+        $serviceRequest = ServiceRequest::findOrFail($id);
+        
+        // Validate that the user owns the request or is the provider
+        if (auth()->id() !== $serviceRequest->requester_id && auth()->id() !== $serviceRequest->provider_id) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        // Validate the new status
+        $validated = $request->validate([
+            'status' => 'required|in:pending,accepted,in_progress,completed,cancelled,rejected'
+        ]);
+
+        // Update the status
+        $serviceRequest->update([
+            'status' => $validated['status']
+        ]);
+
+        return response()->json([
+            'success' => true, 
+            'message' => 'Booking status updated to ' . $validated['status']
+        ]);
     }
 
-    // 4. Allow Cancellation (for 'pending' or 'accepted')
-    $serviceRequest->update(['status' => 'cancelled']);
+    public function storeBuyerReview(Request $request, ServiceRequest $serviceRequest)
+    {
+        $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'required|string|max:500',
+        ]);
 
-    return response()->json([
-        'success' => true,
-        'message' => 'Service request cancelled successfully.'
-    ]);
-}
-    public function updateStatus(Request $request, $id)
-{
-    $serviceRequest = ServiceRequest::findOrFail($id);
-    
-    // Validate that the user owns the request or is the provider
-    if (auth()->id() !== $serviceRequest->requester_id && auth()->id() !== $serviceRequest->provider_id) {
-        return response()->json(['error' => 'Unauthorized'], 403);
+        // ensure only provider can review requester
+        if ($serviceRequest->provider_id !== auth()->id()) {
+            abort(403);
+        }
+
+        // prevent duplicate review
+        if ($serviceRequest->reviewByHelper) {
+            return back()->with('error', 'You already reviewed this client.');
+        }
+
+        Review::create([
+            'service_request_id' => $serviceRequest->id,
+            'reviewer_id' => auth()->id(),
+            'reviewee_id' => $serviceRequest->requester_id,
+            'rating' => $request->rating,
+            'comment' => $request->comment,
+        ]);
+
+        return back()->with('success', 'Review submitted!');
     }
-
-    // Validate the new status
-    $validated = $request->validate([
-        'status' => 'required|in:pending,accepted,in_progress,completed,cancelled,rejected'
-    ]);
-
-    // Update the status
-    $serviceRequest->update([
-        'status' => $validated['status']
-    ]);
-
-    return response()->json([
-        'success' => true, 
-        'message' => 'Booking status updated to ' . $validated['status']
-    ]);
-}
-
-public function storeBuyerReview(Request $request, ServiceRequest $serviceRequest)
-{
-    $request->validate([
-        'rating' => 'required|integer|min:1|max:5',
-        'comment' => 'required|string|max:500',
-    ]);
-
-    // ensure only provider can review requester
-    if ($serviceRequest->provider_id !== auth()->id()) {
-        abort(403);
-    }
-
-    // prevent duplicate review
-    if ($serviceRequest->reviewByHelper) {
-        return back()->with('error', 'You already reviewed this client.');
-    }
-
-    Review::create([
-        'service_request_id' => $serviceRequest->id,
-        'reviewer_id' => auth()->id(),
-        'reviewee_id' => $serviceRequest->requester_id,
-        'rating' => $request->rating,
-        'comment' => $request->comment,
-    ]);
-
-    return back()->with('success', 'Review submitted!');
-}
 
 }

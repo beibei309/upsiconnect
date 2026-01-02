@@ -31,6 +31,7 @@
                     </div>
 
                     <div class="pt-20 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+                        {{-- Left Side: User Info --}}
                         <div>
                             <h1 class="text-3xl font-black text-slate-900">{{ $user->name }}</h1>
                             <p class="text-slate-500 font-medium mt-1">
@@ -44,21 +45,44 @@
                             @endif
                         </div>
 
-                        {{-- Rating Summary Badge --}}
-                        <div class="flex items-center gap-4 bg-slate-50 px-5 py-3 rounded-2xl border border-slate-100">
-                            <div class="text-center">
-                                <div class="text-3xl font-black text-slate-900 leading-none">
-                                    {{ number_format($averageRating, 1) }}</div>
-                                <div class="flex text-yellow-400 text-[10px] justify-center mt-1">
-                                    @for ($i = 1; $i <= 5; $i++)
-                                        <i class="{{ $i <= round($averageRating) ? 'fas' : 'far' }} fa-star"></i>
-                                    @endfor
+                        {{-- Right Side: Metrics (Rating & Reports) --}}
+                        <div class="flex flex-wrap items-center gap-3">
+                            
+                            {{-- NEW: Report Count Badge (Only shows if > 0) --}}
+                          @if(($user->reports_count ?? 0) > 0)
+                                <div class="flex items-start gap-3 bg-red-50 px-4 py-3 rounded-xl border border-red-100 max-w-sm">
+                                    <div class="mt-0.5">
+                                        {{-- Icon changed to indicate Payment Issue --}}
+                                        <i class="fas fa-file-invoice-dollar text-red-600 text-lg"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-bold text-red-800 uppercase tracking-widest mb-1">
+                                            Report
+                                        </p>
+                                        <p class="text-xs text-red-700 leading-snug">
+                                            This account has been reported <span class="font-black">{{ $user->reports_count }} time(s)</span> for failing to settle payments for completed services.
+                                        </p>
+                                    </div>
+                                </div>
+                            @endif
+
+                            {{-- Rating Summary Badge --}}
+                            <div class="flex items-center gap-4 bg-slate-50 px-5 py-3 rounded-2xl border border-slate-100">
+                                <div class="text-center">
+                                    <div class="text-3xl font-black text-slate-900 leading-none">
+                                        {{ number_format($averageRating, 1) }}</div>
+                                    <div class="flex text-yellow-400 text-[10px] justify-center mt-1">
+                                        @for ($i = 1; $i <= 5; $i++)
+                                            <i class="{{ $i <= round($averageRating) ? 'fas' : 'far' }} fa-star"></i>
+                                        @endfor
+                                    </div>
+                                </div>
+                                <div class="h-8 w-px bg-slate-200"></div>
+                                <div class="text-sm font-bold text-slate-500 uppercase tracking-wide">
+                                    {{ $totalReviews }} Reviews
                                 </div>
                             </div>
-                            <div class="h-8 w-px bg-slate-200"></div>
-                            <div class="text-sm font-bold text-slate-500 uppercase tracking-wide">
-                                {{ $totalReviews }} Reviews
-                            </div>
+
                         </div>
                     </div>
                 </div>

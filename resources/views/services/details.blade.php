@@ -115,29 +115,54 @@
             {{-- LEFT COLUMN (Service Details) --}}
             <div class="lg:col-span-8 space-y-8">
                 <div>
-                    <h1 class="text-3xl md:text-4xl font-bold text-slate-900 leading-tight mb-4">{{ $service->title }}
-                    </h1>
-                    <div class="flex flex-wrap items-center gap-4 text-sm">
-                        <span class="font-semibold text-slate-900">{{ $service->user->name }}</span> |
-                        <span class="text-slate-500"><i class="fa-solid fa-star text-yellow-400"></i>
-                            {{ $service->rating ?? '0.0' }}</span>
+    {{-- TITLE --}}
+    <h1 class="text-3xl md:text-4xl font-bold text-slate-900 leading-tight">
+        {{ $service->title }}
+    </h1>
 
-                        {{-- ADDED STATUS BADGE --}}
-                        @if ($service->status === 'available')
-                            <span
-                                class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-50 text-green-700 border border-green-200">
-                                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                                Available
-                            </span>
-                        @else
-                            <span
-                                class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-gray-100 text-gray-500 border border-gray-200">
-                                <span class="w-2 h-2 rounded-full bg-gray-400"></span>
-                                Unavailable
-                            </span>
-                        @endif
-                    </div>
-                </div>
+    {{-- CATEGORY (Below Title) --}}
+    @if ($service->category)
+        <div class="mt-2">
+            <span
+                class="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-semibold" style="color: {{ $service->category->color }}; background-color: {{ $service->category->color }}20; border: 1px solid {{ $service->category->color }};" >
+                <svg class="h-3.5 w-3.5 text-current" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+
+                {{ $service->category->name }}
+            </span>
+        </div>
+    @endif
+
+    {{-- META INFO --}}
+    <div class="flex flex-wrap items-center gap-4 text-sm mt-4">
+        <span class="font-semibold text-slate-900">{{ $service->user->name }}</span> |
+        <span class="text-slate-500">
+            <i class="fa-solid fa-star text-yellow-400"></i>
+            {{ $service->rating ?? '0.0' }}
+        </span>
+
+        {{-- STATUS BADGE --}}
+        @if ($service->status === 'available')
+            <span
+                class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold
+                bg-green-50 text-green-700 border border-green-200">
+                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                Available
+            </span>
+        @else
+            <span
+                class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold
+                bg-gray-100 text-gray-500 border border-gray-200">
+                <span class="w-2 h-2 rounded-full bg-gray-400"></span>
+                Unavailable
+            </span>
+        @endif
+    </div>
+</div>
+
 
                 <div
                     class="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-md transition-all duration-300 hover:shadow-xl">

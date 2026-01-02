@@ -31,6 +31,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'public_verified_at',
         'verification_status',
         'staff_email',
+        'reports_count',
         'staff_verified_at',
         'is_available',
         'is_suspended',
@@ -127,6 +128,7 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(Review::class, 'reviewer_id');
     }
+    
 
     public function applicationInterests()
     {
