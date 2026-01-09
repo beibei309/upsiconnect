@@ -59,7 +59,7 @@ class FavoriteController extends Controller
 }
 
 
-    public function index()
+public function index()
 {
     $favourites = StudentService::whereIn('id', function ($q) {
             $q->select('service_id')
@@ -67,7 +67,22 @@ class FavoriteController extends Controller
               ->where('user_id', Auth::id())
               ->whereNotNull('service_id');
         })
-        ->with(['user', 'category'])
+        // Load the relations
+        ->with(['user', 'category']) 
+        
+        // --- FIXED LOGIC START (Copied from Services Controller) ---
+        // 1. count reviews where reviewee_id matches the service provider
+        ->withCount(['reviews' => function ($query) {
+            $query->whereColumn('reviews.reviewee_id', 'student_services.user_id');
+        }])
+        // 2. avg rating where reviewee_id matches the service provider
+        ->withAvg(['reviews' => function ($query) {
+            $query->whereColumn('reviews.reviewee_id', 'student_services.user_id');
+        }], 'rating')
+        // --- FIXED LOGIC END ---
+
+        ->where('approval_status', 'approved')
+        ->orderBy('created_at', 'desc')
         ->paginate(12);
 
     return view('favorites.index', compact('favourites'));

@@ -7,11 +7,7 @@
             
             {{-- HEADER SECTION --}}
             <div class="mb-10 text-center md:text-left">
-                <nav class="flex justify-center md:justify-start mb-4">
-                    <span class="px-3 py-1 text-[10px] font-black tracking-widest uppercase bg-indigo-50 text-indigo-600 rounded-full border border-indigo-100">
-                        S2U Dashboard
-                    </span>
-                </nav>
+               
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Account Settings</h1>
@@ -195,8 +191,8 @@
                         <div class="px-8 py-8 border-b border-slate-100 bg-slate-50/50">
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                 <div>
-                                    <h3 class="text-xl font-black text-slate-900 tracking-tight">Public Reviews</h3>
-                                    <p class="text-sm text-slate-500 font-medium">What others are saying about your services.</p>
+                                    <h3 class="text-xl font-black text-slate-900 tracking-tight">Sellers Feedback</h3>
+                                    <p class="text-sm text-slate-500 font-medium">Feedback from sellers regarding their interactions with you.</p>
                                 </div>
                                 
                                 {{-- Rating Big Badge --}}
@@ -269,7 +265,7 @@
                                                         <i class="fas fa-shopping-bag text-[10px] text-slate-400"></i>
                                                     </div>
                                                     <div class="flex flex-col">
-                                                        <span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider leading-none">Bought</span>
+                                                        <span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider leading-none">You bought</span>
                                                         <span class="text-xs font-bold text-slate-700 leading-none mt-1">{{ Str::limit($review->studentService->title, 30) }}</span>
                                                     </div>
                                                 </div>

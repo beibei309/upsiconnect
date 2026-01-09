@@ -933,7 +933,7 @@
             {{-- Modal Body --}}
             <div class="mb-4">
                 <p class="text-sm text-gray-600 mb-2">
-                    Total Amount: <span class="font-bold text-green-600">RM <span
+                    Estimated Total Amount: <span class="font-bold text-green-600">RM <span
                             id="paymentModalPrice">0.00</span></span>
                 </p>
                 <p class="text-xs text-gray-500 bg-gray-50 p-2 rounded-lg border border-gray-100">

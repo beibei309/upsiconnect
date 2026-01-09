@@ -487,7 +487,11 @@ Route::middleware(['auth:admin', 'prevent-back-history'])->prefix('admin')->grou
         
         // Delete status
         Route::delete('/delete/{id}', [AdminStudentStatusController::class, 'destroy'])->name('delete');
+
     });
+            
+        // Graduation reminder email
+        Route::post('/student-status/remind/{id}', [AdminStudentStatusController::class, 'sendReminder'])->name('admin.student_status.send_reminder');
 
     // ========================================
     // USER MODERATION ACTIONS

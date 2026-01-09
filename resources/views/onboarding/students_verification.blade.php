@@ -160,8 +160,8 @@
                     </div>
                 </div>
 
-                <a href="{{ route('students.create') }}" class="block w-full bg-slate-900 hover:bg-slate-800 text-white py-3 rounded-xl font-bold transition-all">
-                    Update Profile
+                <a href="{{ route('dashboard') }}" class="block w-full bg-slate-900 hover:bg-slate-800 text-white py-3 rounded-xl font-bold transition-all">
+                    Back to dashboard
                 </a>
             </div>
         @endif

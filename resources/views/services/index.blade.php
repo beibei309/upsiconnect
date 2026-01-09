@@ -288,10 +288,10 @@
                                         class="md:w-72 h-64 md:h-auto flex-shrink-0 relative rounded-[1.5rem] overflow-hidden bg-slate-50">
                                         @php
                                             // Check if it's a local storage path or an external URL
-                                        $imageUrl = Str::startsWith($service->image_path, ['http://', 'https://'])
-                                            ? $service->image_path
-                                            : asset('storage/' . $service->image_path);
-                                                                                @endphp
+$imageUrl = Str::startsWith($service->image_path, ['http://', 'https://'])
+    ? $service->image_path
+    : asset('storage/' . $service->image_path);
+                                        @endphp
 
                                         <img src="{{ $imageUrl }}" alt="{{ $service->title }}"
                                             class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
@@ -391,12 +391,22 @@
                                                 </div>
                                                 <div class="flex flex-col min-w-0">
                                                     <span
-                                                        class="text-sm font-black text-slate-800 group-hover/user:text-indigo-600 transition truncate">
-                                                        {{ $service->user->name }}
+                                                        class="text-sm font-black text-slate-800 group-hover/user:text-indigo-600 transition truncate"
+                                                        @guest title="Login to view full name" @endguest>
+
+                                                        @auth
+                                                            {{-- Logged in: Show Full Name --}}
+                                                            {{ $service->user->name }}
+                                                        @else
+                                                            {{-- Guest: Show 1st letter + stars (e.g. "Ali" -> "A****") --}}
+                                                            {{ Str::limit($service->user->name, 1, '****') }}
+                                                        @endauth
+
                                                     </span>
                                                     <span
-                                                        class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Student
-                                                        Helper</span>
+                                                        class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                                        Student Seller
+                                                    </span>
                                                 </div>
                                             </a>
 
@@ -508,6 +518,10 @@
             }
         </script>
     </div>
+
+    {{-- Footer bar --}}
+    @include('layouts.footer')
+
 </body>
 
 </html>

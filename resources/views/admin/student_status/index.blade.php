@@ -134,59 +134,80 @@
                         </td>
 
                         {{-- ACTIONS COLUMN --}}
-                        <td class="py-4 px-6 text-right">
-                            <div class="flex items-center justify-end gap-3">
+                        {{-- ACTIONS COLUMN --}}
+<td class="py-4 px-6 text-right">
+    <div class="flex items-center justify-end gap-3">
 
-                                @if ($student->studentStatus)
-                                    {{-- 1. REMINDER BUTTON (VISUAL ONLY - DUMMY) --}}
-                                    @if (!empty($student->studentStatus->graduation_date) && $student->studentStatus->status !== 'Graduated')
-                                        <button type="button" onclick="alert('Reminder feature coming soon!')"
-                                            class="text-yellow-500 hover:text-yellow-700 p-1 rounded hover:bg-yellow-50 transition"
-                                            title="Send Time Remaining Reminder (Coming Soon)">
+        @if ($student->studentStatus)
+            
+            {{-- 1. REMINDER BUTTON (LOGIC ADDED) --}}
+            @php
+                $gradDate = \Carbon\Carbon::parse($student->studentStatus->graduation_date);
+                $now = now();
+                $threeMonthsLimit = now()->addMonths(3);
+                
+                // Show ONLY if: Date exists AND is in future AND is within next 3 months
+                $showReminder = !empty($student->studentStatus->graduation_date) 
+                                && $student->studentStatus->status !== 'Graduated'
+                                && $gradDate->gte($now) 
+                                && $gradDate->lte($threeMonthsLimit);
+            @endphp
 
-                                            {{-- Bell Icon --}}
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
-                                                </path>
-                                            </svg>
-                                        </button>
-                                    @elseif($student->studentStatus->status === 'Graduated')
-                                        {{-- Disabled Bell --}}
-                                        <span class="text-gray-300 p-1 cursor-not-allowed" title="Student has graduated">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
-                                                </path>
-                                            </svg>
-                                        </span>
-                                    @endif
+            @if ($showReminder)
+                {{-- Functional Form to Send Email --}}
+                {{-- Functional Form to Send Email --}}
+<form id="reminder-form-{{ $student->id }}" 
+      action="{{ route('admin.student_status.send_reminder', $student->id) }}" 
+      method="POST" 
+      class="inline-block">
+    @csrf
+    
+    <button type="button" 
+        onclick="confirmSendReminder({{ $student->id }}, '{{ addslashes($student->name) }}')"
+        class="text-yellow-500 hover:text-yellow-700 p-1 rounded hover:bg-yellow-50 transition relative group"
+        title="Send Graduation Reminder">
+        
+        {{-- Bell Icon --}}
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+            </path>
+        </svg>
 
-                                    {{-- EDIT BUTTON --}}
-                                    <a href="{{ route('admin.student_status.edit', $student->studentStatus->id) }}"
-                                        class="text-indigo-600 hover:text-indigo-900 font-medium text-sm">
-                                        Edit
-                                    </a>
+        {{-- Ping Indicator --}}
+        <span class="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+        </span>
+    </button>
+</form>
+            @endif
 
-                                    {{-- DELETE BUTTON --}}
-                                    <form action="{{ route('admin.student_status.delete', $student->studentStatus->id) }}"
-                                        method="POST" class="inline-block"
-                                        onsubmit="return confirm('Remove status record?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button class="text-red-500 hover:text-red-700 font-medium text-sm">
-                                            Delete
-                                        </button>
-                                    </form>
-                                @else
-                                    {{-- ADD BUTTON --}}
-                                    <a href="{{ route('admin.student_status.create', ['student_id' => $student->id]) }}"
-                                        class="text-blue-600 hover:underline">
-                                        + Add Status
-                                    </a>
-                                @endif
-                            </div>
-                        </td>
+            {{-- EDIT BUTTON --}}
+            <a href="{{ route('admin.student_status.edit', $student->studentStatus->id) }}"
+                class="text-indigo-600 hover:text-indigo-900 font-medium text-sm">
+                Edit
+            </a>
+
+            {{-- DELETE BUTTON --}}
+            <form action="{{ route('admin.student_status.delete', $student->studentStatus->id) }}"
+                method="POST" class="inline-block"
+                onsubmit="return confirm('Remove status record?');">
+                @csrf
+                @method('DELETE')
+                <button class="text-red-500 hover:text-red-700 font-medium text-sm">
+                    Delete
+                </button>
+            </form>
+        @else
+            {{-- ADD BUTTON --}}
+            <a href="{{ route('admin.student_status.create', ['student_id' => $student->id]) }}"
+                class="text-blue-600 hover:underline">
+                + Add Status
+            </a>
+        @endif
+    </div>
+</td>
 
                     </tr>
                 @empty
@@ -198,4 +219,35 @@
         </table>
         <div class="p-4">{{ $students->links() }}</div>
     </div>
+    <script>
+    function confirmSendReminder(studentId, studentName) {
+        Swal.fire({
+            title: 'Send Graduation Reminder?',
+            text: `Are you sure you want to send an email reminder to ${studentName}?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#eab308', // Yellow-500 to match your UI
+            cancelButtonColor: '#6b7280', // Gray
+            confirmButtonText: 'Yes, send email',
+            cancelButtonText: 'Cancel',
+            reverseButtons: true,
+            borderRadius: '0.5rem' // Optional: Match Tailwind rounded corners
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Show a loading state immediately after confirming
+                Swal.fire({
+                    title: 'Sending...',
+                    text: 'Please wait while we send the email.',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Submit the form programmatically
+                document.getElementById('reminder-form-' + studentId).submit();
+            }
+        });
+    }
+</script>
 @endsection

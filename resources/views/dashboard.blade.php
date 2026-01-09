@@ -5,8 +5,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>S2U - Student to Community</title>
-
+    <title>U-Serve | Upsi Service Circle</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -272,7 +272,7 @@
                                 class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                             <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
                         </span>
-                        <h2 class="text-2xl font-bold text-slate-900">Top Sellers Online</h2>
+                        <h2 class="text-2xl font-bold text-slate-900">Sellers Available Now</h2>
                     </div>
                     <p class="text-slate-500">Available right now to take your requests.</p>
                 </div>

@@ -46,7 +46,7 @@
                 @if ($user->is_blacklisted)
                     <div class="mt-2">
                         <span class="px-3 py-1 text-sm bg-red-200 text-red-800 rounded-full">
-                            Blacklisted
+                           Suspended
                         </span>
 
                         <p class="text-sm text-red-700 mt-1">
@@ -77,7 +77,7 @@
                     <form action="{{ route('admin.community.blacklist', $user->id) }}" method="POST">
                         @csrf
                         <button class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm">
-                            Blacklist User
+                            Suspend User
                         </button>
                     </form>
                 @endif
@@ -356,7 +356,7 @@
                         icon: userIcon
                     })
                     .addTo(map)
-                    .bindPopup("<b>{{ $user->name }}</b><br>Last seen here.")
+                    .bindPopup("<b>{{ $user->name }}</b><br>Location Registered.")
                     .openPopup();
             }
         });

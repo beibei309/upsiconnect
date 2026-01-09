@@ -1,10 +1,19 @@
 <x-guest-layout>
-    <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-50">
+    <div class="fixed inset-0 w-full h-full overflow-hidden z-0">
+        <video autoplay muted loop playsinline class="absolute min-w-full min-h-full object-cover">
+            <source src="{{ asset('videos/background-myupsi-small.mp4') }}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        {{-- Dark Overlay --}}
+        <div class="absolute inset-0 bg-black/60"></div>
+    </div>
+
+    <div class="relative z-10 min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0">
         
         <div class="mb-6 mt-16">
             <a href="/" class="flex items-center gap-2 group">
-                <img src="/images/logo.png" alt=" Logo"
-                    class="w-25 h-20  rounded-xl shadow-lg group-hover:opacity-90 transition">
+                <img src="/images/logo.png" alt="Logo"
+                    class="w-25 h-20 rounded-xl shadow-lg group-hover:opacity-90 transition">
             </a>
         </div>
 
@@ -63,17 +72,11 @@
                         <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
                         <input id="email" type="email" name="email" :value="old('email')" required autocomplete="username"
                             class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-colors"
-                            placeholder="you@example.com">
+                            placeholder="email@mail.comvero">
                         <x-input-error :messages="$errors->get('email')" class="mt-1 text-red-500 text-xs" />
                     </div>
 
-                    <div>
-                        <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                        <input id="phone" type="tel" name="phone" :value="old('phone')" required
-                            class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-colors"
-                            placeholder="0123456789">
-                        <x-input-error :messages="$errors->get('phone')" class="mt-1 text-red-500 text-xs" />
-                    </div>
+                    
                 </div>
 
                 <div x-show="role === 'student'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
@@ -96,6 +99,13 @@
                          </p>
                     </div>
                 </div>
+                <div>
+                        <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                        <input id="phone" type="tel" name="phone" :value="old('phone')" required
+                            class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-colors"
+                            placeholder="0123456789">
+                        <x-input-error :messages="$errors->get('phone')" class="mt-1 text-red-500 text-xs" />
+                    </div>
 
                 <div x-show="role === 'community'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
                      class="bg-yellow-50 p-4 rounded-xl border border-yellow-100 space-y-4">
@@ -169,7 +179,8 @@
         </div>
 
         <div class="mt-8 mb-8 text-center">
-            <a href="{{ url('/') }}" class="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors group">
+            {{-- Updated text color to gray-200 for better visibility over dark video --}}
+            <a href="{{ url('/') }}" class="inline-flex items-center gap-2 text-sm font-medium text-gray-200 hover:text-white transition-colors group">
                 <svg class="w-4 h-4 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                 Back to Home
             </a>

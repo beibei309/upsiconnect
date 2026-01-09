@@ -36,8 +36,11 @@ class AdminCommunityController extends Controller
         })
 
         // Status Logic
-        ->when($status === 'active', fn($q) => $q->where('is_blacklisted', 0))
-        ->when($status === 'blacklisted', fn($q) => $q->where('is_blacklisted', 1))
+        ->when($status === 'active', fn($q) => $q->where('is_blacklisted', 0)->where('is_suspended', 0))
+            ->when($status === 'suspended', fn($q) => $q->where(function($sub) {
+                $sub->where('is_blacklisted', 1)
+                    ->orWhere('is_suspended', 1);
+            }))
 
         // 2. ADDED: Rating Range Logic
         ->when($ratingRange, function ($query, $range) {
@@ -72,12 +75,14 @@ class AdminCommunityController extends Controller
     $communityUsers->appends($request->only('search', 'status', 'rating_range'));
 
     // Stats
-    $stats = [
-        'total' => User::where('role', 'community')->count(),
-        'approved' => User::where('role', 'community')->where('verification_status', 'approved')->count(),
-        'pending' => User::where('role', 'community')->where('verification_status', 'pending')->count(),
-        'blacklisted' => User::where('role', 'community')->where('is_blacklisted', 1)->count(),
-    ];
+   $stats = [
+            'total' => User::where('role', 'community')->count(),
+            'approved' => User::where('role', 'community')->where('verification_status', 'approved')->count(),
+            'pending' => User::where('role', 'community')->where('verification_status', 'pending')->count(),
+            'blacklisted' => User::where('role', 'community')
+                                 ->where(fn($q) => $q->where('is_blacklisted', 1)->orWhere('is_suspended', 1))
+                                 ->count(),
+        ];
 
     return view('admin.community.index', compact('communityUsers', 'stats'));
 }
@@ -132,14 +137,16 @@ public function update(Request $request, $id)
     }
 
     // Blacklist / Unblacklist
-    if ($request->remove_blacklist) {
-        $user->is_blacklisted = 0;
-        $user->blacklist_reason = null;
-    } 
-    elseif ($request->blacklist_reason) {
-        $user->is_blacklisted = 1;
-        $user->blacklist_reason = $request->blacklist_reason;
-    }
+   if ($request->remove_blacklist) {
+            $user->is_blacklisted = 0;
+            $user->is_suspended = 0; // Sync suspended
+            $user->blacklist_reason = null;
+        } 
+        elseif ($request->blacklist_reason) {
+            $user->is_blacklisted = 1;
+            $user->is_suspended = 1; // Sync suspended
+            $user->blacklist_reason = $request->blacklist_reason;
+        }
 
     $user->save();
 
@@ -158,8 +165,9 @@ public function blacklist(Request $request, $id)
     $user = User::where('role', 'community')->findOrFail($id);
 
     $user->is_blacklisted = 1;
-    $user->blacklist_reason = $request->blacklist_reason;
-    $user->save();
+        $user->is_suspended = 1; 
+        $user->blacklist_reason = $request->blacklist_reason;
+        $user->save();
 
     Mail::to($user->email)->send(new UserBlacklisted($user, $request->blacklist_reason));
 
@@ -172,8 +180,9 @@ public function unblacklist($id)
     $user = User::where('role', 'community')->findOrFail($id);
 
     $user->is_blacklisted = 0;
-    $user->blacklist_reason = null;
-    $user->save();
+        $user->is_suspended = 0; 
+        $user->blacklist_reason = null;
+        $user->save();
 
     Mail::to($user->email)->send(new UserUnblacklisted($user));
 
@@ -225,13 +234,16 @@ public function export(Request $request)
 
     // Prepare CSV
     $csvData = $users->map(function ($user) {
-        return [
-            'Name' => $user->name,
-            'Email' => $user->email,
-            'Phone' => $user->phone,
-            'Status' => $user->is_blacklisted ? 'Blacklisted' : ($user->verification_status == 'approved' ? 'Verified' : 'Not Verified'),
-        ];
-    });
+            // [UPDATED] Check both for Status string
+            $isBlacklisted = $user->is_blacklisted || $user->is_suspended;
+            
+            return [
+                'Name' => $user->name,
+                'Email' => $user->email,
+                'Phone' => $user->phone,
+                'Status' => $isBlacklisted ? 'Blacklisted/Suspended' : ($user->verification_status == 'approved' ? 'Verified' : 'Not Verified'),
+            ];
+        });
 
     return response()->streamDownload(function() use ($csvData) {
         $output = fopen('php://output', 'w');

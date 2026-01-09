@@ -408,12 +408,12 @@
                 <button @click="activeTab = 'seekers'" 
                     :class="activeTab === 'seekers' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-600 hover:bg-slate-50'"
                     class="px-6 py-2.5 rounded-xl font-bold transition-all duration-300 text-sm">
-                    For Seekers
+                    For Buyers
                 </button>
                 <button @click="activeTab = 'providers'" 
                     :class="activeTab === 'providers' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-600 hover:bg-slate-50'"
                     class="px-6 py-2.5 rounded-xl font-bold transition-all duration-300 text-sm">
-                    For Providers
+                    For Sellers
                 </button>
             </div>
         </div>
@@ -430,13 +430,13 @@
                     </div>
                     <div class="group flex flex-col items-center text-center">
                         <div class="w-20 h-20 bg-white text-purple-600 rounded-3xl flex items-center justify-center text-3xl font-black mb-8 shadow-xl shadow-purple-100 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 border-2 border-purple-50">2</div>
-                        <h4 class="text-xl font-bold text-slate-900 mb-3">Connect & Chat</h4>
-                        <p class="text-slate-600 leading-relaxed max-w-xs">Discuss needs, timelines, and pricing directly with providers through chat.</p>
+                        <h4 class="text-xl font-bold text-slate-900 mb-3">Book & Chat</h4>
+                        <p class="text-slate-600 leading-relaxed max-w-xs">Book your requested date, Wait for approval, discuss needs, pricing or other details directly with student sellers through Whatsapp.</p>
                     </div>
                     <div class="group flex flex-col items-center text-center">
                         <div class="w-20 h-20 bg-white text-emerald-500 rounded-3xl flex items-center justify-center text-3xl font-black mb-8 shadow-xl shadow-emerald-100 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-300 border-2 border-emerald-50">3</div>
-                        <h4 class="text-xl font-bold text-slate-900 mb-3">Learn & Review</h4>
-                        <p class="text-slate-600 leading-relaxed max-w-xs">Get the job done and leave a review to help build a trustworthy community.</p>
+                        <h4 class="text-xl font-bold text-slate-900 mb-3">Leave a Review</h4>
+                        <p class="text-slate-600 leading-relaxed max-w-xs">Leave a review to help build a trustworthy community.</p>
                     </div>
                 </div>
             </div>
@@ -459,7 +459,7 @@
                     <div class="group flex flex-col items-center text-center">
                         <div class="w-20 h-20 bg-white text-teal-500 rounded-3xl flex items-center justify-center text-3xl font-black mb-8 shadow-xl shadow-teal-100 group-hover:scale-110 transition-all border-2 border-teal-50">3</div>
                         <h4 class="text-xl font-bold text-slate-900 mb-3">Earn & Grow</h4>
-                        <p class="text-slate-600 leading-relaxed max-w-xs">Build your reputation, earn money, and help your fellow students succeed.</p>
+                        <p class="text-slate-600 leading-relaxed max-w-xs">Build your reputation, earn money, and help your fellow students and community succeed.</p>
                     </div>
                 </div>
             </div>
@@ -483,9 +483,9 @@
         </p>
         
         <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
-            <a href="{{ Auth::check() ? route('search.index') : route('register') }}" 
+            <a href="{{ route('services.index') }}" 
                class="group px-10 py-4 bg-white text-slate-950 rounded-2xl font-bold hover:scale-105 transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.2)] flex items-center gap-2">
-                <span>Find Your Next Service!</span>
+                <span>Find Your Service!</span>
                 <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
             </a>
             

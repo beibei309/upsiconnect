@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Verify Email - S2U</title>
+    <title>Verify Email - U-Serve</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -60,7 +60,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex-shrink-0 flex items-center">
-                    <h1 class="text-3xl font-extrabold tracking-tight text-indigo-600">S2U</h1>
+                    <h1 class="text-3xl font-extrabold tracking-tight text-indigo-600">U-Serve</h1>
                 </div>
             </div>
         </div>

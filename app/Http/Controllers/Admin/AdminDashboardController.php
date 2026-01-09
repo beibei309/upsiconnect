@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\StudentService;
-use App\Models\ServiceApplication;
+use App\Models\ServiceRequest;
 use App\Models\StudentStatus;
 
 class AdminDashboardController extends Controller
@@ -16,7 +16,7 @@ class AdminDashboardController extends Controller
     $totalStudents = User::where('role', 'student')->count();
     $totalCommunityUsers = User::where('role', 'community')->count();
     $totalServices = StudentService::count();
-    $pendingRequests = ServiceApplication::where('status', 'pending')->count();
+    $pendingRequests = ServiceRequest::where('status', 'pending')->count();
 
     // ===============================
         // 🔔 ADMIN ACTION REQUIRED

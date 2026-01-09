@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\StudentStatus;
 use Illuminate\Http\Request;
+use App\Mail\GraduationReminderMail;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use App\Notifications\StudyDurationReminder; // Make sure this import exists
 
 class AdminStudentStatusController extends Controller
@@ -159,6 +162,27 @@ class AdminStudentStatusController extends Controller
 
         return redirect()->route('admin.student_status.index')
             ->with('success', 'Status deleted.');
+    }
+
+    public function sendReminder($userId)
+    {
+        $user = User::findOrFail($userId);
+        
+        // Safety check: Ensure they are actually graduating soon
+        $status = $user->studentStatus;
+        
+        if (!$status || !$status->graduation_date) {
+            return back()->with('error', 'Student has no graduation date set.');
+        }
+
+        // Send the email
+        // Make sure you have created the Mailable (see step 3)
+        try {
+            Mail::to($user->email)->send(new GraduationReminderMail($user));
+            return back()->with('success', 'Reminder email sent to ' . $user->name);
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to send email: ' . $e->getMessage());
+        }
     }
 
 }

@@ -86,7 +86,11 @@
                                         <div class="font-medium text-gray-900">{{ $student->name }}</div>
                                         @if ($student->role === 'helper')
                                             <span
-                                                class="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700">Seller</span>
+                                                class="text-xs px-2 py-0.5 rounded-full bg-blue-200 text-gray-700">Seller</span>
+                                        @endif
+                                        @if ($student->role === 'student')
+                                            <span
+                                                class="text-xs px-2 py-0.5 rounded-full bg-yellow-200 text-gray-700">Student</span>
                                         @endif
                                     </div>
                                 </div>
